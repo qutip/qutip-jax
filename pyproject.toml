@@ -1,0 +1,13 @@
+[build-system]
+requires = [
+    "setuptools",
+    "packaging",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "-Werror --strict-config --strict-markers  --benchmark-skip"
+testpaths = [
+    "tests",
+]

@@ -1,0 +1,43 @@
+name: Documentation
+
+on:
+  [push, pull_request]
+
+jobs:
+  build:
+    name: Build HTML documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.9'
+
+      - name: Install documentation dependencies
+        run: |
+          python -mpip install -r doc/requirements.txt
+
+      - name: Install QuTiP from GitHub
+        run: |
+          python -mpip install git+https://github.com/qutip/qutip.git@dev.major
+          python -c 'import qutip; qutip.about()'
+
+      - name: Install qutip-jax from GitHub
+        run: |
+          python -mpip install .[full]
+          python -c 'import qutip_jax; print(qutip_jax.__version__)'
+
+      - name: Build documentation
+        working-directory: doc
+        run: |
+          make html
+
+      - name: Upload built files
+        uses: actions/upload-artifact@v2
+        with:
+          name: qutip-jax_html_docs
+          path: doc/_build/html/*
+          if-no-files-found: error

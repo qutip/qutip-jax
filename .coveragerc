@@ -1,0 +1,7 @@
+[run]
+source = src
+
+[report]
+exclude_lines =
+    # Skip Python wrappers which help load in C extension modules.
+    __bootstrap__()
