@@ -3,12 +3,16 @@ from jax.config import config
 config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import numpy as np
+import numbers
+
+__all__ = ["JaxArray"]
 
 class JaxArray(Data):
     def __init__(self, data, shape=None, copy=None):
         data = jnp.array(data, dtype=jnp.complex128)
 
         if shape is None:
+            shape = data.shape
             if len(shape) == 0:
                 shape = (1, 1)
             if len(shape) == 1:
@@ -26,14 +30,14 @@ class JaxArray(Data):
                 """Shape must be a 2-tuple of positive ints, but is """ + repr(shape)
             )
 
-        if prod(shape) != prod(data.shape):
+        if np.prod(shape) != np.prod(data.shape):
             raise ValueError("Shape of data does not match argument.")
 
         if copy:
             # Since jax's arrays are immutable, we could probably skip this.
             data = data.copy()
         self.data = jnp.reshape(data, shape)
-        super.__init__(shape)
+        super().__init__(shape)
 
     def copy(self):
         return self.__class__(self.data, copy=True)
