@@ -37,5 +37,8 @@ def test_convert():
     qobj = qutip.Qobj(ones)
     prod = qobj * jnp.array([0.5])
     assert_array_almost_equal(prod.data.to_array(), ones * jnp.array([0.5]))
-    assert(isinstance(qutip.sigmax().to('jax'), jax.interpreters.xla.DeviceArray))
+
+    sx = qutip.sigmax()
+    assert(isinstance(sx.data, qutip.core.data.CSR))
+    assert(isinstance(sx.to('jax').data, JaxArray))
 

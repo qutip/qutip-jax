@@ -1,7 +1,7 @@
 import qutip
 from qutip_jax.jaxarray import JaxArray
 
-from .convert import jax_from_dense, dense_from_jax
+from .convert import is_jax_array, jax_from_dense, dense_from_jax
 from .version import version as __version__
 
 
@@ -15,3 +15,9 @@ qutip.data.to.add_conversions(
 
 # User friendly name for conversion with `to` or Qobj creation functions:
 qutip.data.to.register_aliases(["jax"], JaxArray)
+
+qutip.data.create.add_creators(
+    [
+        (is_jax_array, JaxArray, 85),
+    ]
+)
