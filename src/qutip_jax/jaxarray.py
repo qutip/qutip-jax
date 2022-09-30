@@ -1,11 +1,18 @@
-from qutip.core.data.base import Data
-from jax.config import config
-config.update("jax_enable_x64", True)
 import jax.numpy as jnp
+from jax import tree_util
+from jax.config import config
+
+config.update("jax_enable_x64", True)
+
 import numpy as np
+
+from qutip.core.data.base import Data
+
 import numbers
 
+
 __all__ = ["JaxArray"]
+
 
 class JaxArray(Data):
     def __init__(self, data, shape=None, copy=None):
@@ -56,3 +63,17 @@ class JaxArray(Data):
 
     def trace(self):
         return jnp.trace(self.data)
+
+    def _tree_flatten(self):
+        children = (self.data,)  # arrays / dynamic values
+        aux_data = {"shape": self.shape}  # static values
+        return (children, aux_data)
+
+    @classmethod
+    def _tree_unflatten(cls, aux_data, children):
+        return cls(*children, **aux_data)
+
+
+tree_util.register_pytree_node(
+    JaxArray, JaxArray._tree_flatten, JaxArray._tree_unflatten
+)
