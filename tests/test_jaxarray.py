@@ -3,8 +3,13 @@ import jax.numpy as jnp
 from jax import jit
 
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
+
+import qutip_jax
 from qutip_jax.jaxarray import JaxArray
+
+import qutip
 
 
 def test_create():
@@ -24,3 +29,11 @@ def test_jit():
 
     tr = func(arr)
     assert isinstance(tr, jax.interpreters.xla.DeviceArray)
+
+
+def test_convert():
+    """Tests if the conversions from Qobj to JaxArray work"""
+    ones = jnp.ones((3, 3))
+    qobj = qutip.Qobj(ones)
+    prod = qobj * jnp.array([0.5])
+    assert_array_almost_equal(prod.data.to_array(), ones * jnp.array([0.5]))

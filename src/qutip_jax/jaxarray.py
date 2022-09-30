@@ -16,7 +16,7 @@ __all__ = ["JaxArray"]
 
 class JaxArray(Data):
     def __init__(self, data, shape=None, copy=None):
-        data = jnp.array(data, dtype=jnp.complex128)
+        jxa = jnp.array(data, dtype=jnp.complex128)
 
         if shape is None:
             shape = data.shape
@@ -40,32 +40,32 @@ class JaxArray(Data):
         if np.prod(shape) != np.prod(data.shape):
             raise ValueError("Shape of data does not match argument.")
 
-        if copy:
-            # Since jax's arrays are immutable, we could probably skip this.
-            data = data.copy()
-        self.data = jnp.reshape(data, shape)
+        # if copy:
+        #     # Since jax's arrays are immutable, we could probably skip this.
+        #     data = data.copy()
+        self._jxa = jxa.reshape(shape)
         super().__init__(shape)
 
     def copy(self):
-        return self.__class__(self.data, copy=True)
+        return self.__class__(self._jxa, copy=True)
 
     def to_array(self):
-        return np.array(self.data)
+        return np.array(self._jxa)
 
     def conj(self):
-        return self.__class__(self.data.conj())
+        return self.__class__(self._jxa.conj())
 
     def transpose(self):
-        return self.__class__(self.data.T)
+        return self.__class__(self._jxa.T)
 
     def adjoint(self):
-        return self.__class__(self.data.T.conj())
+        return self.__class__(self._jxa.T.conj())
 
     def trace(self):
-        return jnp.trace(self.data)
+        return jnp.trace(self._jxa)
 
     def _tree_flatten(self):
-        children = (self.data,)  # arrays / dynamic values
+        children = (self._jxa,)  # arrays / dynamic values
         aux_data = {"shape": self.shape}  # static values
         return (children, aux_data)
 
