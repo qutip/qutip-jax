@@ -6,6 +6,8 @@ Backing the linear algebra operations with JAX extends QuTiP's
 capability to work with a GPU. Furthermore, it allows QuTiP's `Qobj` class to
 benefit from [auto differentiation](https://jax.readthedocs.io/en/latest/notebooks/autodiff_cookbook.html).
 
+We are actively developing the plug-in and in the pre-alpha state. Therefore it is a work-in-progress and is not ready for use yet. You are welcome to contribute or take part in the development by posting issues, PRs and through discussions.
+
 Support
 -------
 
@@ -17,3 +19,8 @@ We are proud to be affiliated with [Unitary Fund](https://unitary.fund) and
 lab](https://dml.riken.jp/) at RIKEN, by the University of Sherbrooke, and by
 Aberystwyth University, [among other supporting
 organizations](https://qutip.org/#supporting-organizations).
+
+
+Contact
+-------
+Contact Shahnawaz Ahmed (shahnawaz.ahmed95@gmail.com), Eric Giguère(eric.giguere@calculquebec.ca) or anyone from the QuTiP admin team (https://qutip.org/devs.html) for more information.
