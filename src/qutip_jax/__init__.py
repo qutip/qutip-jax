@@ -14,7 +14,7 @@ qutip.data.to.add_conversions(
 )
 
 # User friendly name for conversion with `to` or Qobj creation functions:
-qutip.data.to.register_aliases(["jax"], JaxArray)
+qutip.data.to.register_aliases(["jax", "JaxArray"], JaxArray)
 
 qutip.data.create.add_creators(
     [

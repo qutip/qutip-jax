@@ -34,7 +34,8 @@ class JaxArray(Data):
             and shape[1] > 0
         ):
             raise ValueError(
-                """Shape must be a 2-tuple of positive ints, but is """ + repr(shape)
+                """Shape must be a 2-tuple of positive ints, but is """
+                + repr(shape)
             )
 
         if np.prod(shape) != np.prod(data.shape):
