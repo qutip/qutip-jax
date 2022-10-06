@@ -40,6 +40,12 @@ def _check_matmul_shape(left, right, out):
 
 
 def add_jaxarray(left, right, scale=1):
+    """
+    Perform the operation
+        left + scale*right
+    where `left` and `right` are matrices, and `scale` is an optional complex
+    scalar.
+    """
     _check_same_shape(left, right)
 
     if scale == 1 and isinstance(scale, int):
@@ -54,14 +60,37 @@ def add_jaxarray(left, right, scale=1):
 
 
 def sub_jaxarray(left, right):
+    """
+    Perform the operation
+        left - right
+    where `left` and `right` are matrices.
+    """
     return add_jaxarray(left, right, -1)
 
 
 def mul_jaxarray(matrix, value):
+    """Multiply a matrix element-wise by a scalar."""
     return JaxArray._fast_constructor(matrix._jxa * value, matrix.shape)
 
 
 def matmul_jaxarray(left, right, scale=1, out=None):
+    """
+    Compute the matrix multiplication of two matrices, with the operation
+        scale * (left @ right)
+    where `scale` is (optionally) a scalar, and `left` and `right` are
+    matrices.
+
+    Arguments
+    ---------
+    left : Data
+        The left operand as either a bra or a ket matrix.
+
+    right : Data
+        The right operand as a ket matrix.
+
+    scale : complex, optional
+        The scalar to multiply the output by.
+    """
     _check_matmul_shape(left, right, out)
     shape = (left.shape[0], right.shape[1])
 
@@ -77,11 +106,16 @@ def matmul_jaxarray(left, right, scale=1, out=None):
 
 
 def multiply_jaxarray(left, right):
+    """Element-wise multiplication of matrices."""
     _check_same_shape(left, right)
     return JaxArray._fast_constructor(left._jxa * right._jxa, shape=left.shape)
 
 
 def kron_jaxarray(left, right):
+    """
+    Compute the Kronecker product of two matrices.  This is used to represent
+    quantum tensor products of vector spaces.
+    """
     return JaxArray(jnp.kron(left._jxa, right._jxa))
 
 
