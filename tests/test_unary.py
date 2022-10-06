@@ -23,20 +23,22 @@ class TestNeg(testing.TestNeg):
 
 class TestAdjoint(testing.TestAdjoint):
     specialisations = [
-        pytest.param(qutip_jax.adjoint_jaxarray, JaxArray, JaxArray)
+        pytest.param(qutip_jax.adjoint_jaxarray, JaxArray, JaxArray),
+        pytest.param(lambda mat: mat.adjoint(), JaxArray, JaxArray)
     ]
 
 
 class TestConj(testing.TestConj):
     specialisations = [
-        pytest.param(qutip_jax.conj_jaxarray, JaxArray, JaxArray)
+        pytest.param(qutip_jax.conj_jaxarray, JaxArray, JaxArray),
+        pytest.param(lambda mat: mat.conj(), JaxArray, JaxArray)
     ]
 
 
 class TestTranspose(testing.TestTranspose):
     specialisations = [
-        pytest.param(
-            qutip_jax.transpose_jaxarray, JaxArray, JaxArray)
+        pytest.param(qutip_jax.transpose_jaxarray, JaxArray, JaxArray),
+        pytest.param(lambda mat: mat.transpose(), JaxArray, JaxArray)
     ]
 
 
