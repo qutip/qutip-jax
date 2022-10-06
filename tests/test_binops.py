@@ -33,6 +33,15 @@ class TestSub(testing.TestSub):
         )
     ]
 
+class TestMul(testing.TestMul):
+    specialisations = [
+        pytest.param(
+            qutip_jax.mul_jaxarray,
+            qutip_jax.JaxArray,
+            qutip_jax.JaxArray
+        )
+    ]
+
 class TestMatmul(testing.TestMatmul):
     specialisations = [
         pytest.param(
