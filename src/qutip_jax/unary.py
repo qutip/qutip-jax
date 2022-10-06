@@ -24,28 +24,34 @@ def _check_square_shape(matrix):
 
 
 def neg_jaxarray(matrix):
+    """Unary element-wise negation of a matrix."""
     return mul_jaxarray(matrix, -1)
 
 
 @jit
 def adjoint_jaxarray(matrix):
+    """Hermitian adjoint (matrix conjugate transpose)."""
     return JaxArray(matrix._jxa.T.conj())
 
 
 def transpose_jaxarray(matrix):
+    """Transpose of a matrix."""
     return JaxArray(matrix._jxa.T)
 
 
 def conj_jaxarray(matrix):
+    """Element-wise conjugation of a matrix."""
     return JaxArray._fast_constructor(matrix._jxa.conj(), matrix.shape)
 
 
 def expm_jaxarray(matrix):
+    """Matrix exponential `e**A` for a matrix `A`."""
     _check_square_shape(matrix)
     return JaxArray._fast_constructor(linalg.expm(matrix._jxa), matrix.shape)
 
 
 def inv_jaxarray(matrix):
+    """Matrix inverse `A**-1` for a matrix `A`."""
     _check_square_shape(matrix)
     return JaxArray._fast_constructor(linalg.inv(matrix._jxa), matrix.shape)
 
@@ -61,6 +67,10 @@ def _project_bra(array):
 
 
 def project_jaxarray(state):
+    """
+    Get the projector of a state with itself.  Mathematically, if passed an
+    object `|a>` or `<a|`, then return the matrix `|a><a|`.
+    """
     if state.shape[1] == 1:
         # Is ket
         out = _project_ket(state._jxa)
