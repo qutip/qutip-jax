@@ -1,12 +1,14 @@
 import qutip
 from .jaxarray import JaxArray
+import jax.numpy as jnp
 
 __all__ = [
     "add_jaxarray",
     "sub_jaxarray",
     "mul_jaxarray",
     "matmul_jaxarray",
-    "multiply_jaxarray"
+    "multiply_jaxarray",
+    "kron_jaxarray",
 ]
 
 
@@ -79,6 +81,10 @@ def multiply_jaxarray(left, right):
     return JaxArray._fast_constructor(left._jxa * right._jxa, shape=left.shape)
 
 
+def kron_jaxarray(left, right):
+    return JaxArray(jnp.kron(left._jxa, right._jxa))
+
+
 qutip.data.add.add_specialisations(
     [(JaxArray, JaxArray, JaxArray, add_jaxarray),]
 )
@@ -97,4 +103,8 @@ qutip.data.matmul.add_specialisations(
 
 qutip.data.multiply.add_specialisations(
     [(JaxArray, JaxArray, JaxArray, multiply_jaxarray),]
+)
+
+qutip.data.kron.add_specialisations(
+    [(JaxArray, JaxArray, JaxArray, kron_jaxarray),]
 )
