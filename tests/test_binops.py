@@ -71,3 +71,12 @@ class TestKron(testing.TestKron):
             qutip_jax.JaxArray
         )
     ]
+
+class TestPow(testing.TestPow):
+    specialisations = [
+        pytest.param(
+            qutip_jax.pow_jaxarray,
+            qutip_jax.JaxArray,
+            qutip_jax.JaxArray
+        )
+    ]

@@ -9,6 +9,7 @@ __all__ = [
     "matmul_jaxarray",
     "multiply_jaxarray",
     "kron_jaxarray",
+    "pow_jaxarray",
 ]
 
 
@@ -119,6 +120,25 @@ def kron_jaxarray(left, right):
     return JaxArray(jnp.kron(left._jxa, right._jxa))
 
 
+def pow_jaxarray(matrix, n):
+    """
+    Compute the integer matrix power of the square input matrix.  The power
+    must be an integer >= 0.  `A ** 0` is defined to be the identity matrix of
+    the same shape.
+
+    Arguments
+    ---------
+    matrix : Data
+        Input matrix to take the power of.
+
+    n : non-negative integer
+        The power to which to raise the matrix.
+    """
+    if matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("matrix power only works with square matrices")
+    return JaxArray(jnp.linalg.matrix_power(matrix._jxa, n))
+
+
 qutip.data.add.add_specialisations(
     [(JaxArray, JaxArray, JaxArray, add_jaxarray),]
 )
@@ -141,4 +161,8 @@ qutip.data.multiply.add_specialisations(
 
 qutip.data.kron.add_specialisations(
     [(JaxArray, JaxArray, JaxArray, kron_jaxarray),]
+)
+
+qutip.data.pow.add_specialisations(
+    [(JaxArray, JaxArray, pow_jaxarray),]
 )
