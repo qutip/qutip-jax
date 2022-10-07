@@ -65,6 +65,13 @@ class JaxArray(Data):
     def trace(self):
         return jnp.trace(self._jxa)
 
+    @classmethod
+    def _fast_constructor(cls, array, shape):
+        out = cls.__new__(cls)
+        Data.__init__(out, shape)
+        out._jxa = array
+        return out
+
     def _tree_flatten(self):
         children = (self._jxa,)  # arrays / dynamic values
         aux_data = {"shape": self.shape}  # static values
