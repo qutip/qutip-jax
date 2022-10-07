@@ -23,6 +23,25 @@ class TestAdd(testing.TestAdd):
         )
     ]
 
+    def test_jit_from_jxa(self):
+        """Test JIT of add using the _jxa array"""
+
+        @jax.jit
+        def func():
+            return sigmax().to("jax").data._jxa + sigmay().to("jax").data._jxa
+
+        assert isinstance(func(), jax.interpreters.xla.DeviceArray)
+
+    def test_jit_from_qobj(self):
+        """Test JIT of add directly using Qobj"""
+
+        @jax.jit
+        def func():
+            return sigmax() + sigmay()
+
+        assert isinstance(func(), jax.interpreters.xla.DeviceArray)
+
+
 class TestSub(testing.TestSub):
     specialisations = [
         pytest.param(
