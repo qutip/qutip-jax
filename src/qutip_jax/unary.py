@@ -108,7 +108,7 @@ qutip.data.expm.add_specialisations(
 
 
 qutip.data.inv.add_specialisations(
-    [(JaxArray, inv_jaxarray),]
+    [(JaxArray, JaxArray, inv_jaxarray),]
 )
 
 
