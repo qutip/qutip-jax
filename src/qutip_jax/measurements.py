@@ -1,0 +1,131 @@
+import jax.numpy as jnp
+from .jaxarray import JaxArray
+import qutip
+from jax import jit
+from functools import partial
+
+
+__all__ = [
+    "expect_jaxarray",
+    "expect_super_jaxarray",
+    "inner_jaxarray",
+    "inner_op_jaxarray",
+]
+
+
+@partial(jit, static_argnames=['scalar_is_ket'])
+def inner_jaxarray(left, right, scalar_is_ket=False):
+    if (
+        (left._jxa.shape[0] != 1 and left._jxa.shape[1] != 1)
+        or right._jxa.shape[1] != 1
+    ):
+        raise ValueError(
+            "incompatible matrix shapes "
+            + str(left.shape)
+            + " and "
+            + str(right.shape)
+        )
+    if (
+        left._jxa.shape[1] == left._jxa.shape[0]
+        and left._jxa.shape[0] == 1
+        and scalar_is_ket
+    ):
+        left = left.conj()
+    if left._jxa.shape[1] == right._jxa.shape[0]:
+        out = left._jxa @ right._jxa
+    else:
+        out = left._jxa.T.conj() @ right._jxa
+    return out[0, 0]
+
+
+@partial(jit, static_argnames=['scalar_is_ket'])
+def inner_op_jaxarray(left, op, right, scalar_is_ket=False):
+    left_shape = left._jxa.shape[0] == 1 or left._jxa.shape[1] == 1
+    left_op = (
+        (left._jxa.shape[0] == 1 and left._jxa.shape[1] == op._jxa.shape[0])
+        or (left._jxa.shape[1] == 1 and left._jxa.shape[0] == op._jxa.shape[0])
+    )
+    op_right = op._jxa.shape[1] == right._jxa.shape[0]
+    right_shape = right._jxa.shape[1] == 1
+    if not (left_shape and left_op and op_right and right_shape):
+        raise ValueError("".join([
+            "incompatible matrix shapes ",
+            str(left.shape),
+            ", ",
+            str(op.shape),
+            " and ",
+            str(right.shape),
+        ]))
+    if (
+        left._jxa.shape[0] == 1
+        and left._jxa.shape[1] == left._jxa.shape[0]
+        and scalar_is_ket
+    ):
+        left = left.conj()
+    if left._jxa.shape[1] == op._jxa.shape[0]:
+        out = left._jxa @ op._jxa @ right._jxa
+    else:
+        out = left._jxa.T.conj() @ op._jxa @ right._jxa
+    return out[0, 0]
+
+
+@jit
+def expect_jaxarray(op, state):
+    if (
+        op._jxa.shape[0] != op._jxa.shape[1]
+        or op._jxa.shape[1] != state._jxa.shape[0]
+        or not (
+            state._jxa.shape[1] == 1
+            or state._jxa.shape[0] == state._jxa.shape[1]
+        )
+    ):
+        raise ValueError(
+            "incompatible matrix shapes "
+            + str(op.shape)
+            + " and "
+            + str(state.shape)
+        )
+    if state._jxa.shape[0] == state._jxa.shape[1]:
+        out = jnp.trace(op._jxa @ state._jxa)
+    else:
+        out = (state._jxa.T.conj() @ op._jxa @ state._jxa)
+    return out
+
+
+@jit
+def expect_super_jaxarray(op, state):
+    if state._jxa.shape[1] != 1:
+        raise ValueError("expected a column-stacked matrix")
+    if not (
+        op._jxa.shape[0] == op._jxa.shape[1]
+        and op._jxa.shape[1] == state._jxa.shape[0]
+    ):
+        raise ValueError(
+            "incompatible matrix shapes "
+            + str(op.shape)
+            + " and "
+            + str(state.shape)
+        )
+
+    N = int(state._jxa.shape[0]**0.5)
+    return jnp.sum((op._jxa @ state._jxa)[::N+1])
+
+
+qutip.data.inner.add_specialisations(
+    [(JaxArray, JaxArray, inner_jaxarray),]
+)
+
+
+qutip.data.inner_op.add_specialisations(
+    [(JaxArray, JaxArray, JaxArray, inner_op_jaxarray),]
+)
+
+
+qutip.data.expect.add_specialisations(
+    [(JaxArray, JaxArray, expect_jaxarray),]
+)
+
+
+qutip.data.expect_super.add_specialisations(
+    [(JaxArray, JaxArray, expect_super_jaxarray),]
+)

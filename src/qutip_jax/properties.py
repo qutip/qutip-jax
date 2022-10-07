@@ -2,16 +2,19 @@ import jax.numpy as jnp
 from .jaxarray import JaxArray
 import qutip
 from jax import jit
+from functools import partial
 
 
 __all__ = ["isherm_jaxarray", "isdiag_jaxarray", "iszero_jaxarray"]
 
 
-@jit
+@partial(jit, static_argnames=['tol'])
 def _isherm(matrix, tol):
-    return jnp.allclose(matrix, matrix.T.conj(), atol=tol)
+    return jnp.allclose(matrix, matrix.T.conj(), atol=tol, rtol=0)
 
 
+# jitting this makrs it 100x slower for nonsquare.
+# splitting it like this seems ideal.
 def isherm_jaxarray(matrix, tol=None):
     if matrix.shape[0] != matrix.shape[1]:
         return False
@@ -27,19 +30,19 @@ def isdiag_jaxarray(matrix):
 
 def iszero_jaxarray(matrix, tol):
     tol = tol or qutip.settings.core["atol"]
-    return jnp.allclose(matrix._jxa, atol=tol)
+    return jnp.allclose(matrix._jxa, 0., atol=tol)
 
 
-qutip.data.norm.isdiag.add_specialisations(
+qutip.data.isdiag.add_specialisations(
     [(JaxArray, isdiag_jaxarray),]
 )
 
 
-qutip.data.norm.iszero.add_specialisations(
+qutip.data.iszero.add_specialisations(
     [(JaxArray, iszero_jaxarray),]
 )
 
 
-qutip.data.norm.isdiag.add_specialisations(
+qutip.data.isdiag.add_specialisations(
     [(JaxArray, isdiag_jaxarray),]
 )

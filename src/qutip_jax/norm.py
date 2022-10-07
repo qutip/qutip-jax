@@ -13,24 +13,20 @@ def frobenius_jaxarray(matrix):
 
 
 def l2_jaxarray(matrix):
-    if matrix.shape[0] != 1 and matrix.shape[1] != 1:
+    if matrix._jxa.shape[0] != 1 and matrix._jxa.shape[1] != 1:
         raise ValueError("L2 norm is only defined on vectors")
     return jnp.linalg.norm(matrix._jxa)
 
 
 @jit
-def _trace_jaxarray(matrix):
-    out = matrix @ matrix.T.conj()
-    out = linalg.sqrtm(out)
-    out = jnp.trace(out)
-    return out
-
-
 def trace_jaxarray(matrix):
-    if matrix.shape[0] == 1 or matrix.shape[1] == 1:
+    if matrix._jxa.shape[0] == 1 or matrix._jxa.shape[1] == 1:
         return jnp.linalg.norm(matrix._jxa)
     else:
-        return _trace_jaxarray(matrix._jxa)
+        out = matrix._jxa @ matrix._jxa.T.conj()
+        out = linalg.sqrtm(out)
+        out = jnp.trace(out)
+        return out
 
 
 def one_jaxarray(matrix):
