@@ -28,3 +28,4 @@ from .unary import *
 from . import norm
 from .measurements import *
 from .properties import *
+from .linalg import *
