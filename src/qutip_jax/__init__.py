@@ -25,3 +25,4 @@ qutip.data.create.add_creators(
 
 from .binops import *
 from .unary import *
+from .permute import *
