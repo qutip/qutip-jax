@@ -86,7 +86,7 @@ def expect_jaxarray(op, state):
             + str(state.shape)
         )
     if state._jxa.shape[0] == state._jxa.shape[1]:
-        out = jnp.trace(op._jxa @ state._jxa)
+        out = jnp.sum(op._jxa * state._jxa.T)
     else:
         out = (state._jxa.T.conj() @ op._jxa @ state._jxa)
     return out
