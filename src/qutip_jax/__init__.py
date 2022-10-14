@@ -25,6 +25,7 @@ qutip.data.create.add_creators(
 
 from .binops import *
 from .unary import *
+from .permute import *
 from .reshape import *
 from . import norm
 from .measurements import *
