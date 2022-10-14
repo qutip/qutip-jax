@@ -1,7 +1,10 @@
 import jax.numpy as jnp
+
 from .jaxarray import JaxArray
 from .convert import jax_from_dense
+
 import numpy as np
+
 import qutip
 
 
@@ -15,29 +18,25 @@ __all__ = [
 
 def zeros_jaxarray(rows, cols):
     """
-    Create matrix representation of 0 with the given dimensions.
+    Creates a matrix representation of zeros with the given dimensions.
 
-    Depending on the selected output type, this may or may not actually
-    contained explicit values; sparse matrices will typically contain nothing
-    (which is their representation of 0), and dense matrices will still be
-    filled.
-
-    Arguments
-    ---------
-    rows, cols : int
-        The number of rows and columns in the output matrix.
+    Parameters
+    ----------
+        rows, cols : int
+            The number of rows and columns in the output matrix.
     """
     return JaxArray(jnp.zeros((rows, cols), dtype=jnp.complex128))
 
 
 def identity_jaxarray(dimensions, scale=None):
     """
-    Create a square identity matrix of the given dimension.  Optionally, the
-    `scale` can be given, where all the diagonal elements will be that instead
-    of 1.
+    Creates a square identity matrix of the given dimension.
 
-    Arguments
-    ---------
+    Optionally, the `scale` can be given, where all the diagonal elements will
+    be that instead of 1.
+
+    Parameters
+    ----------
     dimension : int
         The dimension of the square output identity matrix.
     scale : complex, optional
@@ -50,13 +49,14 @@ def identity_jaxarray(dimensions, scale=None):
 
 def diag_jaxarray(diagonals, offsets=None, shape=None):
     """
-    Construct a matrix from diagonals and their offsets.  Using this
-    function in single-argument form produces a square matrix with the given
-    values on the main diagonal.
-    With lists of diagonals and offsets, the matrix will be the smallest
-    possible square matrix if shape is not given, but in all cases the
-    diagonals must fit exactly with no extra or missing elements. Duplicated
-    diagonals will be summed together in the output.
+    Constructs a matrix from diagonals and their offsets.
+
+    Using this function in single-argument form produces a square matrix with
+    the given values on the main diagonal. With lists of diagonals and offsets,
+    the matrix will be the smallest possible square matrix if shape is not
+    given, but in all cases the diagonals must fit exactly with no extra or
+    missing elements. Duplicated diagonals will be summed together in the
+    output.
 
     Parameters
     ----------
@@ -76,6 +76,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
     """
     try:
         diagonals = list(diagonals)
+        # Can this be replaced with pure jnp and lax conditionals?
         if diagonals and np.isscalar(diagonals[0]):
             # Catch the case where we're being called as (for example)
             #   diags([1, 2, 3], 0)
@@ -98,9 +99,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
     if offsets.ndim > 1:
         raise ValueError("offsets must be a 1D array of integers")
     if len(diagonals) != len(offsets):
-        raise ValueError(
-            "number of diagonals does not match number of offsets"
-        )
+        raise ValueError("number of diagonals does not match number of offsets")
 
     if shape:
         n_rows, n_cols = shape
@@ -114,16 +113,14 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
             out += jnp.diag(jnp.array(diag), offset)
         out = JaxArray(out)
     else:
-        out = jax_from_dense(
-            qutip.core.data.dense.diags(diagonals, offsets, shape)
-        )
+        out = jax_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
 
     return out
 
 
 def one_element_jaxarray(shape, position, value=None):
     """
-    Create a matrix with only one nonzero element.
+    Creates a matrix with only one nonzero element.
 
     Parameters
     ----------
@@ -137,18 +134,33 @@ def one_element_jaxarray(shape, position, value=None):
         The value of the non-null element.
     """
     if not (0 <= position[0] < shape[0] and 0 <= position[1] < shape[1]):
-        raise ValueError("Position of the elements out of bound: " +
-                         str(position) + " in " + str(shape))
+        raise ValueError(
+            "Position of the elements out of bound: "
+            + str(position)
+            + " in "
+            + str(shape)
+        )
     value = value or 1
     out = jnp.zeros(shape, dtype=jnp.complex128)
     return JaxArray(out.at[position].set(value))
 
 
-
-qutip.data.zeros.add_specialisations([(JaxArray, zeros_jaxarray),])
+qutip.data.zeros.add_specialisations(
+    [
+        (JaxArray, zeros_jaxarray),
+    ]
+)
 
 qutip.data.identity.add_specialisations([(JaxArray, identity_jaxarray)])
 
-qutip.data.diag.add_specialisations([(JaxArray, diag_jaxarray),])
+qutip.data.diag.add_specialisations(
+    [
+        (JaxArray, diag_jaxarray),
+    ]
+)
 
-qutip.data.one_element.add_specialisations([(JaxArray, one_element_jaxarray),])
+qutip.data.one_element.add_specialisations(
+    [
+        (JaxArray, one_element_jaxarray),
+    ]
+)
