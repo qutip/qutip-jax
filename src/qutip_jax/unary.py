@@ -83,35 +83,49 @@ def project_jaxarray(state):
 
 
 qutip.data.neg.add_specialisations(
-    [(JaxArray, JaxArray, neg_jaxarray),]
+    [
+        (JaxArray, JaxArray, neg_jaxarray),
+    ]
 )
 
 
 qutip.data.adjoint.add_specialisations(
-    [(JaxArray, JaxArray, adjoint_jaxarray),]
+    [
+        (JaxArray, JaxArray, adjoint_jaxarray),
+    ]
 )
 
 
 qutip.data.transpose.add_specialisations(
-    [(JaxArray, JaxArray, transpose_jaxarray),]
+    [
+        (JaxArray, JaxArray, transpose_jaxarray),
+    ]
 )
 
 
 qutip.data.conj.add_specialisations(
-    [(JaxArray, JaxArray, conj_jaxarray),]
+    [
+        (JaxArray, JaxArray, conj_jaxarray),
+    ]
 )
 
 
 qutip.data.expm.add_specialisations(
-    [(JaxArray, JaxArray, expm_jaxarray),]
+    [
+        (JaxArray, JaxArray, expm_jaxarray),
+    ]
 )
 
 
 qutip.data.inv.add_specialisations(
-    [(JaxArray, JaxArray, inv_jaxarray),]
+    [
+        (JaxArray, JaxArray, inv_jaxarray),
+    ]
 )
 
 
 qutip.data.project.add_specialisations(
-    [(JaxArray, JaxArray, project_jaxarray),]
+    [
+        (JaxArray, JaxArray, project_jaxarray),
+    ]
 )
