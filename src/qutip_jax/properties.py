@@ -33,9 +33,9 @@ def iszero_jaxarray(matrix, tol):
     return jnp.allclose(matrix._jxa, 0.0, atol=tol)
 
 
-qutip.data.isdiag.add_specialisations(
+qutip.data.isherm.add_specialisations(
     [
-        (JaxArray, isdiag_jaxarray),
+        (JaxArray, isherm_jaxarray),
     ]
 )
 
