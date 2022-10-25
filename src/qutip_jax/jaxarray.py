@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 from jax import tree_util
 from jax.config import config
+import equinox as eqx
 
 config.update("jax_enable_x64", True)
 
@@ -15,6 +16,9 @@ __all__ = ["JaxArray"]
 
 
 class JaxArray(Data):
+    _jxa: jnp.ndarray
+    shape: tuple
+
     def __init__(self, data, shape=None, copy=None):
         jxa = jnp.array(data, dtype=jnp.complex128)
 
@@ -24,7 +28,6 @@ class JaxArray(Data):
                 shape = (1, 1)
             if len(shape) == 1:
                 shape = (shape[0], 1)
-
         if not (
             isinstance(shape, tuple)
             and len(shape) == 2
@@ -37,15 +40,11 @@ class JaxArray(Data):
                 """Shape must be a 2-tuple of positive ints, but is """
                 + repr(shape)
             )
-
         if np.prod(shape) != np.prod(data.shape):
             raise ValueError("Shape of data does not match argument.")
 
-        # if copy:
-        #     # Since jax's arrays are immutable, we could probably skip this.
-        #     data = data.copy()
         self._jxa = jxa.reshape(shape)
-        super().__init__(shape)
+        Data.__init__(self, shape)
 
     def copy(self):
         return self.__class__(self._jxa, copy=True)
@@ -74,12 +73,13 @@ class JaxArray(Data):
 
     def _tree_flatten(self):
         children = (self._jxa,)  # arrays / dynamic values
-        aux_data = {"shape": self.shape}  # static values
+        aux_data = {}  # static values
         return (children, aux_data)
 
     @classmethod
     def _tree_unflatten(cls, aux_data, children):
-        return cls(*children, **aux_data)
+        print(aux_data, children)
+        return cls(*children)
 
 
 tree_util.register_pytree_node(
