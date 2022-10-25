@@ -64,6 +64,24 @@ class JaxArray(Data):
     def trace(self):
         return jnp.trace(self._jxa)
 
+    def __add__(self, other):
+        if isinstance(other, JaxArray):
+            out = self._jxa + other._jxa
+            return JaxArray._fast_constructor(out, out.shape)
+        return NotImplemented
+
+    def __sub__(self, other):
+        if isinstance(other, JaxArray):
+            out = self._jxa - other._jxa
+            return JaxArray._fast_constructor(out, out.shape)
+        return NotImplemented
+
+    def __matmul__(self, other):
+        if isinstance(other, JaxArray):
+            out = self._jxa @ other._jxa
+            return JaxArray._fast_constructor(out, out.shape)
+        return NotImplemented
+
     @classmethod
     def _fast_constructor(cls, array, shape):
         out = cls.__new__(cls)
@@ -78,8 +96,13 @@ class JaxArray(Data):
 
     @classmethod
     def _tree_unflatten(cls, aux_data, children):
-        print(aux_data, children)
-        return cls(*children)
+        # unflatten should not check data validity
+        # jax can pass tracer, object, etc.
+        out = cls.__new__(cls)
+        out._jxa = children[0]
+        shape = getattr(out._jxa, "shape", (1,1))
+        Data.__init__(out, shape)
+        return out
 
 
 tree_util.register_pytree_node(

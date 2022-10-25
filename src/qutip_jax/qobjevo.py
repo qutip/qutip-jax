@@ -6,8 +6,7 @@ import numpy as np
 from .jaxarray import JaxArray
 from qutip.core.coefficient import coefficient_builders
 from qutip.core.cy.coefficient import Coefficient
-from qutip import Qobj, qzero
-from functools import partial
+from qutip import Qobj
 
 
 class JaxJitCoeff(eqx.Module, Coefficient):
@@ -61,6 +60,16 @@ class JaxJitCoeff(eqx.Module, Coefficient):
     def copy(self):
         return self
 
+    def __reduce__(self):
+        # Jitted function cannot be pickled. Extract the original function and
+        # re-jit it.
+        # This can fail depending on the wrapped object.
+        return (self.restore, (self.func.__wrapped__, self.args))
+
+    @classmethod
+    def restore(cls, func, args):
+        return cls(eqx.filter_jit(func), args)
+
 
 coefficient_builders[eqx.jit._JitWrapper] = JaxJitCoeff
 coefficient_builders[jaxlib.xla_extension.CompiledFunction] = JaxJitCoeff
@@ -72,12 +81,10 @@ class JaxQobjEvo(eqx.Module):
     """
     H: jnp.ndarray
     coeffs: list
-    funcs: list
-    dims: object
+    dims: object = eqx.static_field()
 
     def __init__(self, qobjevo):
         as_list = qobjevo.to_list()
-        self.funcs = []
         self.coeffs = []
         qobjs = []
         self.dims = qobjevo.dims
@@ -95,10 +102,8 @@ class JaxQobjEvo(eqx.Module):
                 qobjs.append(part[0])
                 self.coeffs.append(part[1])
             else:
-                # TODO: More effort will be needed for jit to work with general
-                # function based QobjEvo
-                raise ValueError("Function based QobjEvo not supported")
-                # self.funcs.append(part)
+                # TODO:
+                raise NotImplementedError("Function based QobjEvo")
 
         if qobjs:
             shape = qobjs[0].shape
@@ -119,20 +124,11 @@ class JaxQobjEvo(eqx.Module):
     @eqx.filter_jit
     def data(self, t, **kwargs):
         coeff = self._coeff(t, **kwargs)
-        print(coeff)
         data = jnp.dot(self.H, coeff)
-        print(data)
-        array = JaxArray(data)
-        print("array", array)
-        return array
+        return JaxArray(data)
 
     @eqx.filter_jit
     def matmul_data(self, t, y, **kwargs):
-        # out = jnp.zeros(y.shape, dtype=np.complex128)
-        # for f, args in self.funcs:
-        #     out = out + matmul_jaxarray(
-        #         f(t, **args, **kwargs).to(JaxArray).data, y
-        #     )._jxa
         coeffs = self._coeff(t, **kwargs)
         out = JaxArray(jnp.dot(jnp.dot(self.H, coeffs), y._jxa))
         return out
