@@ -1,8 +1,18 @@
-def cplx2float(arr):
+import diffrax
+import equinox as eqx
+from qutip.solver.integrator import Integrator
+import jax
+import jax.numpy as jnp
+from qutip.solver.solver_base import Solver
+
+__all__ = []
+
+
+def _cplx2float(arr):
     return jnp.hstack([arr.real, arr.imag])
 
 
-def float2cplx(arr):
+def _float2cplx(arr):
     N = arr.shape[0] // 2
     return arr[:N] + 1j * arr[N:]
 
@@ -34,7 +44,7 @@ class DiffraxIntegrator(Integrator, eqx.Module):
         self.system = system
         self._back = (np.inf, None)
         self.solver = getattr(diffrax, options.pop("solver", "Dopri5"))()
-        self.ODEsystem = diffrac.ODEterm(self.dstate)
+        self.ODEsystem = diffrax.ODEterm(self.dstate)
         self.solver_state = None
         self._options = {
             key: val
@@ -44,10 +54,10 @@ class DiffraxIntegrator(Integrator, eqx.Module):
 
     @staticmethod
     def dstate(t, y, args):
-        state = float2cplx(y)
+        state = _float2cplx(y)
         H = args[0]
         d_state = H.matmul_data(t, JaxArrar(y))
-        return cplx2float(d_state._jxa)
+        return _cplx2float(d_state._jxa)
 
     def _prepare(self):
         pass
@@ -57,14 +67,14 @@ class DiffraxIntegrator(Integrator, eqx.Module):
         self.t = t
         if not isinstance(state0, JaxArray):
             state0 = _data.to(JaxArray, state0)
-        self.state = cplx2float(JaxArray._jxa)
+        self.state = _cplx2float(JaxArray._jxa)
         self._is_set = True
 
     def get_state(self, copy):
-        return self.t, JaxArray(float2cplx(self.state))
+        return self.t, JaxArray(_float2cplx(self.state))
 
     def integrate(self, t, copy=True):
-        sol = diffeqsolve(
+        sol = diffrax.diffeqsolve(
             self.ODEsystem,
             self.solver,
             t0=self.t, t1=t,
@@ -78,4 +88,6 @@ class DiffraxIntegrator(Integrator, eqx.Module):
         self.state = sol.ys[0, :]
         self.solver_state = sol.solver_state
         return self.get_state()
-        
+
+
+Solver.add_integrator(DiffraxIntegrator, 'diffrax')

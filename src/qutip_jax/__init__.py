@@ -31,3 +31,6 @@ from . import norm
 from .measurements import *
 from .properties import *
 from .create import *
+from .qobjevo import *
+from .ode import *
+#from .qutip_trees import *

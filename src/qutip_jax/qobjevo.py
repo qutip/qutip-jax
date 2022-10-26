@@ -9,6 +9,9 @@ from qutip.core.cy.coefficient import Coefficient
 from qutip import Qobj
 
 
+__all__ = ["JaxQobjEvo"]
+
+
 class JaxJitCoeff(eqx.Module, Coefficient):
     func: callable
     args: dict
