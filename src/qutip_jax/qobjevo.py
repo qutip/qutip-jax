@@ -9,7 +9,7 @@ from qutip.core.cy.coefficient import Coefficient
 from qutip import Qobj
 
 
-__all__ = ["JaxQobjEvo"]
+__all__ = []
 
 
 class JaxJitCoeff(eqx.Module, Coefficient):
@@ -64,8 +64,8 @@ class JaxJitCoeff(eqx.Module, Coefficient):
         return self
 
     def __reduce__(self):
-        # Jitted function cannot be pickled. Extract the original function and
-        # re-jit it.
+        # Jitted function cannot be pickled.
+        # Extract the original function and re-jit it.
         # This can fail depending on the wrapped object.
         return (self.restore, (self.func.__wrapped__, self.args))
 
@@ -80,7 +80,9 @@ coefficient_builders[jaxlib.xla_extension.CompiledFunction] = JaxJitCoeff
 
 class JaxQobjEvo(eqx.Module):
     """
+    Pytree friendly QobjEvo for the Diffrax integrator.
 
+    It only support list based `QobjEvo`.
     """
     H: jnp.ndarray
     coeffs: list
@@ -134,4 +136,12 @@ class JaxQobjEvo(eqx.Module):
     def matmul_data(self, t, y, **kwargs):
         coeffs = self._coeff(t, **kwargs)
         out = JaxArray(jnp.dot(jnp.dot(self.H, coeffs), y._jxa))
+        return out
+
+    def arguments(self, args):
+        out = JaxQobjEvo.__new__(JaxQobjEvo)
+        coeffs = [coeff.replace_arguments(args) for coeff in self.coeffs]
+        object.__setattr__(out, "coeffs", coeffs)
+        object.__setattr__(out, "H", self.H)
+        object.__setattr__(out, "dims", self.dims)
         return out
