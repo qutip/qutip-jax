@@ -12,13 +12,13 @@ from qutip import Qobj
 __all__ = []
 
 
-class JaxJitCoeff(eqx.Module, Coefficient):
-    func: callable
+class JaxJitCoeff(Coefficient):
+    func: callable = eqx.static_field()
     args: dict
 
     def __init__(self, func, args={}, **_):
         self.func = func
-        self.args = args
+        Coefficient.__init__(self, args)
 
     @eqx.filter_jit
     def __call__(self, t, _args=None, **kwargs):
@@ -73,9 +73,19 @@ class JaxJitCoeff(eqx.Module, Coefficient):
     def restore(cls, func, args):
         return cls(eqx.filter_jit(func), args)
 
+    def flatten(self):
+        return (self.args,), (self.func,)
+
+    @classmethod
+    def unflatten(cls, aux_data, children):
+        return JaxJitCoeff(*aux_data, *children)
+
 
 coefficient_builders[eqx.jit._JitWrapper] = JaxJitCoeff
 coefficient_builders[jaxlib.xla_extension.CompiledFunction] = JaxJitCoeff
+jax.tree_util.register_pytree_node(
+    JaxJitCoeff, JaxJitCoeff.flatten, JaxJitCoeff.unflatten
+)
 
 
 class JaxQobjEvo(eqx.Module):
