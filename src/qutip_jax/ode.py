@@ -1,5 +1,4 @@
 import diffrax
-import equinox as eqx
 from qutip.solver.integrator import Integrator
 import jax
 import jax.numpy as jnp

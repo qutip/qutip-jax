@@ -97,8 +97,7 @@ def matmul_jaxarray(left, right, scale=1, out=None):
 
     result = left._jxa @ right._jxa
 
-    if scale != 1 or not isinstance(scale, int):
-        result *= scale
+    result *= scale
 
     if out is None:
         return JaxArray._fast_constructor(result, shape=shape)

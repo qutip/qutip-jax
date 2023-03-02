@@ -126,3 +126,8 @@ def _ProdElement_unflatten(aux_data, children):
 tree_util.register_pytree_node(
     _ProdElement, _ProdElement_flatten, _ProdElement_unflatten
 )
+
+
+########################
+# Coefficients pytrees #
+########################

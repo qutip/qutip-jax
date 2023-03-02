@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 from jax import tree_util
 from jax.config import config
-import equinox as eqx
 
 config.update("jax_enable_x64", True)
 
