@@ -36,7 +36,7 @@ jobs:
 
       - name: Install QuTiP from GitHub
         run: |
-          python -mpip install git+https://github.com/qutip/qutip.git@dev.major
+          python -mpip install git+https://github.com/qutip/qutip.git@master
           python -c 'import qutip; qutip.about()'
 
       - name: Install qutip-jax and dependencies
