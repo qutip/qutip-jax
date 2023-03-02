@@ -53,7 +53,7 @@ def test_jit():
         return arr.trace()
 
     tr = func(arr)
-    assert isinstance(tr, jax.interpreters.xla.DeviceArray)
+    assert isinstance(tr, jax.Array)
 
 
 @pytest.mark.parametrize("to_",

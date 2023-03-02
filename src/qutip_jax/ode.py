@@ -3,8 +3,8 @@ import equinox as eqx
 from qutip.solver.integrator import Integrator
 import jax
 import jax.numpy as jnp
-from qutip.solver.mesolve import MeSolver
-from qutip.solver.sesolve import SeSolver
+from qutip.solver.mesolve import MESolver
+from qutip.solver.sesolve import SESolver
 from qutip.core import data as _data
 import numpy as np
 from qutip_jax import JaxArray
@@ -127,8 +127,8 @@ class DiffraxIntegrator(Integrator):
         Integrator.options.fset(self, new_options)
 
 
-MeSolver.add_integrator(DiffraxIntegrator, 'diffrax')
-SeSolver.add_integrator(DiffraxIntegrator, 'diffrax')
+MESolver.add_integrator(DiffraxIntegrator, 'diffrax')
+SESolver.add_integrator(DiffraxIntegrator, 'diffrax')
 jax.tree_util.register_pytree_node(
     DiffraxIntegrator, DiffraxIntegrator._flatten, DiffraxIntegrator._unflatten
 )

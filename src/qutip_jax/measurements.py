@@ -32,7 +32,7 @@ def inner_jaxarray(left, right, scalar_is_ket=False):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     if (left._jxa.shape[0] != 1 and left._jxa.shape[1] != 1) or right._jxa.shape[
@@ -73,7 +73,7 @@ def inner_op_jaxarray(left, op, right, scalar_is_ket=False):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     left_shape = left._jxa.shape[0] == 1 or left._jxa.shape[1] == 1
@@ -120,7 +120,7 @@ def expect_jaxarray(op, state):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     if (
@@ -150,7 +150,7 @@ def expect_super_jaxarray(op, state):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     if state._jxa.shape[1] != 1:

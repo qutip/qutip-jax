@@ -69,7 +69,7 @@ def _EvoElement_flatten(element):
     coeff = element._coefficient
     if isinstance(coeff, JaxJitCoeff):
         return (qobj, coeff), ()
-    return (qobj,) (coeff,)
+    return (qobj,), (coeff,)
 
 
 def _EvoElement_unflatten(aux_data, children):
