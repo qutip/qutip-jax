@@ -8,12 +8,12 @@ from functools import partial
 __all__ = ["isherm_jaxarray", "isdiag_jaxarray", "iszero_jaxarray"]
 
 
-@partial(jit, static_argnames=['tol'])
+@partial(jit, static_argnames=["tol"])
 def _isherm(matrix, tol):
     return jnp.allclose(matrix, matrix.T.conj(), atol=tol, rtol=0)
 
 
-# jitting this makrs it 100x slower for nonsquare.
+# jitting this makes it 100x slower for nonsquare.
 # splitting it like this seems ideal.
 def isherm_jaxarray(matrix, tol=None):
     if matrix.shape[0] != matrix.shape[1]:
@@ -30,19 +30,25 @@ def isdiag_jaxarray(matrix):
 
 def iszero_jaxarray(matrix, tol):
     tol = tol or qutip.settings.core["atol"]
-    return jnp.allclose(matrix._jxa, 0., atol=tol)
+    return jnp.allclose(matrix._jxa, 0.0, atol=tol)
 
 
-qutip.data.isdiag.add_specialisations(
-    [(JaxArray, isdiag_jaxarray),]
+qutip.data.isherm.add_specialisations(
+    [
+        (JaxArray, isherm_jaxarray),
+    ]
 )
 
 
 qutip.data.iszero.add_specialisations(
-    [(JaxArray, iszero_jaxarray),]
+    [
+        (JaxArray, iszero_jaxarray),
+    ]
 )
 
 
 qutip.data.isdiag.add_specialisations(
-    [(JaxArray, isdiag_jaxarray),]
+    [
+        (JaxArray, isdiag_jaxarray),
+    ]
 )
