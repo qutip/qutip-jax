@@ -36,7 +36,7 @@ jobs:
 
       - name: Install QuTiP from GitHub
         run: |
-          python -mpip install git+https://github.com/qutip/qutip.git@dev.major
+          python -mpip install git+https://github.com/qutip/qutip.git@master
           python -c 'import qutip; qutip.about()'
 
       - name: Install qutip-jax and dependencies
@@ -57,7 +57,7 @@ jobs:
         # to see if something hung.
         timeout-minutes: 60
         run: |
-          pytest --durations=0 --durations-min=1.0 --verbosity=1 --cov=qutip_jax --color=yes
+          pytest --durations=0 --durations-min=1.0 --verbosity=1 --cov=qutip_jax --color=yes -W ignore::UserWarning:qutip
           # Above flags are:
           #  --durations=0 --durations-min=1.0
           #     at the end, show a list of all the tests that took longer than a
@@ -69,6 +69,8 @@ jobs:
           #     limit coverage reporting to code that's within the qutip_jax package
           #  --color=yes
           #     force coloured output in the terminal
+          #  -W ignore::UserWarning:qutip
+          #     Ignore matplotlib missing warnings
           # These flags are added to those in pyproject.toml.
 
       - name: Upload to Coveralls
