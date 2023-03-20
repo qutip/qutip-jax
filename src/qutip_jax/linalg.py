@@ -15,7 +15,9 @@ __all__ = [
 
 @partial(jit, static_argnums=[1, 2, 3, 4])
 def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
-    """Convenient function to dispatch the eigenvalue solver to `eigh`, `eig`, `eigvalsh` or `eigvals` based on the parameters.
+    """
+    Internal function to dispatch the eigenvalue solver to `eigh`, `eig`,
+    `eigvalsh` or `eigvals` based on the parameters.
     """
     if isherm and vecs:
         evals, evecs = jnp.linalg.eigh(data)
@@ -46,8 +48,8 @@ def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
 # Can't jit it if we accept isherm=None
 def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
     """
-    Return eigenvalues and eigenvectors for a `Data` of type `"jax"`.  Takes no special
-    keyword arguments; see the primary documentation in :func:`.eigs`.
+    Return eigenvalues and eigenvectors for a `Data` of type `"jax"`.  Takes no
+    special keyword arguments; see the primary documentation in :func:`.eigs`.
     """
     N = data.shape[0]
     if data.shape[0] != data.shape[1]:
