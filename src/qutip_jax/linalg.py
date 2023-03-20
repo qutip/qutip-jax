@@ -15,9 +15,7 @@ __all__ = [
 
 @partial(jit, static_argnums=[1, 2, 3, 4])
 def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
-    """
-    Internal functions for computing eigenvalues and eigenstates for a dense
-    matrix.
+    """Convenient function to dispatch the eigenvalue solver to `eigh`, `eig`, `eigvalsh` or `eigvals` based on the parameters.
     """
     if isherm and vecs:
         evals, evecs = jnp.linalg.eigh(data)
@@ -44,10 +42,11 @@ def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
 
     return evals, evecs
 
+
 # Can't jit it if we accept isherm=None
 def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
     """
-    Return eigenvalues and eigenvectors for a Dense matrix.  Takes no special
+    Return eigenvalues and eigenvectors for a `Data` of type `"jax"`.  Takes no special
     keyword arguments; see the primary documentation in :func:`.eigs`.
     """
     N = data.shape[0]

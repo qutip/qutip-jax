@@ -5,7 +5,6 @@ import jax.numpy as jnp
 import numpy as np
 
 
-
 def is_eigen_set(oper, vals, vecs):
     for val, vec in zip(vals, vecs.T):
         assert abs(jnp.linalg.norm(vec) - 1) < 1e-13
@@ -45,7 +44,7 @@ def test_eigen_rand_oper(rand, order):
 ])
 @pytest.mark.parametrize("order", ['low', 'high'])
 @pytest.mark.parametrize("N", [1, 5, 8, 9])
-def test_FewState(rand, order, N):
+def test_eigvals_parameter(rand, order, N):
     mat = rand(10, dtype="jax").data
     isherm = rand is qutip.rand_herm
     kw = {"isherm": isherm, "sort": order}
