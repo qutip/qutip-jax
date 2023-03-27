@@ -9,7 +9,7 @@ from .version import version as __version__
 qutip.data.to.add_conversions(
     [
         (JaxArray, qutip.data.Dense, jax_from_dense),
-        (qutip.data.Dense, JaxArray, dense_from_jax),
+        (qutip.data.Dense, JaxArray, dense_from_jax, 2),
     ]
 )
 
@@ -30,6 +30,7 @@ from .reshape import *
 from . import norm
 from .measurements import *
 from .properties import *
+from .linalg import *
 from .create import *
 from .qobjevo import *
 from .ode import *
