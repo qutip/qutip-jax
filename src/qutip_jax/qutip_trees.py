@@ -40,7 +40,7 @@ def _QobjEvo_flatten(qevo):
 
 
 def _QobjEvo_unflatten(aux_data, children):
-    return QobjEvo._retore(children[0], **aux_data)
+    return QobjEvo._restore(children[0], **aux_data)
 
 
 tree_util.register_pytree_node(
@@ -126,8 +126,3 @@ def _ProdElement_unflatten(aux_data, children):
 tree_util.register_pytree_node(
     _ProdElement, _ProdElement_flatten, _ProdElement_unflatten
 )
-
-
-########################
-# Coefficients pytrees #
-########################
