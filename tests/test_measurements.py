@@ -58,3 +58,23 @@ class TestInnerOp(testing.TestInnerOp):
             object,
         )
     ]
+
+
+class TestTrace(testing.TestTrace):
+    specialisations = [
+        pytest.param(
+            qutip_jax.trace_jaxarray,
+            qutip_jax.JaxArray,
+            object,
+        )
+    ]
+
+
+class TestTrace_oper_ket(testing.TestTrace_oper_ket):
+    specialisations = [
+        pytest.param(
+            qutip_jax.trace_oper_ket_jaxarray,
+            qutip_jax.JaxArray,
+            object,
+        )
+    ]
