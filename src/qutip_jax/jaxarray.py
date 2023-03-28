@@ -63,7 +63,6 @@ class JaxArray(Data):
     def trace(self):
         return jnp.trace(self._jxa)
 
-    """
     def __add__(self, other):
         if isinstance(other, JaxArray):
             out = self._jxa + other._jxa
@@ -80,7 +79,7 @@ class JaxArray(Data):
         if isinstance(other, JaxArray):
             out = self._jxa @ other._jxa
             return JaxArray._fast_constructor(out, out.shape)
-        return NotImplemented"""
+        return NotImplemented
 
     @classmethod
     def _fast_constructor(cls, array, shape):
