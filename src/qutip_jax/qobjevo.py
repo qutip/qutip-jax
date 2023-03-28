@@ -81,8 +81,8 @@ class JaxJitCoeff(Coefficient):
         return JaxJitCoeff(*aux_data, *children)
 
 
-coefficient_builders[eqx.jit._JitWrapper] = JaxJitCoeff
-coefficient_builders[jaxlib.xla_extension.CompiledFunction] = JaxJitCoeff
+coefficient_builders[eqx._jit._JitWrapper] = JaxJitCoeff
+coefficient_builders[jaxlib.xla_extension.PjitFunction] = JaxJitCoeff
 jax.tree_util.register_pytree_node(
     JaxJitCoeff, JaxJitCoeff.flatten, JaxJitCoeff.unflatten
 )
