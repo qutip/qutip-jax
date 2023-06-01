@@ -94,7 +94,7 @@ class JaxQobjEvo(eqx.Module):
 
     It only support list based `QobjEvo`.
     """
-    H: jnp.ndarray
+    batched_data: jnp.ndarray
     coeffs: list
     dims: object = eqx.static_field()
 
@@ -118,15 +118,19 @@ class JaxQobjEvo(eqx.Module):
                 self.coeffs.append(part[1])
             else:
                 # TODO:
-                raise NotImplementedError("Function based QobjEvo")
+                raise NotImplementedError(
+                    "Function based QobjEvo are not supported"
+                )
 
         if qobjs:
             shape = qobjs[0].shape
-            self.H = jnp.zeros(shape + (len(qobjs),), dtype=np.complex128)
+            self.batched_data = jnp.zeros(
+                shape + (len(qobjs),), dtype=np.complex128
+            )
             for i, qobj in enumerate(qobjs):
-                self.H = self.H.at[:, :, i].set(qobj.to("jax").data._jxa)
-                if self.coeffs[i] == 1:
-                    self.coeffs[i] = qt.coefficient(lambda t: 1.)
+                self.batched_data = self.batched_data.at[:, :, i].set(
+                    qobj.to("jax").data._jxa
+                )
 
     @eqx.filter_jit
     def _coeff(self, t, **args):
@@ -145,13 +149,13 @@ class JaxQobjEvo(eqx.Module):
     @eqx.filter_jit
     def matmul_data(self, t, y, **kwargs):
         coeffs = self._coeff(t, **kwargs)
-        out = JaxArray(jnp.dot(jnp.dot(self.H, coeffs), y._jxa))
+        out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
         return out
 
     def arguments(self, args):
         out = JaxQobjEvo.__new__(JaxQobjEvo)
         coeffs = [coeff.replace_arguments(args) for coeff in self.coeffs]
         object.__setattr__(out, "coeffs", coeffs)
-        object.__setattr__(out, "H", self.H)
+        object.__setattr__(out, "H", self.batched_data)
         object.__setattr__(out, "dims", self.dims)
         return out

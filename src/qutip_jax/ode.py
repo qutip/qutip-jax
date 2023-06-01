@@ -27,7 +27,7 @@ class DiffraxIntegrator(Integrator):
     supports_blackbox: bool = False  # No feedback support
     support_time_dependant: bool = True
     integrator_options: dict = {
-        "dt0": 0.0001,
+        "dt0": None,
         "solver": diffrax.Tsit5(),
         "stepsize_controller": diffrax.ConstantStepSize(),
         "max_steps": 10000,
@@ -112,12 +112,19 @@ class DiffraxIntegrator(Integrator):
     @property
     def options(self):
         """
-        Supported options by "diag" method:
+        Supported options by diffrax method:
 
-        eigensolver_dtype : str, default="dense"
-            Qutip data type {"dense", "csr", etc.} to use when computing the
-            eigenstates. The dense eigen solver is usually faster and more
-            stable.
+        dt0 : float, default=None
+            Initial step size
+
+        solver: AbstractSolver, default=Tsit5(),
+            ODE solver instance from diffrax.
+
+        stepsize_controller: AbstractStepSizeController, default=ConstantStepSize()
+            Step size controller from diffrax
+
+        max_steps: int, default=10000
+            Maximum of step for the integration.
         """
         return self._options
 
