@@ -143,7 +143,7 @@ class JaxQobjEvo(eqx.Module):
     @eqx.filter_jit
     def data(self, t, **kwargs):
         coeff = self._coeff(t, **kwargs)
-        data = jnp.dot(self.H, coeff)
+        data = jnp.dot(self.batched_data, coeff)
         return JaxArray(data)
 
     @eqx.filter_jit
@@ -156,6 +156,6 @@ class JaxQobjEvo(eqx.Module):
         out = JaxQobjEvo.__new__(JaxQobjEvo)
         coeffs = [coeff.replace_arguments(args) for coeff in self.coeffs]
         object.__setattr__(out, "coeffs", coeffs)
-        object.__setattr__(out, "H", self.batched_data)
+        object.__setattr__(out, "batched_data", self.batched_data)
         object.__setattr__(out, "dims", self.dims)
         return out
