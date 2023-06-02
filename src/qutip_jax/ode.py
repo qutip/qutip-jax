@@ -115,16 +115,16 @@ class DiffraxIntegrator(Integrator):
         Supported options by diffrax method:
 
         dt0 : float, default=0.0001
-            Initial step size
+            Initial step size.
 
         solver: AbstractSolver, default=Tsit5(),
             ODE solver instance from diffrax.
 
         stepsize_controller: AbstractStepSizeController, default=ConstantStepSize()
-            Step size controller from diffrax
+            Step size controller from diffrax.
 
         max_steps: int, default=100000
-            Maximum of step for the integration.
+            Maximum number of steps for the integration.
         """
         return self._options
 
