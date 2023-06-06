@@ -71,7 +71,10 @@ def sub_jaxarray(left, right):
 
 def mul_jaxarray(matrix, value):
     """Multiply a matrix element-wise by a scalar."""
-    return JaxArray._fast_constructor(matrix._jxa * value, matrix.shape)
+    # We don't want to check values type in case jax pass a tracer etc.
+    # But we want to ensure the output is a matrix, thus don't use the
+    # fast constructor.
+    return JaxArray(matrix._jxa * value)
 
 
 def matmul_jaxarray(left, right, scale=1, out=None):
@@ -97,8 +100,7 @@ def matmul_jaxarray(left, right, scale=1, out=None):
 
     result = left._jxa @ right._jxa
 
-    if scale != 1 or not isinstance(scale, int):
-        result *= scale
+    result *= scale
 
     if out is None:
         return JaxArray._fast_constructor(result, shape=shape)
