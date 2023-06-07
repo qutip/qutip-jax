@@ -60,6 +60,49 @@ def add_jaxarray(left, right, scale=1):
     return out
 
 
+def add_jaxdia(left, right, scale=1):
+    """
+    Perform the operation
+        left + scale*right
+    where `left` and `right` are matrices, and `scale` is an optional complex
+    scalar.
+    """
+    _check_same_shape(left, right)
+    diag_left = 0
+    diag_right = 0
+    data = []
+    offsets = []
+
+    while diag_left < left.num_diag and diag_right < right.num_diag:
+        if left._offsets[diag_left] == right._offsets[diag_right]:
+            offsets.append(left._offsets[diag_left])
+            data.append(left._data[diag_left, :] + right._data[diag_right, :] * scale)
+            diag_left += 1
+            diag_right += 1
+        elif left._offsets[diag_left] <= right._offsets[diag_right]:
+            offsets.append(left._offsets[diag_left])
+            data.append(left._data[diag_left, :])
+            diag_left += 1
+        else:
+            offsets.append(right._offsets[diag_right])
+            data.append(right._data[diag_right, :] * scale)
+            diag_right += 1
+
+    for i in range(diag_left, left.num_diag):
+        offsets.append(left._offsets[i])
+        data.append(left._data[i, :])
+
+    for i in range(diag_right, right.num_diag):
+        offsets.append(right._offsets[i])
+        data.append(right._data[i, :] * scale)
+
+    # if not sorted:
+    #     dia.clean_diag(out, True)
+    # if settings.core['auto_tidyup']:
+    #     tidyup_dia(out, settings.core['auto_tidyup_atol'], True)
+    return JaxDia((jnp.array(offsets), jnp.stack(data)), left.shape, False)
+
+
 def sub_jaxarray(left, right):
     """
     Perform the operation
@@ -69,9 +112,23 @@ def sub_jaxarray(left, right):
     return add_jaxarray(left, right, -1)
 
 
+def sub_jaxdia(left, right):
+    """
+    Perform the operation
+        left - right
+    where `left` and `right` are matrices.
+    """
+    return add_jaxdia(left, right, -1)
+
+
 def mul_jaxarray(matrix, value):
     """Multiply a matrix element-wise by a scalar."""
     return JaxArray._fast_constructor(matrix._jxa * value, matrix.shape)
+
+
+def mul_jaxdia(matrix, value):
+    """Multiply a matrix element-wise by a scalar."""
+    return JaxArray._fast_constructor((matrix._offsets, matrix._data * value), matrix.shape)
 
 
 def matmul_jaxarray(left, right, scale=1, out=None):
@@ -112,6 +169,37 @@ def multiply_jaxarray(left, right):
     return JaxArray._fast_constructor(left._jxa * right._jxa, shape=left.shape)
 
 
+def multiply_jaxdia(left, right):
+    """
+    Perform the operation
+        left + scale*right
+    where `left` and `right` are matrices, and `scale` is an optional complex
+    scalar.
+    """
+    _check_same_shape(left, right)
+    diag_left = 0
+    diag_right = 0
+    data = []
+    offsets = []
+
+    while diag_left < left.num_diag and diag_right < right.num_diag:
+        if left._offsets[diag_left] == right._offsets[diag_right]:
+            offsets.append(left._offsets[diag_left])
+            data.append(left._data[diag_left, :] + right._data[diag_right, :] * scale)
+            diag_left += 1
+            diag_right += 1
+        elif left._offsets[diag_left] <= right._offsets[diag_right]:
+            diag_left += 1
+        else:
+            diag_right += 1
+
+    # if not sorted:
+    #     dia.clean_diag(out, True)
+    # if settings.core['auto_tidyup']:
+    #     tidyup_dia(out, settings.core['auto_tidyup_atol'], True)
+    return JaxDia((jnp.array(offsets), jnp.stack(data)), left.shape, False)
+
+
 def kron_jaxarray(left, right):
     """
     Compute the Kronecker product of two matrices.  This is used to represent
@@ -139,25 +227,29 @@ def pow_jaxarray(matrix, n):
     return JaxArray(jnp.linalg.matrix_power(matrix._jxa, n))
 
 
-qutip.data.add.add_specialisations(
-    [(JaxArray, JaxArray, JaxArray, add_jaxarray),]
-)
+qutip.data.add.add_specialisations([
+    (JaxArray, JaxArray, JaxArray, add_jaxarray),
+    (JaxDia, JaxDia, JaxDia, add_jaxdia),
+])
 
-qutip.data.sub.add_specialisations(
-    [(JaxArray, JaxArray, JaxArray, sub_jaxarray),]
-)
+qutip.data.sub.add_specialisations([
+    (JaxArray, JaxArray, JaxArray, sub_jaxarray),
+    (JaxDia, JaxDia, JaxDia, sub_jaxdia),
+])
 
-qutip.data.mul.add_specialisations(
-    [(JaxArray, JaxArray, mul_jaxarray),]
-)
+qutip.data.mul.add_specialisations([
+    (JaxArray, JaxArray, mul_jaxarray),
+    (JaxDia, JaxDia, mul_jaxdia),
+])
 
 qutip.data.matmul.add_specialisations(
     [(JaxArray, JaxArray, JaxArray, matmul_jaxarray),]
 )
 
-qutip.data.multiply.add_specialisations(
-    [(JaxArray, JaxArray, JaxArray, multiply_jaxarray),]
-)
+qutip.data.multiply.add_specialisations([
+    (JaxArray, JaxArray, JaxArray, multiply_jaxarray),
+    (JaxDia, JaxDia, JaxDia, multiply_jaxdia),
+])
 
 qutip.data.kron.add_specialisations(
     [(JaxArray, JaxArray, JaxArray, kron_jaxarray),]

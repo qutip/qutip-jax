@@ -1,5 +1,5 @@
 import qutip
-from .jaxarray import JaxArray
+from .jaxarray import JaxArray, JaxDia
 from .binops import mul_jaxarray
 import jax.scipy.linalg as linalg
 from jax import jit
@@ -28,6 +28,11 @@ def neg_jaxarray(matrix):
     return mul_jaxarray(matrix, -1)
 
 
+def neg_jaxdia(matrix):
+    """Unary element-wise negation of a matrix."""
+    return mul_jaxdia(matrix, -1)
+
+
 @jit
 def adjoint_jaxarray(matrix):
     """Hermitian adjoint (matrix conjugate transpose)."""
@@ -42,6 +47,22 @@ def transpose_jaxarray(matrix):
 def conj_jaxarray(matrix):
     """Element-wise conjugation of a matrix."""
     return JaxArray._fast_constructor(matrix._jxa.conj(), matrix.shape)
+
+
+@jit
+def adjoint_jaxdia(matrix):
+    """Hermitian adjoint (matrix conjugate transpose)."""
+    return JaxDia._fast_constructor(-self._offsets[::-1], matrix._data.conj(), self.shape[::-1])
+
+
+def transpose_jaxdia(matrix):
+    """Transpose of a matrix."""
+    return JaxDia._fast_constructor(-self._offsets[::-1], matrix._data, self.shape[::-1])
+
+
+def conj_jaxdia(matrix):
+    """Element-wise conjugation of a matrix."""
+    return JaxDia._fast_constructor(self._offsets, matrix._data.conj(), self.shape)
 
 
 def expm_jaxarray(matrix):
@@ -85,6 +106,7 @@ def project_jaxarray(state):
 qutip.data.neg.add_specialisations(
     [
         (JaxArray, JaxArray, neg_jaxarray),
+        (JaxDia, JaxDia, neg_jaxdia),
     ]
 )
 
@@ -92,6 +114,7 @@ qutip.data.neg.add_specialisations(
 qutip.data.adjoint.add_specialisations(
     [
         (JaxArray, JaxArray, adjoint_jaxarray),
+        (JaxDia, JaxDia, adjoint_jaxdia),
     ]
 )
 
@@ -99,6 +122,7 @@ qutip.data.adjoint.add_specialisations(
 qutip.data.transpose.add_specialisations(
     [
         (JaxArray, JaxArray, transpose_jaxarray),
+        (JaxDia, JaxDia, transpose_jaxdia),
     ]
 )
 
@@ -106,6 +130,7 @@ qutip.data.transpose.add_specialisations(
 qutip.data.conj.add_specialisations(
     [
         (JaxArray, JaxArray, conj_jaxarray),
+        (JaxDia, JaxDia, conj_jaxdia),
     ]
 )
 
