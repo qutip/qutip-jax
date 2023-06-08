@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
 from .jaxarray import JaxArray
-from .convert import jax_from_dense
+from .convert import jaxarray_from_dense
 
 import numpy as np
 
@@ -113,7 +113,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
             out += jnp.diag(jnp.array(diag), offset)
         out = JaxArray(out)
     else:
-        out = jax_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
+        out = jaxarray_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
 
     return out
 

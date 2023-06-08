@@ -1,14 +1,18 @@
 import qutip
 from .jaxarray import JaxArray, JaxDia
-from .binops import mul_jaxarray
+from .binops import mul_jaxarray, mul_jaxdia
 import jax.scipy.linalg as linalg
 from jax import jit
 
 __all__ = [
     "neg_jaxarray",
+    "neg_jaxdia",
     "adjoint_jaxarray",
+    "adjoint_jaxdia",
     "transpose_jaxarray",
+    "transpose_jaxdia",
     "conj_jaxarray",
+    "conj_jaxdia",
     "inv_jaxarray",
     "expm_jaxarray",
     "project_jaxarray",
@@ -52,17 +56,17 @@ def conj_jaxarray(matrix):
 @jit
 def adjoint_jaxdia(matrix):
     """Hermitian adjoint (matrix conjugate transpose)."""
-    return JaxDia._fast_constructor(-self._offsets[::-1], matrix._data.conj(), self.shape[::-1])
+    return JaxDia._fast_constructor(-matrix.offsets[::-1], matrix.data.conj(), matrix.shape[::-1])
 
 
 def transpose_jaxdia(matrix):
     """Transpose of a matrix."""
-    return JaxDia._fast_constructor(-self._offsets[::-1], matrix._data, self.shape[::-1])
+    return JaxDia._fast_constructor(-matrix.offsets[::-1], matrix.data, matrix.shape[::-1])
 
 
 def conj_jaxdia(matrix):
     """Element-wise conjugation of a matrix."""
-    return JaxDia._fast_constructor(self._offsets, matrix._data.conj(), self.shape)
+    return JaxDia._fast_constructor(matrix.offsets, matrix.data.conj(), matrix.shape)
 
 
 def expm_jaxarray(matrix):

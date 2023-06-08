@@ -1,13 +1,17 @@
 import qutip
-from .jaxarray import JaxArray
+from .jaxarray import JaxArray, JaxDia
 import jax.numpy as jnp
 
 __all__ = [
     "add_jaxarray",
+    "add_jaxdia",
     "sub_jaxarray",
+    "sub_jaxdia",
     "mul_jaxarray",
+    "mul_jaxdia",
     "matmul_jaxarray",
     "multiply_jaxarray",
+    "multiply_jaxdia",
     "kron_jaxarray",
     "pow_jaxarray",
 ]
@@ -73,28 +77,28 @@ def add_jaxdia(left, right, scale=1):
     data = []
     offsets = []
 
-    while diag_left < left.num_diag and diag_right < right.num_diag:
-        if left._offsets[diag_left] == right._offsets[diag_right]:
-            offsets.append(left._offsets[diag_left])
-            data.append(left._data[diag_left, :] + right._data[diag_right, :] * scale)
+    while diag_left < left.num_diags and diag_right < right.num_diags:
+        if left.offsets[diag_left] == right.offsets[diag_right]:
+            offsets.append(left.offsets[diag_left])
+            data.append(left.data[diag_left, :] + right.data[diag_right, :] * scale)
             diag_left += 1
             diag_right += 1
-        elif left._offsets[diag_left] <= right._offsets[diag_right]:
-            offsets.append(left._offsets[diag_left])
-            data.append(left._data[diag_left, :])
+        elif left.offsets[diag_left] <= right.offsets[diag_right]:
+            offsets.append(left.offsets[diag_left])
+            data.append(left.data[diag_left, :])
             diag_left += 1
         else:
-            offsets.append(right._offsets[diag_right])
-            data.append(right._data[diag_right, :] * scale)
+            offsets.append(right.offsets[diag_right])
+            data.append(right.data[diag_right, :] * scale)
             diag_right += 1
 
-    for i in range(diag_left, left.num_diag):
-        offsets.append(left._offsets[i])
-        data.append(left._data[i, :])
+    for i in range(diag_left, left.num_diags):
+        offsets.append(left.offsets[i])
+        data.append(left.data[i, :])
 
-    for i in range(diag_right, right.num_diag):
-        offsets.append(right._offsets[i])
-        data.append(right._data[i, :] * scale)
+    for i in range(diag_right, right.num_diags):
+        offsets.append(right.offsets[i])
+        data.append(right.data[i, :] * scale)
 
     # if not sorted:
     #     dia.clean_diag(out, True)
@@ -128,7 +132,7 @@ def mul_jaxarray(matrix, value):
 
 def mul_jaxdia(matrix, value):
     """Multiply a matrix element-wise by a scalar."""
-    return JaxArray._fast_constructor((matrix._offsets, matrix._data * value), matrix.shape)
+    return JaxDia._fast_constructor(matrix.offsets, matrix.data * value, matrix.shape)
 
 
 def matmul_jaxarray(left, right, scale=1, out=None):
@@ -182,13 +186,13 @@ def multiply_jaxdia(left, right):
     data = []
     offsets = []
 
-    while diag_left < left.num_diag and diag_right < right.num_diag:
-        if left._offsets[diag_left] == right._offsets[diag_right]:
-            offsets.append(left._offsets[diag_left])
-            data.append(left._data[diag_left, :] + right._data[diag_right, :] * scale)
+    while diag_left < left.num_diags and diag_right < right.num_diags:
+        if left.offsets[diag_left] == right.offsets[diag_right]:
+            offsets.append(left.offsets[diag_left])
+            data.append(left.data[diag_left, :] + right.data[diag_right, :] * scale)
             diag_left += 1
             diag_right += 1
-        elif left._offsets[diag_left] <= right._offsets[diag_right]:
+        elif left.offsets[diag_left] <= right.offsets[diag_right]:
             diag_left += 1
         else:
             diag_right += 1

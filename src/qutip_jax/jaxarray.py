@@ -12,7 +12,7 @@ from qutip.core.data.base import Data
 import numbers
 
 
-__all__ = ["JaxArray"]
+__all__ = ["JaxArray", "JaxDia"]
 
 
 class JaxArray(Data):
@@ -106,23 +106,15 @@ class JaxArray(Data):
 
 
 class JaxDia(Data):
-    _data: jnp.ndarray
-    _offsets: jnp.ndarray
+    data: jnp.ndarray
+    offsets: jnp.ndarray
     shape: tuple
 
     def __init__(self, arg, shape=None, copy=None):
         offsets, data = arg
-        offsets = jnp.atleast_1d(offsets, dtype=jnp.int64)
-        data = jnp.atleast_2d(data, dtype=jnp.complex128)
+        offsets = jnp.atleast_1d(offsets).astype(jnp.int64)
+        data = jnp.atleast_2d(data).astype(jnp.complex128)
 
-        """
-        if shape is None:
-            shape = data.shape
-            if len(shape) == 0:
-                shape = (1, 1)
-            if len(shape) == 1:
-                shape = (shape[0], 1)
-        """
         if not (
             isinstance(shape, tuple)
             and len(shape) == 2
@@ -136,35 +128,37 @@ class JaxDia(Data):
                 + repr(shape)
             )
 
-        self._data = data
-        self._offsets = offsets
+        self.data = data
+        self.offsets = offsets
+        self.num_diags = len(offsets)
         super().__init__(shape)
 
     def copy(self):
-        return self.__class__((self._offsets, self._data), self.shape, copy=True)
+        return self.__class__((self.offsets, self.data), self.shape, copy=True)
 
     def to_array(self):
-        return np.array(dia2array(self))
+        from .convert import jaxarray_from_jaxdia
+        return jaxarray_from_jaxdia(self).to_array()
 
     def conj(self):
-        return self.__class__((self._offsets, self._data.conj()), self.shape, copy=True)
+        return self.__class__((self.offsets, self.data.conj()), self.shape, copy=True)
 
     def transpose(self):
-        return self.__class__((-self._offsets[::-1], self._data), self.shape[::-1], copy=True)
+        return self.__class__((-self.offsets[::-1], self.data), self.shape[::-1], copy=True)
 
     def adjoint(self):
-        return self.__class__((-self._offsets[::-1], self._data.conj()), self.shape[::-1], copy=True)
+        return self.__class__((-self.offsets[::-1], self.data.conj()), self.shape[::-1], copy=True)
 
     @classmethod
     def _fast_constructor(cls, offsets, data, shape):
         out = cls.__new__(cls)
         Data.__init__(out, shape)
-        out._data = data
-        out._offsets = offsets
+        out.data = data
+        out.offsets = offsets
         return out
 
     def _tree_flatten(self):
-        children = (self._data, self._offsets,)  # arrays / dynamic values
+        children = (self.data, self.offsets,)  # arrays / dynamic values
         aux_data = {"shape": self.shape}  # static values
         return (children, aux_data)
 
@@ -173,8 +167,8 @@ class JaxDia(Data):
         # unflatten should not check data validity
         # jax can pass tracer, object, etc.
         out = cls.__new__(cls)
-        out._data = children[0]
-        out._offsets = children[1]
+        out.data = children[0]
+        out.offsets = children[1]
         shape = aux_data["shape"]
         Data.__init__(out, shape)
         return out
