@@ -1,8 +1,11 @@
 import qutip
-from .jaxarray import JaxArray, JaxDia
+from .jaxarray import JaxArray
+from .jaxdia import JaxDia
 from .binops import mul_jaxarray, mul_jaxdia
 import jax.scipy.linalg as linalg
 from jax import jit
+import numpy as np
+import jax.numpy as jnp
 
 __all__ = [
     "neg_jaxarray",
@@ -54,19 +57,38 @@ def conj_jaxarray(matrix):
 
 
 @jit
-def adjoint_jaxdia(matrix):
-    """Hermitian adjoint (matrix conjugate transpose)."""
-    return JaxDia._fast_constructor(-matrix.offsets[::-1], matrix.data.conj(), matrix.shape[::-1])
-
-
-def transpose_jaxdia(matrix):
-    """Transpose of a matrix."""
-    return JaxDia._fast_constructor(-matrix.offsets[::-1], matrix.data, matrix.shape[::-1])
-
-
 def conj_jaxdia(matrix):
     """Element-wise conjugation of a matrix."""
+    print(matrix.shape, matrix.offsets)
     return JaxDia._fast_constructor(matrix.offsets, matrix.data.conj(), matrix.shape)
+
+
+@jit
+def transpose_jaxdia(matrix):
+    """Transpose of a matrix."""
+    new_offset = tuple(-diag for diag in matrix.offsets[::-1])
+    new_data = jnp.zeros((matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128)
+    for i, diag in enumerate(matrix.offsets):
+        old_start = max(0, diag)
+        old_end = min(matrix.shape[1], matrix.shape[0] + diag)
+        new_start = max(0, -diag)
+        new_end = min(matrix.shape[0], matrix.shape[1] - diag)
+        new_data = new_data.at[-i-1, new_start:new_end].set(matrix.data[i, old_start:old_end])
+    return JaxDia._fast_constructor(new_offset, new_data, matrix.shape[::-1])
+
+
+@jit
+def adjoint_jaxdia(matrix):
+    """Hermitian adjoint (matrix conjugate transpose)."""
+    new_offset = tuple(-diag for diag in matrix.offsets[::-1])
+    new_data = jnp.zeros((matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128)
+    for i, diag in enumerate(matrix.offsets):
+        old_start = max(0, diag)
+        old_end = min(matrix.shape[1], matrix.shape[0] + diag)
+        new_start = max(0, -diag)
+        new_end = min(matrix.shape[0], matrix.shape[1] - diag)
+        new_data = new_data.at[-i-1, new_start:new_end].set(matrix.data[i, old_start:old_end].conj())
+    return JaxDia._fast_constructor(new_offset, new_data, matrix.shape[::-1])
 
 
 def expm_jaxarray(matrix):

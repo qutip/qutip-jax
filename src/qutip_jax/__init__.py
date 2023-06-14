@@ -1,5 +1,6 @@
 import qutip
-from qutip_jax.jaxarray import JaxArray, JaxDia
+from .jaxarray import JaxArray
+from .jaxdia import JaxDia
 
 from .convert import (
     is_jax_array,

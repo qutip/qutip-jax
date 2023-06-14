@@ -92,6 +92,12 @@ class TestKron(testing.TestKron):
             JaxArray,
             JaxArray,
             JaxArray,
+        ),
+        pytest.param(
+            qutip_jax.kron_jaxdia,
+            JaxDia,
+            JaxDia,
+            JaxDia,
         )
     ]
 

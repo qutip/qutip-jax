@@ -10,8 +10,9 @@ def _random_cplx(shape):
     )
 
 def _random_dia(shape):
-    offsets = np.arange(-shape[0]+1, shape[1]-1)
+    offsets = np.arange(-shape[0]+1, shape[1])
     np.random.shuffle(offsets)
-    offsets = offsets[:min(3, shape[0] + shape[1] - 1)]
-    data = np.random.rand(*shape) + 1j * np.random.rand(*shape)
+    offsets = tuple(offsets[:min(3, shape[0] + shape[1] - 1)])
+    data_shape = len(offsets), shape[1]
+    data = np.random.rand(*data_shape) + 1j * np.random.rand(*data_shape)
     return qutip_jax.JaxDia((offsets, data), shape=shape)

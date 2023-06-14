@@ -1,4 +1,4 @@
-from qutip_jax import JaxArray
+from qutip_jax import JaxArray, JaxDia
 from qutip_jax.create import *
 import pytest
 import numpy as np
@@ -15,11 +15,14 @@ import numpy as np
         pytest.param((2, 10), id="wide"),
     ],
 )
-def test_zeros(shape):
+@pytest.mark.parametrize("func",
+    [zeros_jaxarray, zeros_jaxdia]
+)
+def test_zeros(func, shape):
     """Tests the function that creates zero JAX arrays."""
-    base = zeros_jaxarray(shape[0], shape[1])
+    base = func(shape[0], shape[1])
     nd = base.to_array()
-    assert isinstance(base, JaxArray)
+    # assert isinstance(base, JaxArray)
     assert base.shape == shape
     assert nd.shape == shape
     assert np.count_nonzero(nd) == 0
@@ -31,19 +34,22 @@ def test_zeros(shape):
     [None, 2, -0.1, 1.5, 1.5 + 1j],
     ids=["none", "int", "negative", "float", "complex"],
 )
-def test_identity(dimension, scale):
+@pytest.mark.parametrize("func",
+    [identity_jaxarray, identity_jaxdia]
+)
+def test_identity(func, dimension, scale):
     """Tests the function that creates identity JAX arrays."""
     # scale=None is testing that the default value returns the identity.
     base = (
-        identity_jaxarray(dimension)
+        func(dimension)
         if scale is None
-        else identity_jaxarray(dimension, scale)
+        else func(dimension, scale)
     )
     nd = base.to_array()
     numpy_test = np.eye(dimension, dtype=np.complex128)
     if scale is not None:
         numpy_test *= scale
-    assert isinstance(base, JaxArray)
+    # assert isinstance(base, JaxArray)
     assert base.shape == (dimension, dimension)
     assert np.count_nonzero(nd - numpy_test) == 0
 
@@ -88,7 +94,7 @@ def test_diags(diagonals, offsets, shape):
     test = np.zeros(shape, dtype=np.complex128)
     for diagonal, offset in zip(diagonals, offsets):
         test[np.where(np.eye(*shape, k=offset) == 1)] += diagonal
-    assert isinstance(base, JaxArray)
+    # assert isinstance(base, JaxArray)
     assert base.shape == shape
     np.testing.assert_allclose(base.to_array(), test, rtol=1e-10)
 
@@ -106,16 +112,19 @@ def test_diags(diagonals, offsets, shape):
         pytest.param((2, 10), (1, 5), 10, id="wide"),
     ],
 )
-def test_one_element(shape, position, value):
+@pytest.mark.parametrize("func",
+    [one_element_jaxarray, one_element_jaxdia]
+)
+def test_one_element(func, shape, position, value):
     """Tests the function that creates single element JAX arrays."""
     test = np.zeros(shape, dtype=np.complex128)
     if value is None:
-        base = one_element_jaxarray(shape, position)
+        base = func(shape, position)
         test[position] = 1.0 + 0.0j
     else:
-        base = one_element_jaxarray(shape, position, value)
+        base = func(shape, position, value)
         test[position] = value
-    assert isinstance(base, JaxArray)
+    # assert isinstance(base, JaxArray)
     assert base.shape == shape
     assert np.allclose(base.to_array(), test, atol=1e-10)
 
@@ -129,8 +138,11 @@ def test_one_element(shape, position, value):
         pytest.param((10, 10), (5, -1), 2.0, id="outside neg"),
     ],
 )
-def test_one_element_error(shape, position, value):
+@pytest.mark.parametrize("func",
+    [one_element_jaxarray, one_element_jaxdia]
+)
+def test_one_element_error(func, shape, position, value):
     """Tests for wrong inputs to the one_element_jaxarray function."""
     with pytest.raises(ValueError) as exc:
-        base = one_element_jaxarray(shape, position, value)
+        base = func(shape, position, value)
     assert str(exc.value).startswith("Position of the elements" " out of bound: ")

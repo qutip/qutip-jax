@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 
 from .jaxarray import JaxArray
+from .jaxdia import JaxDia
 from .convert import jaxarray_from_dense
 
 import numpy as np
@@ -9,10 +10,10 @@ import qutip
 
 
 __all__ = [
-    "zeros_jaxarray",
-    "identity_jaxarray",
+    "zeros_jaxarray", "zeros_jaxdia",
+    "identity_jaxarray", "identity_jaxdia",
     "diag_jaxarray",
-    "one_element_jaxarray",
+    "one_element_jaxarray", "one_element_jaxdia"
 ]
 
 
@@ -26,6 +27,20 @@ def zeros_jaxarray(rows, cols):
             The number of rows and columns in the output matrix.
     """
     return JaxArray(jnp.zeros((rows, cols), dtype=jnp.complex128))
+
+
+def zeros_jaxdia(rows, cols):
+    """
+    Creates a matrix representation of zeros with the given dimensions.
+
+    Parameters
+    ----------
+        rows, cols : int
+            The number of rows and columns in the output matrix.
+    """
+    return JaxDia._fast_constructor(
+        (), jnp.zeros((0, cols), dtype=jnp.complex128), (rows, cols)
+    )
 
 
 def identity_jaxarray(dimensions, scale=None):
@@ -45,6 +60,29 @@ def identity_jaxarray(dimensions, scale=None):
     if scale is None:
         return JaxArray(jnp.eye(dimensions, dtype=jnp.complex128))
     return JaxArray(jnp.eye(dimensions, dtype=jnp.complex128) * scale)
+
+
+def identity_jaxdia(dimensions, scale=None):
+    """
+    Creates a square identity matrix of the given dimension.
+
+    Optionally, the `scale` can be given, where all the diagonal elements will
+    be that instead of 1.
+
+    Parameters
+    ----------
+    dimension : int
+        The dimension of the square output identity matrix.
+    scale : complex, optional
+        The element which should be placed on the diagonal.
+    """
+    if scale is None:
+        scale = 1.
+    return JaxDia._fast_constructor(
+        (0,),
+        jnp.ones((1, dimensions), dtype=jnp.complex128) * scale,
+        (dimensions, dimensions)
+    )
 
 
 def diag_jaxarray(diagonals, offsets=None, shape=None):
@@ -140,27 +178,59 @@ def one_element_jaxarray(shape, position, value=None):
             + " in "
             + str(shape)
         )
-    value = value or 1
+    if value is None:
+        value = 1.
     out = jnp.zeros(shape, dtype=jnp.complex128)
     return JaxArray(out.at[position].set(value))
 
 
-qutip.data.zeros.add_specialisations(
-    [
-        (JaxArray, zeros_jaxarray),
-    ]
-)
+def one_element_jaxdia(shape, position, value=None):
+    """
+    Creates a matrix with only one nonzero element.
 
-qutip.data.identity.add_specialisations([(JaxArray, identity_jaxarray)])
+    Parameters
+    ----------
+    shape : tuple
+        The shape of the output as (``rows``, ``columns``).
 
-qutip.data.diag.add_specialisations(
-    [
-        (JaxArray, diag_jaxarray),
-    ]
-)
+    position : tuple
+        The position of the non zero in the matrix as (``rows``, ``columns``).
 
-qutip.data.one_element.add_specialisations(
-    [
+    value : complex, optional
+        The value of the non-null element.
+    """
+    if not (0 <= position[0] < shape[0] and 0 <= position[1] < shape[1]):
+        raise ValueError(
+            "Position of the elements out of bound: "
+            + str(position)
+            + " in "
+            + str(shape)
+        )
+    if value is None:
+        value = 1.
+    row, col = position
+    return JaxDia._fast_constructor(
+        (col - row,),
+        jnp.zeros((1, shape[1]), dtype=jnp.complex128).at[0, col].set(value),
+        shape
+    )
+
+
+qutip.data.zeros.add_specialisations([
+    (JaxArray, zeros_jaxarray),
+    (JaxDia, zeros_jaxdia),
+])
+
+qutip.data.identity.add_specialisations([
+    (JaxArray, identity_jaxarray),
+    (JaxDia, identity_jaxdia),
+])
+
+qutip.data.diag.add_specialisations([
+    (JaxArray, diag_jaxarray),
+])
+
+qutip.data.one_element.add_specialisations([
         (JaxArray, one_element_jaxarray),
-    ]
-)
+        (JaxDia, one_element_jaxdia),
+])

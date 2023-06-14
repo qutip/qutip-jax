@@ -1,7 +1,7 @@
 import jax.numpy as jnp
+import numpy as np
 from jax import tree_util
 from jax.config import config
-import equinox as eqx
 
 config.update("jax_enable_x64", True)
 
@@ -12,7 +12,7 @@ from qutip.core.data.base import Data
 import numbers
 
 
-__all__ = ["JaxArray", "JaxDia"]
+__all__ = ["JaxArray"]
 
 
 class JaxArray(Data):
@@ -105,80 +105,6 @@ class JaxArray(Data):
         return out
 
 
-class JaxDia(Data):
-    data: jnp.ndarray
-    offsets: jnp.ndarray
-    shape: tuple
-
-    def __init__(self, arg, shape=None, copy=None):
-        offsets, data = arg
-        offsets = jnp.atleast_1d(offsets).astype(jnp.int64)
-        data = jnp.atleast_2d(data).astype(jnp.complex128)
-
-        if not (
-            isinstance(shape, tuple)
-            and len(shape) == 2
-            and isinstance(shape[0], numbers.Integral)
-            and isinstance(shape[1], numbers.Integral)
-            and shape[0] > 0
-            and shape[1] > 0
-        ):
-            raise ValueError(
-                """Shape must be a 2-tuple of positive ints, but is """
-                + repr(shape)
-            )
-
-        self.data = data
-        self.offsets = offsets
-        self.num_diags = len(offsets)
-        super().__init__(shape)
-
-    def copy(self):
-        return self.__class__((self.offsets, self.data), self.shape, copy=True)
-
-    def to_array(self):
-        from .convert import jaxarray_from_jaxdia
-        return jaxarray_from_jaxdia(self).to_array()
-
-    def conj(self):
-        return self.__class__((self.offsets, self.data.conj()), self.shape, copy=True)
-
-    def transpose(self):
-        return self.__class__((-self.offsets[::-1], self.data), self.shape[::-1], copy=True)
-
-    def adjoint(self):
-        return self.__class__((-self.offsets[::-1], self.data.conj()), self.shape[::-1], copy=True)
-
-    @classmethod
-    def _fast_constructor(cls, offsets, data, shape):
-        out = cls.__new__(cls)
-        Data.__init__(out, shape)
-        out.data = data
-        out.offsets = offsets
-        return out
-
-    def _tree_flatten(self):
-        children = (self.data, self.offsets,)  # arrays / dynamic values
-        aux_data = {"shape": self.shape}  # static values
-        return (children, aux_data)
-
-    @classmethod
-    def _tree_unflatten(cls, aux_data, children):
-        # unflatten should not check data validity
-        # jax can pass tracer, object, etc.
-        out = cls.__new__(cls)
-        out.data = children[0]
-        out.offsets = children[1]
-        shape = aux_data["shape"]
-        Data.__init__(out, shape)
-        return out
-
-
 tree_util.register_pytree_node(
     JaxArray, JaxArray._tree_flatten, JaxArray._tree_unflatten
-)
-
-
-tree_util.register_pytree_node(
-    JaxDia, JaxDia._tree_flatten, JaxDia._tree_unflatten
 )

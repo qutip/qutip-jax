@@ -1,8 +1,11 @@
 import qutip
-from .jaxarray import JaxArray, JaxDia
+from .jaxarray import JaxArray
+from .jaxdia import JaxDia
 import jax
 import jax.numpy as jnp
 import numpy as np
+from qutip import settings
+
 
 # Conversion function
 def jaxarray_from_dense(dense):
@@ -19,14 +22,14 @@ def jaxdia_from_jaxarray(jax_array):
 
     for row in range(jax_array.shape[0]):
         for col in range(jax_array.shape[1]):
-            if matrix.data[row, col] <= tol:
+            if jnp.abs(jax_array._jxa[row, col]) <= tol:
                 continue
+            diag = col - row
             if diag not in data:
                 data[diag] = jnp.zeros(jax_array.shape[1], dtype=np.complex128)
-            diag = col - row
-            data[diag].at[row].set(matrix.data[row, col])
+            data[diag] = data[diag].at[col].set(jax_array._jxa[row, col])
 
-    offsets = jnp.array(list(data.keys()))
+    offsets = tuple(data.keys())
     data = jnp.stack(list(data.values()))
     return JaxDia((offsets, data), shape=jax_array.shape, copy=False)
 
@@ -38,7 +41,7 @@ def jaxarray_from_jaxdia(matrix):
         start = max(diag, 0)
         end = min(matrix.shape[1], diag + matrix.shape[0])
         for col in range(start, end):
-            out.at[(col-diag), col].set(data[col])
+            out = out.at[(col-diag), col].set(data[col])
 
     return JaxArray(out, copy=False)
 
