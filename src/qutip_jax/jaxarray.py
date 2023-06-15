@@ -2,6 +2,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import tree_util
 from jax.config import config
+from qutip.core.data.extract import extract
 
 config.update("jax_enable_x64", True)
 
@@ -108,3 +109,25 @@ class JaxArray(Data):
 tree_util.register_pytree_node(
     JaxArray, JaxArray._tree_flatten, JaxArray._tree_unflatten
 )
+
+
+def extract_jaxarray(matrix, format=None, _=None):
+    """
+    Return ``jaxarray`` as a jax Array.
+
+    Parameters
+    ----------
+    matrix : Data
+        The matrix to convert to common type.
+
+    format : str, {"Array"}
+        Type of the output.
+    """
+    if format not in [None, "Array", "JaxArray"]:
+        raise ValueError(
+            "Diag can only be extracted to 'JaxArray'"
+        )
+    return matrix._jxa
+
+
+extract.add_specialisations([(JaxArray, extract_jaxarray)], _defer=True)

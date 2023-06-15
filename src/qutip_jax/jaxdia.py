@@ -1,15 +1,15 @@
 import jax.numpy as jnp
 import numpy as np
-from jax import tree_util
+from jax import tree_util, jit
 from jax.config import config
+from qutip.core.data.extract import extract
+import qutip.core.data as _data
+import numpy as np
+from qutip.core.data.base import Data
+import numbers
+
 
 config.update("jax_enable_x64", True)
-
-import numpy as np
-
-from qutip.core.data.base import Data
-
-import numbers
 
 
 __all__ = ["JaxDia"]
@@ -94,6 +94,7 @@ tree_util.register_pytree_node(
 )
 
 
+@jit
 def clean_diag(matrix):
     idx = np.argsort(matrix.offsets)
     new_offset = tuple(matrix.offsets[i] for i in idx)
@@ -106,3 +107,61 @@ def clean_diag(matrix):
         new_data = new_data.at[i, end:].set(0)
 
     return JaxDia._fast_constructor(new_offset, new_data, matrix.shape)
+
+
+def tidyup_jaxdia(matrix, tol, _=None):
+    matrix = clean_diag(matrix)
+    new_offset = []
+    new_data = []
+    for offset, data in zip(matrix.offsets, matrix.data):
+        real = data.real
+        mask_r = real < tol
+        imag = data.imag
+        mask_i = imag < tol
+        if jnp.all(mask_r) and jnp.all(mask_i):
+            continue
+        data = real.at[mask_r].set(0) + 1j * imag.at[mask_i].set(0)
+        new_offset.append(offset)
+        new_data.append(data)
+    new_offset = tuple(new_offset)
+    new_data = jnp.array(new_data)
+    return JaxDia._fast_constructor(new_offset, new_data, matrix.shape)
+
+
+_data.tidyup.add_specialisations([(JaxDia, tidyup_jaxdia)], _defer=True)
+
+
+def extract_jaxdia(matrix, format=None, _=None):
+    """
+    Return ``jaxdia_matrix`` as a pair of offsets and diagonals.
+
+    It can be extracted as either a dict of the offset to the diagonal or a
+    tuple of ``(offsets, diagonals)``.
+    The diagonal are the lenght of the number of columns.
+    Each entry is at the position of the column.
+
+    The element ``A[3, 5]`` is at ``extract_jaxdia(A, "dict")[5-3][5]``.
+
+    Parameters
+    ----------
+    matrix : Data
+        The matrix to convert to common type.
+
+    format : str, {"dict"}
+        Type of the output.
+    """
+    if format in ["dict", None]:
+        out = {}
+        for offset, data in zip(matrix.offsets, matrix.data):
+            out[offset] = data
+
+    elif format in ["tuple"]:
+        out = (matrix.offsets, matrix.data)
+    else:
+        raise ValueError(
+            "Diag can only be extracted to 'dict' or 'tuple'"
+        )
+    return out
+
+
+extract.add_specialisations([(JaxDia, extract_jaxdia)], _defer=True)
