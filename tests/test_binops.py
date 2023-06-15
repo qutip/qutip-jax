@@ -64,6 +64,24 @@ class TestMatmul(testing.TestMatmul):
             JaxArray,
             JaxArray,
             JaxArray,
+        ),
+        pytest.param(
+            qutip_jax.matmul_jaxdia,
+            JaxDia,
+            JaxDia,
+            JaxDia,
+        ),
+        pytest.param(
+            qutip_jax.matmul_jaxdia_jaxarray_jaxarray,
+            JaxDia,
+            JaxArray,
+            JaxArray,
+        ),
+        pytest.param(
+            qutip_jax.matmul_jaxarray_jaxdia_jaxarray,
+            JaxArray,
+            JaxDia,
+            JaxArray,
         )
     ]
 

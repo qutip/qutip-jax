@@ -3,6 +3,7 @@ from .jaxarray import JaxArray
 from .jaxdia import JaxDia, clean_diag
 import jax.numpy as jnp
 import jax
+from jax import vmap
 
 __all__ = [
     "add_jaxarray",
@@ -11,7 +12,7 @@ __all__ = [
     "sub_jaxdia",
     "mul_jaxarray",
     "mul_jaxdia",
-    "matmul_jaxarray",
+    "matmul_jaxarray", "matmul_jaxdia", "matmul_jaxdia_jaxarray_jaxarray", "matmul_jaxarray_jaxdia_jaxarray",
     "multiply_jaxarray",
     "multiply_jaxdia",
     "kron_jaxarray",
@@ -101,35 +102,6 @@ def add_jaxdia(left, right, scale=1):
             offsets.append(diag)
             data.append(right.data[diag_right, :] * scale)
 
-    """
-    while diag_left < left.num_diags and diag_right < right.num_diags:
-        if left.offsets[diag_left] == right.offsets[diag_right]:
-            offsets.append(left.offsets[diag_left])
-            data.append(left.data[diag_left, :] + right.data[diag_right, :] * scale)
-            diag_left += 1
-            diag_right += 1
-        elif left.offsets[diag_left] <= right.offsets[diag_right]:
-            offsets.append(left.offsets[diag_left])
-            data.append(left.data[diag_left, :])
-            diag_left += 1
-        else:
-            offsets.append(right.offsets[diag_right])
-            data.append(right.data[diag_right, :] * scale)
-            diag_right += 1
-
-    for i in range(diag_left, left.num_diags):
-        offsets.append(left.offsets[i])
-        data.append(left.data[i, :])
-
-    for i in range(diag_right, right.num_diags):
-        offsets.append(right.offsets[i])
-        data.append(right.data[i, :] * scale)
-    """
-
-    # if not sorted:
-    #     dia.clean_diag(out, True)
-    # if settings.core['auto_tidyup']:
-    #     tidyup_dia(out, settings.core['auto_tidyup_atol'], True)
     return JaxDia((tuple(offsets), jnp.array(data)), left.shape, False)
 
 
@@ -193,6 +165,91 @@ def matmul_jaxarray(left, right, scale=1, out=None):
         out._jxa = result + out._jxa
 
 
+def matmul_jaxdia(left, right, scale=1, out=None):
+    _check_matmul_shape(left, right, out)
+    out_dict = {}
+
+    for diag_left in range(left.num_diags):
+        for diag_right in range(right.num_diags):
+            off_out = left.offsets[diag_left] + right.offsets[diag_right]
+            if off_out <= -left.shape[0] or off_out >= right.shape[1]:
+                continue
+
+            start_left = max(0, left.offsets[diag_left]) + right.offsets[diag_right]
+            start_right = max(0, right.offsets[diag_right])
+            start_out = max(0, off_out)
+            start = max(start_left, start_right, start_out)
+
+            end_left = min(left.shape[1], left.shape[0] + left.offsets[diag_left]) + right.offsets[diag_right]
+            end_right = min(right.shape[1], right.shape[0] + right.offsets[diag_right])
+            end_out = min(right.shape[1], left.shape[0] + off_out)
+            end = min(end_left, end_right, end_out)
+
+            left_shift = -right.offsets[diag_right]
+            data = jnp.zeros(right.shape[1], dtype=jnp.complex128)
+            data = data.at[start:end].set(
+                scale
+                * left.data[diag_left, left_shift + start:left_shift + end]
+                * right.data[diag_right, start:end]
+            )
+
+            if off_out in out_dict:
+                out_dict[off_out] = out_dict[off_out] + data
+            else:
+                out_dict[off_out] = data
+
+    out_dia = JaxDia._fast_constructor(
+        tuple(out_dict.keys()),
+        jnp.array(list(out_dict.values())),
+        (left.shape[0], right.shape[1])
+    )
+    if out is not None:
+        out_dia = add_jaxdia(out, out_dia)
+    return out_dia
+
+
+def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=1, out=None):
+    _check_matmul_shape(left, right, out)
+    mul = vmap(jnp.multiply, (0, 0))
+    if out is None:
+        out = jnp.zeros((left.shape[0], right.shape[1]), dtype=jnp.complex128)
+    else:
+        out = out._jxa
+
+    for offset, data in zip(left.offsets, left.data):
+        start = max(0, offset)
+        end = min(left.shape[1], left.shape[0] + offset)
+        top = max(0, -offset)
+        bottom = top + end - start
+
+        out = out.at[top:bottom, :].add(
+            mul(data[start:end], right._jxa[start:end, :]) * scale
+        )
+
+    return JaxArray(out, shape=(left.shape[0], right.shape[1]), copy=False)
+
+
+def matmul_jaxarray_jaxdia_jaxarray(left, right, scale=1, out=None):
+    _check_matmul_shape(left, right, out)
+    mul = vmap(jnp.multiply, (1, 0))
+    if out is None:
+        out = jnp.zeros((left.shape[0], right.shape[1]), dtype=jnp.complex128)
+    else:
+        out = out._jxa
+
+    for offset, data in zip(right.offsets, right.data):
+        start = max(0, offset)
+        end = min(right.shape[1], right.shape[0] + offset)
+        top = max(0, -offset)
+        bottom = top + end - start
+
+        out = out.at[:, start:end].add(
+            mul(left._jxa[:, top:bottom], data[start:end]).T * scale
+        )
+
+    return JaxArray(out, shape=(left.shape[0], right.shape[1]), copy=False)
+
+
 def multiply_jaxarray(left, right):
     """Element-wise multiplication of matrices."""
     _check_same_shape(left, right)
@@ -211,8 +268,6 @@ def multiply_jaxdia(left, right):
     diag_right = 0
     data = []
     offsets = []
-    # print(left.offsets)
-    # print(right.offsets)
 
     for i, diag in enumerate(left.offsets):
         if diag not in right.offsets:
@@ -221,22 +276,9 @@ def multiply_jaxdia(left, right):
         offsets.append(diag)
         data.append(left.data[i, :] * right.data[j, :])
 
-    """while diag_left < left.num_diags and diag_right < right.num_diags:
-        if left.offsets[diag_left] == right.offsets[diag_right]:
-            offsets.append(left.offsets[diag_left])
-            data.append(left.data[diag_left, :] * right.data[diag_right, :])
-            diag_left += 1
-            diag_right += 1
-        elif left.offsets[diag_left] <= right.offsets[diag_right]:
-            diag_left += 1
-        else:
-            diag_right += 1"""
+    out = JaxDia._fast_constructor(tuple(offsets), jnp.array(data), left.shape)
 
-    # if not sorted:
-    #     dia.clean_diag(out, True)
-    # if settings.core['auto_tidyup']:
-    #     tidyup_dia(out, settings.core['auto_tidyup_atol'], True)
-    return JaxDia((jnp.array(offsets), jnp.array(data)), left.shape, False)
+    return out
 
 
 def kron_jaxarray(left, right):
@@ -248,7 +290,7 @@ def kron_jaxarray(left, right):
 
 
 def multiply_outer(left, right):
-    return jax.vmap(jax.vmap(jnp.multiply, (None, 0)), (0, None))(left, right).ravel()
+    return vmap(vmap(jnp.multiply, (None, 0)), (0, None))(left, right).ravel()
 
 
 def kron_jaxdia(left, right):
@@ -261,7 +303,6 @@ def kron_jaxdia(left, right):
     if right.shape[0] == right.shape[1]:
         for diag_left in range(left.num_diags):
             for diag_right in range(right.num_diags):
-                print(diag_left, diag_right)
                 out_diag = (
                     left.offsets[diag_left] * right.shape[0]
                     + right.offsets[diag_right]
@@ -342,9 +383,10 @@ qutip.data.mul.add_specialisations([
     (JaxDia, JaxDia, mul_jaxdia),
 ])
 
-qutip.data.matmul.add_specialisations(
-    [(JaxArray, JaxArray, JaxArray, matmul_jaxarray),]
-)
+qutip.data.matmul.add_specialisations([
+    (JaxArray, JaxArray, JaxArray, matmul_jaxarray),
+    (JaxDia, JaxDia, JaxDia, matmul_jaxdia),
+])
 
 qutip.data.multiply.add_specialisations([
     (JaxArray, JaxArray, JaxArray, multiply_jaxarray),
@@ -354,6 +396,7 @@ qutip.data.multiply.add_specialisations([
 qutip.data.kron.add_specialisations([
     (JaxArray, JaxArray, JaxArray, kron_jaxarray),
     (JaxDia, JaxDia, JaxDia, kron_jaxdia),
+    (JaxDia, JaxArray, JaxArray, matmul_jaxdia_jaxarray_jaxarray),
 ])
 
 qutip.data.pow.add_specialisations(
