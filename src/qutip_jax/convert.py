@@ -30,7 +30,7 @@ def jaxdia_from_jaxarray(jax_array):
             data[diag] = data[diag].at[col].set(jax_array._jxa[row, col])
 
     offsets = tuple(data.keys())
-    data = jnp.stack(list(data.values()))
+    data = jnp.array(list(data.values()))
     return JaxDia((offsets, data), shape=jax_array.shape, copy=False)
 
 

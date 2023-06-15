@@ -8,10 +8,12 @@ from . import conftest
 
 
 testing._ALL_CASES = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
+    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
+    qutip_jax.JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
 }
 testing._RANDOM = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
+    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
+    qutip_jax.JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
 }
 
 

@@ -50,6 +50,18 @@ class JaxDia(Data):
         from .convert import jaxarray_from_jaxdia
         return jaxarray_from_jaxdia(self).to_array()
 
+    def conj(self):
+        from .unary import conj_jaxdia
+        return conj_jaxdia(self)
+
+    def transpose(self):
+        from .unary import transpose_jaxdia
+        return transpose_jaxdia(self)
+
+    def adjoint(self):
+        from .unary import adjoint_jaxdia
+        return adjoint_jaxdia(self)
+
     @classmethod
     def _fast_constructor(cls, offsets, data, shape):
         out = cls.__new__(cls)
