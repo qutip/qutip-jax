@@ -14,10 +14,10 @@ import qutip
 @pytest.mark.parametrize("dtype", [int, float, complex])
 def test_init(backend, shape, dtype):
     """Tests creation of JaxArrays from NumPy and JAX-Numpy arrays"""
-    array = np.array(np.random.rand(*1), dtype=dtype)
+    array = np.array(np.random.rand(1, shape[1]), dtype=dtype)
     array = backend.array(array)
-    jax_a = JaxArray(((0,), array), shape=shape)
-    assert isinstance(jax_a, JaxArray)
+    jax_a = JaxDia(((0,), array), shape=shape)
+    assert isinstance(jax_a, JaxDia)
     assert jax_a.data.dtype == jnp.complex128
     assert jax_a.shape == shape
 

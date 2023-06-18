@@ -44,7 +44,7 @@ def test_convert_explicit_jaxarray(to_, back_):
 )
 @pytest.mark.parametrize("back_",
     [
-        pytest.param("Jaxdia", id="from str"),
+        pytest.param("JaxDia", id="from str"),
         pytest.param(JaxDia, id="from type"),
     ],
 )

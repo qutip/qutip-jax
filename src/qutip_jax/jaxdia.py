@@ -50,6 +50,10 @@ class JaxDia(Data):
         from .convert import jaxarray_from_jaxdia
         return jaxarray_from_jaxdia(self).to_array()
 
+    def trace(self):
+        from .properties import trace_jaxdia
+        return trace_jaxdia(self)
+
     def conj(self):
         from .unary import conj_jaxdia
         return conj_jaxdia(self)
