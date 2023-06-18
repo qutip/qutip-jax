@@ -20,6 +20,12 @@ testing._RANDOM = {
 class TestExpect(testing_expect.TestExpect):
     specialisations = [
         pytest.param(
+            qutip_jax.expect_jaxdia_jaxarray,
+            qutip_jax.JaxDia,
+            qutip_jax.JaxArray,
+            object,
+        ),
+        pytest.param(
             qutip_jax.expect_jaxarray,
             qutip_jax.JaxArray,
             qutip_jax.JaxArray,
@@ -33,6 +39,12 @@ class TestExpectSuper(testing_expect.TestExpectSuper):
         pytest.param(
             qutip_jax.expect_super_jaxarray,
             qutip_jax.JaxArray,
+            qutip_jax.JaxArray,
+            object,
+        ),
+        pytest.param(
+            qutip_jax.expect_super_jaxdia_jaxarray,
+            qutip_jax.JaxDia,
             qutip_jax.JaxArray,
             object,
         )

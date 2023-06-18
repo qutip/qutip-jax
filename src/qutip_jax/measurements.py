@@ -1,5 +1,7 @@
 import jax.numpy as jnp
 from .jaxarray import JaxArray
+from .jaxdia import JaxDia
+from .binops import matmul_jaxdia_jaxarray_jaxarray
 import qutip
 from jax import jit
 from functools import partial
@@ -7,7 +9,9 @@ from functools import partial
 
 __all__ = [
     "expect_jaxarray",
+    "expect_jaxdia_jaxarray",
     "expect_super_jaxarray",
+    "expect_super_jaxdia_jaxarray",
     "inner_jaxarray",
     "inner_op_jaxarray",
 ]
@@ -138,6 +142,68 @@ def expect_jaxarray(op, state):
     return out
 
 
+def expect_jaxdia_jaxarray(op, state):
+    """Computes the expectation value between op and state assuming they are
+    operators and state representations (density matrix/ket).
+
+    Parameters
+    ----------
+    op, state : :class:`qutip.Qobj`
+        Quantum objects from which the underlying JAX array can be accessed.
+
+    Returns
+    -------
+    out : jax.interpreters.xla.DeviceArray
+        The complex valued output.
+    """
+    if (
+        op.shape[0] != op.shape[1]
+        or op.shape[1] != state.shape[0]
+        or not (state.shape[1] == 1 or state.shape[0] == state.shape[1])
+    ):
+        raise ValueError(
+            "incompatible matrix shapes " + str(op.shape) + " and " + str(state.shape)
+        )
+    if state.shape[0] == state.shape[1]:
+        #TODO: not optimal, but * not definied between dia and array...
+        out = jnp.trace(
+            matmul_jaxdia_jaxarray_jaxarray(op, state)._jxa
+        )
+    else:
+        out = (
+            state._jxa.T.conj()
+            @ matmul_jaxdia_jaxarray_jaxarray(op, state)._jxa
+        )[0, 0]
+    return out
+
+
+def expect_super_jaxdia_jaxarray(op, state):
+    """Computes the expectation value between op and state assuming they
+    represent a superoperator and a state (vectorized).
+
+    Parameters
+    ----------
+    op, state : :class:`qutip.Qobj`
+        Quantum objects from which the underlying JAX array can be accessed.
+
+    Returns
+    -------
+    out : jax.interpreters.xla.DeviceArray
+        The complex valued output.
+    """
+    if state.shape[1] != 1:
+        raise ValueError("expected a column-stacked matrix")
+    if not (
+        op.shape[0] == op.shape[1] and op.shape[1] == state.shape[0]
+    ):
+        raise ValueError(
+            "incompatible matrix shapes " + str(op.shape) + " and " + str(state.shape)
+        )
+
+    N = int(state._jxa.shape[0] ** 0.5)
+    return jnp.sum(matmul_jaxdia_jaxarray_jaxarray(op, state)._jxa[:: N + 1])
+
+
 @jit
 def expect_super_jaxarray(op, state):
     """Computes the expectation value between op and state assuming they
@@ -183,6 +249,7 @@ qutip.data.inner_op.add_specialisations(
 qutip.data.expect.add_specialisations(
     [
         (JaxArray, JaxArray, expect_jaxarray),
+        (JaxDia, JaxArray, expect_jaxdia_jaxarray),
     ]
 )
 
@@ -190,5 +257,6 @@ qutip.data.expect.add_specialisations(
 qutip.data.expect_super.add_specialisations(
     [
         (JaxArray, JaxArray, expect_super_jaxarray),
+        (JaxDia, JaxArray, expect_super_jaxdia_jaxarray),
     ]
 )
