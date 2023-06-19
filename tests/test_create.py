@@ -81,9 +81,13 @@ def test_identity(func, dimension, scale):
         ),
     ],
 )
-def test_diags(diagonals, offsets, shape):
+@pytest.mark.parametrize(["func", "dtype"], [
+    (diag_jaxarray, JaxArray),
+    (diag_jaxdia, JaxDia)
+])
+def test_diags(func, dtype, diagonals, offsets, shape):
     """Tests the function that creates diagonal JAX arrays."""
-    base = diag_jaxarray(diagonals, offsets, shape)
+    base = func(diagonals, offsets, shape)
     # Build numpy version test.
     if not isinstance(diagonals[0], list):
         diagonals = [diagonals]
@@ -96,6 +100,7 @@ def test_diags(diagonals, offsets, shape):
         test[np.where(np.eye(*shape, k=offset) == 1)] += diagonal
     # assert isinstance(base, JaxArray)
     assert base.shape == shape
+    assert isinstance(base, dtype)
     np.testing.assert_allclose(base.to_array(), test, rtol=1e-10)
 
 
