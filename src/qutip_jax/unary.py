@@ -60,20 +60,26 @@ def conj_jaxarray(matrix):
 def conj_jaxdia(matrix):
     """Element-wise conjugation of a matrix."""
     print(matrix.shape, matrix.offsets)
-    return JaxDia._fast_constructor(matrix.offsets, matrix.data.conj(), matrix.shape)
+    return JaxDia._fast_constructor(
+        matrix.offsets, matrix.data.conj(), matrix.shape
+    )
 
 
 @jit
 def transpose_jaxdia(matrix):
     """Transpose of a matrix."""
     new_offset = tuple(-diag for diag in matrix.offsets[::-1])
-    new_data = jnp.zeros((matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128)
+    new_data = jnp.zeros(
+        (matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128
+    )
     for i, diag in enumerate(matrix.offsets):
         old_start = max(0, diag)
         old_end = min(matrix.shape[1], matrix.shape[0] + diag)
         new_start = max(0, -diag)
         new_end = min(matrix.shape[0], matrix.shape[1] - diag)
-        new_data = new_data.at[-i-1, new_start:new_end].set(matrix.data[i, old_start:old_end])
+        new_data = new_data.at[-i - 1, new_start:new_end].set(
+            matrix.data[i, old_start:old_end]
+        )
     return JaxDia._fast_constructor(new_offset, new_data, matrix.shape[::-1])
 
 
@@ -81,13 +87,17 @@ def transpose_jaxdia(matrix):
 def adjoint_jaxdia(matrix):
     """Hermitian adjoint (matrix conjugate transpose)."""
     new_offset = tuple(-diag for diag in matrix.offsets[::-1])
-    new_data = jnp.zeros((matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128)
+    new_data = jnp.zeros(
+        (matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128
+    )
     for i, diag in enumerate(matrix.offsets):
         old_start = max(0, diag)
         old_end = min(matrix.shape[1], matrix.shape[0] + diag)
         new_start = max(0, -diag)
         new_end = min(matrix.shape[0], matrix.shape[1] - diag)
-        new_data = new_data.at[-i-1, new_start:new_end].set(matrix.data[i, old_start:old_end].conj())
+        new_data = new_data.at[-i - 1, new_start:new_end].set(
+            matrix.data[i, old_start:old_end].conj()
+        )
     return JaxDia._fast_constructor(new_offset, new_data, matrix.shape[::-1])
 
 

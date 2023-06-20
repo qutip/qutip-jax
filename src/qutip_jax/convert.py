@@ -41,7 +41,7 @@ def jaxarray_from_jaxdia(matrix):
         start = max(diag, 0)
         end = min(matrix.shape[1], diag + matrix.shape[0])
         for col in range(start, end):
-            out = out.at[(col-diag), col].set(data[col])
+            out = out.at[(col - diag), col].set(data[col])
 
     return JaxArray(out, copy=False)
 

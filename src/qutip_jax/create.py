@@ -10,10 +10,14 @@ import qutip
 
 
 __all__ = [
-    "zeros_jaxarray", "zeros_jaxdia",
-    "identity_jaxarray", "identity_jaxdia",
-    "diag_jaxarray", "diag_jaxdia",
-    "one_element_jaxarray", "one_element_jaxdia"
+    "zeros_jaxarray",
+    "zeros_jaxdia",
+    "identity_jaxarray",
+    "identity_jaxdia",
+    "diag_jaxarray",
+    "diag_jaxdia",
+    "one_element_jaxarray",
+    "one_element_jaxdia",
 ]
 
 
@@ -77,11 +81,11 @@ def identity_jaxdia(dimensions, scale=None):
         The element which should be placed on the diagonal.
     """
     if scale is None:
-        scale = 1.
+        scale = 1.0
     return JaxDia._fast_constructor(
         (0,),
         jnp.ones((1, dimensions), dtype=jnp.complex128) * scale,
-        (dimensions, dimensions)
+        (dimensions, dimensions),
     )
 
 
@@ -151,7 +155,9 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
             out += jnp.diag(jnp.array(diag), offset)
         out = JaxArray(out)
     else:
-        out = jaxarray_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
+        out = jaxarray_from_dense(
+            qutip.core.data.dense.diags(diagonals, offsets, shape)
+        )
 
     return out
 
@@ -211,7 +217,9 @@ def diag_jaxdia(diagonals, offsets=None, shape=None):
         raise ValueError("number of diagonals does not match number of offsets")
     if len(diagonals) == 0:
         if shape is None:
-            raise ValueError("cannot construct matrix with no diagonals without a shape")
+            raise ValueError(
+                "cannot construct matrix with no diagonals without a shape"
+            )
         else:
             n_rows, n_cols = shape
         return zeros(n_rows, n_cols)
@@ -235,7 +243,7 @@ def diag_jaxdia(diagonals, offsets=None, shape=None):
     out = JaxDia(
         (tuple(out.keys()), jnp.array(list(out.values()))),
         shape=(n_rows, n_cols),
-        copy=False
+        copy=False,
     )
     return out
 
@@ -263,7 +271,7 @@ def one_element_jaxarray(shape, position, value=None):
             + str(shape)
         )
     if value is None:
-        value = 1.
+        value = 1.0
     out = jnp.zeros(shape, dtype=jnp.complex128)
     return JaxArray(out.at[position].set(value))
 
@@ -291,30 +299,39 @@ def one_element_jaxdia(shape, position, value=None):
             + str(shape)
         )
     if value is None:
-        value = 1.
+        value = 1.0
     row, col = position
     return JaxDia._fast_constructor(
         (col - row,),
         jnp.zeros((1, shape[1]), dtype=jnp.complex128).at[0, col].set(value),
-        shape
+        shape,
     )
 
 
-qutip.data.zeros.add_specialisations([
-    (JaxArray, zeros_jaxarray),
-    (JaxDia, zeros_jaxdia),
-])
+qutip.data.zeros.add_specialisations(
+    [
+        (JaxArray, zeros_jaxarray),
+        (JaxDia, zeros_jaxdia),
+    ]
+)
 
-qutip.data.identity.add_specialisations([
-    (JaxArray, identity_jaxarray),
-    (JaxDia, identity_jaxdia),
-])
+qutip.data.identity.add_specialisations(
+    [
+        (JaxArray, identity_jaxarray),
+        (JaxDia, identity_jaxdia),
+    ]
+)
 
-qutip.data.diag.add_specialisations([
-    (JaxArray, diag_jaxarray),
-])
+qutip.data.diag.add_specialisations(
+    [
+        (JaxArray, diag_jaxarray),
+        (JaxDia, diag_jaxdia),
+    ]
+)
 
-qutip.data.one_element.add_specialisations([
+qutip.data.one_element.add_specialisations(
+    [
         (JaxArray, one_element_jaxarray),
         (JaxDia, one_element_jaxdia),
-])
+    ]
+)

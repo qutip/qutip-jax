@@ -12,7 +12,10 @@ __all__ = [
     "sub_jaxdia",
     "mul_jaxarray",
     "mul_jaxdia",
-    "matmul_jaxarray", "matmul_jaxdia", "matmul_jaxdia_jaxarray_jaxarray", "matmul_jaxarray_jaxdia_jaxarray",
+    "matmul_jaxarray",
+    "matmul_jaxdia",
+    "matmul_jaxdia_jaxarray_jaxarray",
+    "matmul_jaxarray_jaxdia_jaxarray",
     "multiply_jaxarray",
     "multiply_jaxdia",
     "kron_jaxarray",
@@ -32,8 +35,10 @@ def _check_same_shape(left, right):
 def _check_matmul_shape(left, right, out):
     if left.shape[1] != right.shape[0]:
         raise ValueError(
-            "incompatible matrix shapes " + str(left.shape)
-            + " and " + str(right.shape)
+            "incompatible matrix shapes "
+            + str(left.shape)
+            + " and "
+            + str(right.shape)
         )
     if (
         out is not None
@@ -130,7 +135,9 @@ def mul_jaxarray(matrix, value):
 
 def mul_jaxdia(matrix, value):
     """Multiply a matrix element-wise by a scalar."""
-    return JaxDia._fast_constructor(matrix.offsets, matrix.data * value, matrix.shape)
+    return JaxDia._fast_constructor(
+        matrix.offsets, matrix.data * value, matrix.shape
+    )
 
 
 def matmul_jaxarray(left, right, scale=1, out=None):
@@ -175,13 +182,20 @@ def matmul_jaxdia(left, right, scale=1, out=None):
             if off_out <= -left.shape[0] or off_out >= right.shape[1]:
                 continue
 
-            start_left = max(0, left.offsets[diag_left]) + right.offsets[diag_right]
+            start_left = (
+                max(0, left.offsets[diag_left]) + right.offsets[diag_right]
+            )
             start_right = max(0, right.offsets[diag_right])
             start_out = max(0, off_out)
             start = max(start_left, start_right, start_out)
 
-            end_left = min(left.shape[1], left.shape[0] + left.offsets[diag_left]) + right.offsets[diag_right]
-            end_right = min(right.shape[1], right.shape[0] + right.offsets[diag_right])
+            end_left = (
+                min(left.shape[1], left.shape[0] + left.offsets[diag_left])
+                + right.offsets[diag_right]
+            )
+            end_right = min(
+                right.shape[1], right.shape[0] + right.offsets[diag_right]
+            )
             end_out = min(right.shape[1], left.shape[0] + off_out)
             end = min(end_left, end_right, end_out)
 
@@ -189,7 +203,7 @@ def matmul_jaxdia(left, right, scale=1, out=None):
             data = jnp.zeros(right.shape[1], dtype=jnp.complex128)
             data = data.at[start:end].set(
                 scale
-                * left.data[diag_left, left_shift + start:left_shift + end]
+                * left.data[diag_left, left_shift + start : left_shift + end]
                 * right.data[diag_right, start:end]
             )
 
@@ -201,7 +215,7 @@ def matmul_jaxdia(left, right, scale=1, out=None):
     out_dia = JaxDia._fast_constructor(
         tuple(out_dict.keys()),
         jnp.array(list(out_dict.values())),
-        (left.shape[0], right.shape[1])
+        (left.shape[0], right.shape[1]),
     )
     if out is not None:
         out_dia = add_jaxdia(out, out_dia)
@@ -308,8 +322,7 @@ def kron_jaxdia(left, right):
                     + right.offsets[diag_right]
                 )
                 out_data = multiply_outer(
-                    left.data[diag_left],
-                    right.data[diag_right]
+                    left.data[diag_left], right.data[diag_right]
                 )
                 if out_diag in out:
                     out[out_diag] = out[out_diag] + out_data
@@ -320,19 +333,26 @@ def kron_jaxdia(left, right):
         delta = right.shape[0] - right.shape[1]
         for diag_left in range(left.num_diags):
             start_left = max(0, left.offsets[diag_left])
-            end_left = min(left.shape[1], left.shape[0] + left.offsets[diag_left])
+            end_left = min(
+                left.shape[1], left.shape[0] + left.offsets[diag_left]
+            )
             for diag_right in range(right.num_diags):
                 start_right = max(0, right.offsets[diag_right])
-                end_right = min(right.shape[1], right.shape[0] + right.offsets[diag_right])
+                end_right = min(
+                    right.shape[1], right.shape[0] + right.offsets[diag_right]
+                )
 
                 for col_left in range(start_left, end_left):
-                    out_diag =  (
+                    out_diag = (
                         left.offsets[diag_left] * right.shape[0]
                         + right.offsets[diag_right]
                         - col_left * delta
                     )
                     data = jnp.zeros(ncols, dtype=jnp.complex128)
-                    data = data.at[col_left*right.shape[1]:col_left*right.shape[1] + right.shape[1]].set(
+                    data = data.at[
+                        col_left * right.shape[1] : col_left * right.shape[1]
+                        + right.shape[1]
+                    ].set(
                         left.data[diag_left, col_left] * right.data[diag_right]
                     )
 
@@ -342,8 +362,7 @@ def kron_jaxdia(left, right):
                         out[out_diag] = data
 
     out = JaxDia(
-        (tuple(out.keys()), jnp.array(list(out.values()))),
-        shape=(nrows, ncols)
+        (tuple(out.keys()), jnp.array(list(out.values()))), shape=(nrows, ncols)
     )
     out = clean_diag(out)
     return out
@@ -368,37 +387,51 @@ def pow_jaxarray(matrix, n):
     return JaxArray(jnp.linalg.matrix_power(matrix._jxa, n))
 
 
-qutip.data.add.add_specialisations([
-    (JaxArray, JaxArray, JaxArray, add_jaxarray),
-    (JaxDia, JaxDia, JaxDia, add_jaxdia),
-])
+qutip.data.add.add_specialisations(
+    [
+        (JaxArray, JaxArray, JaxArray, add_jaxarray),
+        (JaxDia, JaxDia, JaxDia, add_jaxdia),
+    ]
+)
 
-qutip.data.sub.add_specialisations([
-    (JaxArray, JaxArray, JaxArray, sub_jaxarray),
-    (JaxDia, JaxDia, JaxDia, sub_jaxdia),
-])
+qutip.data.sub.add_specialisations(
+    [
+        (JaxArray, JaxArray, JaxArray, sub_jaxarray),
+        (JaxDia, JaxDia, JaxDia, sub_jaxdia),
+    ]
+)
 
-qutip.data.mul.add_specialisations([
-    (JaxArray, JaxArray, mul_jaxarray),
-    (JaxDia, JaxDia, mul_jaxdia),
-])
+qutip.data.mul.add_specialisations(
+    [
+        (JaxArray, JaxArray, mul_jaxarray),
+        (JaxDia, JaxDia, mul_jaxdia),
+    ]
+)
 
-qutip.data.matmul.add_specialisations([
-    (JaxArray, JaxArray, JaxArray, matmul_jaxarray),
-    (JaxDia, JaxDia, JaxDia, matmul_jaxdia),
-])
+qutip.data.matmul.add_specialisations(
+    [
+        (JaxArray, JaxArray, JaxArray, matmul_jaxarray),
+        (JaxDia, JaxDia, JaxDia, matmul_jaxdia),
+    ]
+)
 
-qutip.data.multiply.add_specialisations([
-    (JaxArray, JaxArray, JaxArray, multiply_jaxarray),
-    (JaxDia, JaxDia, JaxDia, multiply_jaxdia),
-])
+qutip.data.multiply.add_specialisations(
+    [
+        (JaxArray, JaxArray, JaxArray, multiply_jaxarray),
+        (JaxDia, JaxDia, JaxDia, multiply_jaxdia),
+    ]
+)
 
-qutip.data.kron.add_specialisations([
-    (JaxArray, JaxArray, JaxArray, kron_jaxarray),
-    (JaxDia, JaxDia, JaxDia, kron_jaxdia),
-    (JaxDia, JaxArray, JaxArray, matmul_jaxdia_jaxarray_jaxarray),
-])
+qutip.data.kron.add_specialisations(
+    [
+        (JaxArray, JaxArray, JaxArray, kron_jaxarray),
+        (JaxDia, JaxDia, JaxDia, kron_jaxdia),
+        (JaxDia, JaxArray, JaxArray, matmul_jaxdia_jaxarray_jaxarray),
+    ]
+)
 
 qutip.data.pow.add_specialisations(
-    [(JaxArray, JaxArray, pow_jaxarray),]
+    [
+        (JaxArray, JaxArray, pow_jaxarray),
+    ]
 )

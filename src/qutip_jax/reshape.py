@@ -18,16 +18,24 @@ __all__ = [
 # jit slower
 def reshape_jaxarray(matrix, n_rows_out, n_cols_out):
     if n_rows_out * n_cols_out != matrix.shape[0] * matrix.shape[1]:
-        message = "".join([
-            "cannot reshape ", str(matrix.shape), " to ",
-            "(", str(n_rows_out), ", ", str(n_cols_out), ")",
-        ])
+        message = "".join(
+            [
+                "cannot reshape ",
+                str(matrix.shape),
+                " to ",
+                "(",
+                str(n_rows_out),
+                ", ",
+                str(n_cols_out),
+                ")",
+            ]
+        )
         raise ValueError(message)
     if n_rows_out <= 0 or n_cols_out <= 0:
         raise ValueError("must have > 0 rows and columns")
     return JaxArray._fast_constructor(
         jnp.reshape(matrix._jxa, (n_rows_out, n_cols_out)),
-        (n_rows_out, n_cols_out)
+        (n_rows_out, n_cols_out),
     )
 
 
@@ -35,8 +43,7 @@ def reshape_jaxarray(matrix, n_rows_out, n_cols_out):
 def column_stack_jaxarray(matrix):
     shape = (matrix._jxa.shape[0] * matrix._jxa.shape[1], 1)
     return JaxArray._fast_constructor(
-        lax.reshape(matrix._jxa, shape, (1, 0)),
-        shape
+        lax.reshape(matrix._jxa, shape, (1, 0)), shape
     )
 
 
@@ -50,16 +57,13 @@ def column_unstack_jaxarray(matrix, rows):
         raise ValueError("number of rows does not divide into the shape")
     shape = (matrix._jxa.shape[0] * matrix._jxa.shape[1] // rows, rows)
     return JaxArray._fast_constructor(
-        lax.reshape(matrix._jxa, shape, (1, 0)).transpose(),
-        shape[::-1]
+        lax.reshape(matrix._jxa, shape, (1, 0)).transpose(), shape[::-1]
     )
 
 
 @jit
 def split_columns_jaxarray(matrix):
-    return [
-        JaxArray(matrix._jxa[:, k]) for k in range(matrix.shape[1])
-    ]
+    return [JaxArray(matrix._jxa[:, k]) for k in range(matrix.shape[1])]
 
 
 def _parse_ptrace_inputs(dims, sel, shape):
@@ -71,14 +75,17 @@ def _parse_ptrace_inputs(dims, sel, shape):
         raise ValueError("ptrace is only defined for square density matrices")
 
     if shape[0] != np.prod(dims, dtype=int):
-        raise ValueError(f"the input matrix shape, {shape} and the"
-                         f" dimension argument, {dims}, are not compatible.")
+        raise ValueError(
+            f"the input matrix shape, {shape} and the"
+            f" dimension argument, {dims}, are not compatible."
+        )
     if sel.ndim != 1:
         raise ValueError("Selection must be one-dimensional")
 
     if any(d < 1 for d in dims):
-        raise ValueError("dimensions must be greated than zero but where"
-                         f" dims={dims}.")
+        raise ValueError(
+            "dimensions must be greated than zero but where" f" dims={dims}."
+        )
 
     for i in range(sel.shape[0]):
         if sel[i] < 0 or sel[i] >= dims.size:
@@ -108,13 +115,11 @@ def ptrace_jaxarray(matrix, dims, sel):
     sel = list(sel)
     qtrace = list(set(np.arange(nd)) - set(sel))
 
-
     dkeep = np.prod([dims[x] for x in sel], dtype=int)
     dtrace = np.prod([dims[x] for x in qtrace], dtype=int)
 
     transpose_idx = tuple(
-        qtrace + [nd + q for q in qtrace]
-        + sel + [nd + q for q in sel]
+        qtrace + [nd + q for q in qtrace] + sel + [nd + q for q in sel]
     )
 
     return JaxArray(
@@ -123,25 +128,35 @@ def ptrace_jaxarray(matrix, dims, sel):
 
 
 qutip.data.reshape.add_specialisations(
-    [(JaxArray, JaxArray, reshape_jaxarray),]
+    [
+        (JaxArray, JaxArray, reshape_jaxarray),
+    ]
 )
 
 
 qutip.data.column_stack.add_specialisations(
-    [(JaxArray, JaxArray, column_stack_jaxarray),]
+    [
+        (JaxArray, JaxArray, column_stack_jaxarray),
+    ]
 )
 
 
 qutip.data.column_unstack.add_specialisations(
-    [(JaxArray, JaxArray, column_unstack_jaxarray),]
+    [
+        (JaxArray, JaxArray, column_unstack_jaxarray),
+    ]
 )
 
 
 qutip.data.split_columns.add_specialisations(
-    [(JaxArray, split_columns_jaxarray),]
+    [
+        (JaxArray, split_columns_jaxarray),
+    ]
 )
 
 
 qutip.data.ptrace.add_specialisations(
-    [(JaxArray, JaxArray, ptrace_jaxarray),]
+    [
+        (JaxArray, JaxArray, ptrace_jaxarray),
+    ]
 )

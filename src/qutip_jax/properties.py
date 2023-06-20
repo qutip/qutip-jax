@@ -8,9 +8,14 @@ import numpy as np
 
 
 __all__ = [
-    "isherm_jaxarray", "isdiag_jaxarray", "iszero_jaxarray",
-    "trace_jaxarray", "trace_oper_ket_jaxarray",
-    "isherm_jaxdia", "isdiag_jaxdia", "iszero_jaxdia",
+    "isherm_jaxarray",
+    "isdiag_jaxarray",
+    "iszero_jaxarray",
+    "trace_jaxarray",
+    "trace_oper_ket_jaxarray",
+    "isherm_jaxdia",
+    "isdiag_jaxdia",
+    "iszero_jaxdia",
     "trace_jaxdia",
 ]
 
@@ -30,7 +35,7 @@ def isherm_jaxarray(matrix, tol=None):
 
 
 def _is_zero(vec, tol):
-    return jnp.allclose(vec, 0., atol=tol, rtol=0)
+    return jnp.allclose(vec, 0.0, atol=tol, rtol=0)
 
 
 def _is_conj(vec1, vec2, tol):
@@ -67,9 +72,8 @@ def isdiag_jaxarray(matrix):
 
 
 def isdiag_jaxdia(matrix):
-    if (
-        matrix.num_diags == 0
-        or (matrix.num_diags == 1 and matrix.offsets[0] == 0)
+    if matrix.num_diags == 0 or (
+        matrix.num_diags == 1 and matrix.offsets[0] == 0
     ):
         return True
     for offset, data in zip(matrix.offsets, matrix.data):
@@ -97,9 +101,15 @@ def iszero_jaxdia(matrix, tol):
 
 def _check_shape(matrix):
     if matrix.shape[0] != matrix.shape[1]:
-        raise ValueError("".join([
-            "matrix shape ", str(matrix.shape), " is not square.",
-        ]))
+        raise ValueError(
+            "".join(
+                [
+                    "matrix shape ",
+                    str(matrix.shape),
+                    " is not square.",
+                ]
+            )
+        )
 
 
 def trace_jaxarray(matrix):
@@ -110,7 +120,7 @@ def trace_jaxarray(matrix):
 def trace_jaxdia(matrix):
     _check_shape(matrix)
     if 0 not in matrix.offsets:
-        return 0.
+        return 0.0
     idx = matrix.offsets.index(0)
     return jnp.sum(matrix.data[idx])
 
@@ -118,36 +128,52 @@ def trace_jaxdia(matrix):
 def trace_oper_ket_jaxarray(matrix):
     N = int(np.sqrt(matrix.shape[0]))
     if matrix.shape[0] != N * N or matrix.shape[1] != 1:
-        raise ValueError("".join([
-            "matrix ", str(matrix.shape), " is not a stacked square matrix."
-        ]))
-    return jnp.sum(matrix._jxa[::N + 1])
+        raise ValueError(
+            "".join(
+                [
+                    "matrix ",
+                    str(matrix.shape),
+                    " is not a stacked square matrix.",
+                ]
+            )
+        )
+    return jnp.sum(matrix._jxa[:: N + 1])
 
 
-qutip.data.isherm.add_specialisations([
-    (JaxArray, isherm_jaxarray),
-    (JaxDia, isherm_jaxdia),
-])
+qutip.data.isherm.add_specialisations(
+    [
+        (JaxArray, isherm_jaxarray),
+        (JaxDia, isherm_jaxdia),
+    ]
+)
 
 
-qutip.data.iszero.add_specialisations([
-    (JaxArray, iszero_jaxarray),
-    (JaxDia, iszero_jaxdia),
-])
+qutip.data.iszero.add_specialisations(
+    [
+        (JaxArray, iszero_jaxarray),
+        (JaxDia, iszero_jaxdia),
+    ]
+)
 
 
-qutip.data.isdiag.add_specialisations([
-    (JaxArray, isdiag_jaxarray),
-    (JaxDia, isdiag_jaxdia),
-])
+qutip.data.isdiag.add_specialisations(
+    [
+        (JaxArray, isdiag_jaxarray),
+        (JaxDia, isdiag_jaxdia),
+    ]
+)
 
 
-qutip.data.trace.add_specialisations([
-    (JaxArray, trace_jaxarray),
-    (JaxDia, trace_jaxdia),
-])
+qutip.data.trace.add_specialisations(
+    [
+        (JaxArray, trace_jaxarray),
+        (JaxDia, trace_jaxdia),
+    ]
+)
 
 
-qutip.data.trace_oper_ket.add_specialisations([
-    (JaxArray, trace_oper_ket_jaxarray),
-])
+qutip.data.trace_oper_ket.add_specialisations(
+    [
+        (JaxArray, trace_oper_ket_jaxarray),
+    ]
+)

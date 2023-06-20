@@ -48,22 +48,27 @@ class JaxDia(Data):
 
     def to_array(self):
         from .convert import jaxarray_from_jaxdia
+
         return jaxarray_from_jaxdia(self).to_array()
 
     def trace(self):
         from .properties import trace_jaxdia
+
         return trace_jaxdia(self)
 
     def conj(self):
         from .unary import conj_jaxdia
+
         return conj_jaxdia(self)
 
     def transpose(self):
         from .unary import transpose_jaxdia
+
         return transpose_jaxdia(self)
 
     def adjoint(self):
         from .unary import adjoint_jaxdia
+
         return adjoint_jaxdia(self)
 
     @classmethod
@@ -76,8 +81,11 @@ class JaxDia(Data):
         return out
 
     def _tree_flatten(self):
-        children = (self.data, )  # arrays / dynamic values
-        aux_data = {"shape": self.shape, "offsets": self.offsets}  # static values
+        children = (self.data,)  # arrays / dynamic values
+        aux_data = {
+            "shape": self.shape,
+            "offsets": self.offsets,
+        }  # static values
         return (children, aux_data)
 
     @classmethod
@@ -162,9 +170,7 @@ def extract_jaxdia(matrix, format=None, _=None):
     elif format in ["tuple"]:
         out = (matrix.offsets, matrix.data)
     else:
-        raise ValueError(
-            "Diag can only be extracted to 'dict' or 'tuple'"
-        )
+        raise ValueError("Diag can only be extracted to 'dict' or 'tuple'")
     return out
 
 

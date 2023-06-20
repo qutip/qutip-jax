@@ -101,7 +101,7 @@ class JaxArray(Data):
         # jax can pass tracer, object, etc.
         out = cls.__new__(cls)
         out._jxa = children[0]
-        shape = getattr(out._jxa, "shape", (1,1))
+        shape = getattr(out._jxa, "shape", (1, 1))
         Data.__init__(out, shape)
         return out
 
@@ -124,9 +124,7 @@ def extract_jaxarray(matrix, format=None, _=None):
         Type of the output.
     """
     if format not in [None, "Array", "JaxArray"]:
-        raise ValueError(
-            "Diag can only be extracted to 'JaxArray'"
-        )
+        raise ValueError("Diag can only be extracted to 'JaxArray'")
     return matrix._jxa
 
 

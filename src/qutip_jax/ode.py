@@ -13,12 +13,14 @@ class DiffraxIntegrator(Integrator, eqx.Module):
     support_time_dependant: bool = True
     _is_set: bool = False
 
-    integrator_options: frozenset = frozenset({
-        "dt0",
-        "solver",
-        "stepsize_controller",
-        "max_steps",
-    })
+    integrator_options: frozenset = frozenset(
+        {
+            "dt0",
+            "solver",
+            "stepsize_controller",
+            "max_steps",
+        }
+    )
     _options: dict = None
     name: str
 
@@ -67,7 +69,8 @@ class DiffraxIntegrator(Integrator, eqx.Module):
         sol = diffeqsolve(
             self.ODEsystem,
             self.solver,
-            t0=self.t, t1=t,
+            t0=self.t,
+            t1=t,
             y0=self.state,
             saveat=diffrax.SaveAt(t1=True, solver_state=True),
             solver_state=self.solver_state,
@@ -78,4 +81,3 @@ class DiffraxIntegrator(Integrator, eqx.Module):
         self.state = sol.ys[0, :]
         self.solver_state = sol.solver_state
         return self.get_state()
-        

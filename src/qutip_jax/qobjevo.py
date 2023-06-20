@@ -34,27 +34,33 @@ class JaxJitCoeff(eqx.Module, Coefficient):
 
     def __add__(self, other):
         if isinstance(other, JaxJitCoeff):
+
             def f(t, **kwargs):
                 return self(t, **kwargs) + other(t, **kwargs)
+
             return JaxJitCoeff(eqx.filter_jit(f), {})
         return NotImplemented
 
     def __mul__(self, other):
         if isinstance(other, JaxJitCoeff):
+
             def f(t, **kwargs):
                 return self(t, **kwargs) * other(t, **kwargs)
+
             return JaxJitCoeff(eqx.filter_jit(f), {})
         return NotImplemented
 
     def conj(self):
         def f(t, **kwargs):
             return jnp.conj(self(t, **kwargs))
+
         return JaxJitCoeff(eqx.filter_jit(f), {})
 
     def _cdc(self):
         def f(t, **kwargs):
             val = self(t, **kwargs)
             return jnp.conj(val) * val
+
         return JaxJitCoeff(eqx.filter_jit(f), {})
 
     def copy(self):
@@ -76,9 +82,8 @@ coefficient_builders[jaxlib.xla_extension.CompiledFunction] = JaxJitCoeff
 
 
 class JaxQobjEvo(eqx.Module):
-    """
+    """ """
 
-    """
     H: jnp.ndarray
     coeffs: list
     dims: object = eqx.static_field()
@@ -89,16 +94,13 @@ class JaxQobjEvo(eqx.Module):
         qobjs = []
         self.dims = qobjevo.dims
 
-        constant = JaxJitCoeff(eqx.filter_jit(lambda t, **_: 1.))
+        constant = JaxJitCoeff(eqx.filter_jit(lambda t, **_: 1.0))
 
         for part in as_list:
             if isinstance(part, Qobj):
                 qobjs.append(part)
                 self.coeffs.append(constant)
-            elif (
-                isinstance(part, list)
-                and isinstance(part[0], Qobj)
-            ):
+            elif isinstance(part, list) and isinstance(part[0], Qobj):
                 qobjs.append(part[0])
                 self.coeffs.append(part[1])
             else:
@@ -111,7 +113,7 @@ class JaxQobjEvo(eqx.Module):
             for i, qobj in enumerate(qobjs):
                 self.H = self.H.at[:, :, i].set(qobj.to("jax").data._jxa)
                 if self.coeffs[i] == 1:
-                    self.coeffs[i] = qt.coefficient(lambda t: 1.)
+                    self.coeffs[i] = qt.coefficient(lambda t: 1.0)
 
     @eqx.filter_jit
     def _coeff(self, t, **args):
