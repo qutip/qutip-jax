@@ -7,6 +7,8 @@ import numpy as np
 from qutip import settings
 
 
+__all__ = ["is_jax_array", "jax_from_dense", "dense_from_jax"]
+
 # Conversion function
 def jaxarray_from_dense(dense):
     return JaxArray(dense.to_array(), copy=False)

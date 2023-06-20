@@ -7,7 +7,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "-Werror --strict-config --strict-markers  --benchmark-skip"
+addopts = "-Werror --strict-config --strict-markers"
 testpaths = [
     "tests",
 ]

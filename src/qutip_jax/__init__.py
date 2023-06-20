@@ -16,7 +16,7 @@ from .version import version as __version__
 qutip.data.to.add_conversions(
     [
         (JaxArray, qutip.data.Dense, jaxarray_from_dense),
-        (qutip.data.Dense, JaxArray, dense_from_jaxarray),
+        (qutip.data.Dense, JaxArray, dense_from_jaxarray, 2),
         (JaxArray, JaxDia, jaxarray_from_jaxdia),
         (JaxDia, JaxArray, jaxdia_from_jaxarray),
     ]
@@ -40,4 +40,8 @@ from .reshape import *
 from . import norm
 from .measurements import *
 from .properties import *
+from .linalg import *
 from .create import *
+from .qobjevo import *
+from .ode import *
+from .qutip_trees import *

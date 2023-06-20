@@ -14,6 +14,8 @@ __all__ = [
     "expect_super_jaxdia_jaxarray",
     "inner_jaxarray",
     "inner_op_jaxarray",
+    "trace_jaxarray",
+    "trace_oper_ket_jaxarray",
 ]
 
 
@@ -36,7 +38,7 @@ def inner_jaxarray(left, right, scalar_is_ket=False):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     if (
@@ -80,7 +82,7 @@ def inner_op_jaxarray(left, op, right, scalar_is_ket=False):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     left_shape = left._jxa.shape[0] == 1 or left._jxa.shape[1] == 1
@@ -127,7 +129,7 @@ def expect_jaxarray(op, state):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     if (
@@ -241,7 +243,7 @@ def expect_super_jaxarray(op, state):
 
     Returns
     -------
-    out : jax.interpreters.xla.DeviceArray
+    out : jax.Array
         The complex valued output.
     """
     if state._jxa.shape[1] != 1:
@@ -259,6 +261,30 @@ def expect_super_jaxarray(op, state):
 
     N = int(state._jxa.shape[0] ** 0.5)
     return jnp.sum((op._jxa @ state._jxa)[:: N + 1])
+
+
+@jit
+def trace_jaxarray(matrix):
+    """Compute the trace (sum of digaonal elements) of a square matrix."""
+    if matrix._jxa.shape[0] != matrix._jxa.shape[1]:
+        raise ValueError("".join([
+            "matrix ", str(matrix.shape), " is not a stacked square matrix."
+        ]))
+    return jnp.trace(matrix._jxa)
+
+
+@jit
+def trace_oper_ket_jaxarray(matrix):
+    """
+    Compute the trace (sum of digaonal elements) of a stacked square matrix .
+    """
+    N = int(matrix.shape[0] ** 0.5)
+    if matrix.shape[0] != N * N or matrix.shape[1] != 1:
+        raise ValueError("".join([
+            "matrix ", str(matrix.shape), " is not a stacked square matrix."
+        ]))
+    return jnp.sum(matrix._jxa[:: N + 1])
+
 
 
 qutip.data.inner.add_specialisations(
@@ -287,5 +313,19 @@ qutip.data.expect_super.add_specialisations(
     [
         (JaxArray, JaxArray, expect_super_jaxarray),
         (JaxDia, JaxArray, expect_super_jaxdia_jaxarray),
+    ]
+)
+
+
+qutip.data.trace.add_specialisations(
+    [
+        (JaxArray, trace_jaxarray),
+    ]
+)
+
+
+qutip.data.trace_oper_ket.add_specialisations(
+    [
+        (JaxArray, trace_oper_ket_jaxarray),
     ]
 )

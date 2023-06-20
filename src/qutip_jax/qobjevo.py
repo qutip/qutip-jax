@@ -9,13 +9,16 @@ from qutip.core.cy.coefficient import Coefficient
 from qutip import Qobj
 
 
-class JaxJitCoeff(eqx.Module, Coefficient):
-    func: callable
+__all__ = []
+
+
+class JaxJitCoeff(Coefficient):
+    func: callable = eqx.static_field()
     args: dict
 
     def __init__(self, func, args={}, **_):
         self.func = func
-        self.args = args
+        Coefficient.__init__(self, args)
 
     @eqx.filter_jit
     def __call__(self, t, _args=None, **kwargs):
@@ -67,8 +70,8 @@ class JaxJitCoeff(eqx.Module, Coefficient):
         return self
 
     def __reduce__(self):
-        # Jitted function cannot be pickled. Extract the original function and
-        # re-jit it.
+        # Jitted function cannot be pickled.
+        # Extract the original function and re-jit it.
         # This can fail depending on the wrapped object.
         return (self.restore, (self.func.__wrapped__, self.args))
 
@@ -76,15 +79,28 @@ class JaxJitCoeff(eqx.Module, Coefficient):
     def restore(cls, func, args):
         return cls(eqx.filter_jit(func), args)
 
+    def flatten(self):
+        return (self.args,), (self.func,)
 
-coefficient_builders[eqx.jit._JitWrapper] = JaxJitCoeff
-coefficient_builders[jaxlib.xla_extension.CompiledFunction] = JaxJitCoeff
+    @classmethod
+    def unflatten(cls, aux_data, children):
+        return JaxJitCoeff(*aux_data, *children)
+
+
+coefficient_builders[eqx._jit._JitWrapper] = JaxJitCoeff
+coefficient_builders[jaxlib.xla_extension.PjitFunction] = JaxJitCoeff
+jax.tree_util.register_pytree_node(
+    JaxJitCoeff, JaxJitCoeff.flatten, JaxJitCoeff.unflatten
+)
 
 
 class JaxQobjEvo(eqx.Module):
-    """ """
+    """
+    Pytree friendly QobjEvo for the Diffrax integrator.
 
-    H: jnp.ndarray
+    It only support list based `QobjEvo`.
+    """
+    batched_data: jnp.ndarray
     coeffs: list
     dims: object = eqx.static_field()
 
@@ -105,15 +121,19 @@ class JaxQobjEvo(eqx.Module):
                 self.coeffs.append(part[1])
             else:
                 # TODO:
-                raise NotImplementedError("Function based QobjEvo")
+                raise NotImplementedError(
+                    "Function based QobjEvo are not supported"
+                )
 
         if qobjs:
             shape = qobjs[0].shape
-            self.H = jnp.zeros(shape + (len(qobjs),), dtype=np.complex128)
+            self.batched_data = jnp.zeros(
+                shape + (len(qobjs),), dtype=np.complex128
+            )
             for i, qobj in enumerate(qobjs):
-                self.H = self.H.at[:, :, i].set(qobj.to("jax").data._jxa)
-                if self.coeffs[i] == 1:
-                    self.coeffs[i] = qt.coefficient(lambda t: 1.0)
+                self.batched_data = self.batched_data.at[:, :, i].set(
+                    qobj.to("jax").data._jxa
+                )
 
     @eqx.filter_jit
     def _coeff(self, t, **args):
@@ -126,11 +146,19 @@ class JaxQobjEvo(eqx.Module):
     @eqx.filter_jit
     def data(self, t, **kwargs):
         coeff = self._coeff(t, **kwargs)
-        data = jnp.dot(self.H, coeff)
+        data = jnp.dot(self.batched_data, coeff)
         return JaxArray(data)
 
     @eqx.filter_jit
     def matmul_data(self, t, y, **kwargs):
         coeffs = self._coeff(t, **kwargs)
-        out = JaxArray(jnp.dot(jnp.dot(self.H, coeffs), y._jxa))
+        out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
+        return out
+
+    def arguments(self, args):
+        out = JaxQobjEvo.__new__(JaxQobjEvo)
+        coeffs = [coeff.replace_arguments(args) for coeff in self.coeffs]
+        object.__setattr__(out, "coeffs", coeffs)
+        object.__setattr__(out, "batched_data", self.batched_data)
+        object.__setattr__(out, "dims", self.dims)
         return out
