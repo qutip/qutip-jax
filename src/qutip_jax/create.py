@@ -1,10 +1,11 @@
 import jax.numpy as jnp
-
+from jax import jit
 from .jaxarray import JaxArray
 from .jaxdia import JaxDia
 from .convert import jaxarray_from_dense
 
 import numpy as np
+from functools import partial
 
 import qutip
 
@@ -33,6 +34,7 @@ def zeros_jaxarray(rows, cols):
     return JaxArray(jnp.zeros((rows, cols), dtype=jnp.complex128))
 
 
+@partial(jit, static_argnames=["rows", "cols"])
 def zeros_jaxdia(rows, cols):
     """
     Creates a matrix representation of zeros with the given dimensions.
@@ -66,7 +68,8 @@ def identity_jaxarray(dimensions, scale=None):
     return JaxArray(jnp.eye(dimensions, dtype=jnp.complex128) * scale)
 
 
-def identity_jaxdia(dimensions, scale=None):
+@partial(jit, static_argnums=(0,))
+def identity_jaxdia(dimensions, scale=1.0):
     """
     Creates a square identity matrix of the given dimension.
 

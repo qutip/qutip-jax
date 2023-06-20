@@ -151,6 +151,7 @@ def expect_jaxarray(op, state):
     return out
 
 
+@jit
 def expect_jaxdia_jaxarray(op, state):
     """Computes the expectation value between op and state assuming they are
     operators and state representations (density matrix/ket).
@@ -171,14 +172,26 @@ def expect_jaxdia_jaxarray(op, state):
         or not (state.shape[1] == 1 or state.shape[0] == state.shape[1])
     ):
         raise ValueError(
-            "incompatible matrix shapes "
-            + str(op.shape)
-            + " and "
-            + str(state.shape)
+            f"incompatible matrix shapes {op.shape} and {state.shape}"
         )
+    out = 0
     if state.shape[0] == state.shape[1]:
-        # TODO: not optimal, but * not definied between dia and array...
-        out = jnp.trace(matmul_jaxdia_jaxarray_jaxarray(op, state)._jxa)
+        for offset, data in zip(op.offsets, op.data):
+            print(offset, op.shape)
+            if offset >= 0:
+                out += jnp.sum(
+                    data[offset:]
+                    * state._jxa.ravel()[
+                        offset * op.shape[0] :: (op.shape[0] + 1)
+                    ]
+                )
+            else:
+                out += jnp.sum(
+                    data[:offset]
+                    * state._jxa.ravel()[
+                        -offset : (offset * op.shape[0]) : (op.shape[0] + 1)
+                    ]
+                )
     else:
         out = (
             state._jxa.T.conj()
@@ -187,6 +200,7 @@ def expect_jaxdia_jaxarray(op, state):
     return out
 
 
+@jit
 def expect_super_jaxdia_jaxarray(op, state):
     """Computes the expectation value between op and state assuming they
     represent a superoperator and a state (vectorized).

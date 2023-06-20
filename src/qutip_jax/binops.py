@@ -3,7 +3,7 @@ from .jaxarray import JaxArray
 from .jaxdia import JaxDia, clean_diag
 import jax.numpy as jnp
 import jax
-from jax import vmap
+from jax import vmap, jit
 
 __all__ = [
     "add_jaxarray",
@@ -27,18 +27,16 @@ __all__ = [
 def _check_same_shape(left, right):
     if left.shape != right.shape:
         raise ValueError(
-            f"""Incompatible shapes for addition of two matrices:
-                         left={left.shape} and right={right.shape}"""
+            "Incompatible shapes for addition of two matrices: "
+            f"left={left.shape} and right={right.shape}"
+            ""
         )
 
 
 def _check_matmul_shape(left, right, out):
     if left.shape[1] != right.shape[0]:
         raise ValueError(
-            "incompatible matrix shapes "
-            + str(left.shape)
-            + " and "
-            + str(right.shape)
+            f"incompatible matrix shapes {left.shape} and {right.shape}"
         )
     if (
         out is not None
@@ -46,9 +44,7 @@ def _check_matmul_shape(left, right, out):
         and out.shape[1] != right.shape[1]
     ):
         raise ValueError(
-            "incompatible output shape, got "
-            + str(out.shape)
-            + " but needed "
+            f"incompatible output shape, got {out.shape}, but needed "
             + str((left.shape[0], right.shape[1]))
         )
 
@@ -73,7 +69,8 @@ def add_jaxarray(left, right, scale=1):
     return out
 
 
-def add_jaxdia(left, right, scale=1):
+@jit
+def add_jaxdia(left, right, scale=None):
     """
     Perform the operation
         left + scale*right
@@ -93,9 +90,12 @@ def add_jaxdia(left, right, scale=1):
             diag_left = left.offsets.index(diag)
             diag_right = right.offsets.index(diag)
             offsets.append(diag)
-            data.append(
-                left.data[diag_left, :] + right.data[diag_right, :] * scale
-            )
+            if scale is None:
+                data.append(left.data[diag_left, :] + right.data[diag_right, :])
+            else:
+                data.append(
+                    left.data[diag_left, :] + right.data[diag_right, :] * scale
+                )
 
         elif diag in left.offsets:
             diag_left = left.offsets.index(diag)
@@ -105,7 +105,10 @@ def add_jaxdia(left, right, scale=1):
         elif diag in right.offsets:
             diag_right = right.offsets.index(diag)
             offsets.append(diag)
-            data.append(right.data[diag_right, :] * scale)
+            if scale is None:
+                data.append(right.data[diag_right, :])
+            else:
+                data.append(right.data[diag_right, :] * scale)
 
     return JaxDia((tuple(offsets), jnp.array(data)), left.shape, False)
 
@@ -133,6 +136,7 @@ def mul_jaxarray(matrix, value):
     return JaxArray._fast_constructor(matrix._jxa * value, matrix.shape)
 
 
+@jit
 def mul_jaxdia(matrix, value):
     """Multiply a matrix element-wise by a scalar."""
     return JaxDia._fast_constructor(
@@ -172,7 +176,8 @@ def matmul_jaxarray(left, right, scale=1, out=None):
         out._jxa = result + out._jxa
 
 
-def matmul_jaxdia(left, right, scale=1, out=None):
+@jit
+def matmul_jaxdia(left, right, scale=1.0, out=None):
     _check_matmul_shape(left, right, out)
     out_dict = {}
 
@@ -222,7 +227,8 @@ def matmul_jaxdia(left, right, scale=1, out=None):
     return out_dia
 
 
-def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=1, out=None):
+@jit
+def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=1.0, out=None):
     _check_matmul_shape(left, right, out)
     mul = vmap(jnp.multiply, (0, 0))
     if out is None:
@@ -243,7 +249,8 @@ def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=1, out=None):
     return JaxArray(out, shape=(left.shape[0], right.shape[1]), copy=False)
 
 
-def matmul_jaxarray_jaxdia_jaxarray(left, right, scale=1, out=None):
+@jit
+def matmul_jaxarray_jaxdia_jaxarray(left, right, scale=1.0, out=None):
     _check_matmul_shape(left, right, out)
     mul = vmap(jnp.multiply, (1, 0))
     if out is None:
@@ -270,6 +277,7 @@ def multiply_jaxarray(left, right):
     return JaxArray._fast_constructor(left._jxa * right._jxa, shape=left.shape)
 
 
+@jit
 def multiply_jaxdia(left, right):
     """
     Perform the operation
@@ -303,10 +311,12 @@ def kron_jaxarray(left, right):
     return JaxArray(jnp.kron(left._jxa, right._jxa))
 
 
-def multiply_outer(left, right):
+@jit
+def _multiply_outer(left, right):
     return vmap(vmap(jnp.multiply, (None, 0)), (0, None))(left, right).ravel()
 
 
+@jit
 def kron_jaxdia(left, right):
     nrows = left.shape[0] * right.shape[0]
     ncols = left.shape[1] * right.shape[1]
@@ -321,7 +331,7 @@ def kron_jaxdia(left, right):
                     left.offsets[diag_left] * right.shape[0]
                     + right.offsets[diag_right]
                 )
-                out_data = multiply_outer(
+                out_data = _multiply_outer(
                     left.data[diag_left], right.data[diag_right]
                 )
                 if out_diag in out:
@@ -412,6 +422,8 @@ qutip.data.matmul.add_specialisations(
     [
         (JaxArray, JaxArray, JaxArray, matmul_jaxarray),
         (JaxDia, JaxDia, JaxDia, matmul_jaxdia),
+        (JaxDia, JaxArray, JaxArray, matmul_jaxdia_jaxarray_jaxarray),
+        (JaxArray, JaxArray, JaxArray, matmul_jaxarray_jaxdia_jaxarray),
     ]
 )
 
@@ -426,7 +438,6 @@ qutip.data.kron.add_specialisations(
     [
         (JaxArray, JaxArray, JaxArray, kron_jaxarray),
         (JaxDia, JaxDia, JaxDia, kron_jaxdia),
-        (JaxDia, JaxArray, JaxArray, matmul_jaxdia_jaxarray_jaxarray),
     ]
 )
 

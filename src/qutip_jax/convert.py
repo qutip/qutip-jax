@@ -34,6 +34,7 @@ def jaxdia_from_jaxarray(jax_array):
     return JaxDia((offsets, data), shape=jax_array.shape, copy=False)
 
 
+@jax.jit
 def jaxarray_from_jaxdia(matrix):
     out = jnp.zeros(matrix.shape, dtype=np.complex128)
 
