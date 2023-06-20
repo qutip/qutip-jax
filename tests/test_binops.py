@@ -29,7 +29,7 @@ class TestAdd(testing.TestAdd):
             JaxDia,
             JaxDia,
             JaxDia,
-        )
+        ),
     ]
 
 
@@ -46,7 +46,7 @@ class TestSub(testing.TestSub):
             JaxDia,
             JaxDia,
             JaxDia,
-        )
+        ),
     ]
 
 
@@ -82,7 +82,7 @@ class TestMatmul(testing.TestMatmul):
             JaxArray,
             JaxDia,
             JaxArray,
-        )
+        ),
     ]
 
 
@@ -99,7 +99,7 @@ class TestMultiply(testing.TestMultiply):
             JaxDia,
             JaxDia,
             JaxDia,
-        )
+        ),
     ]
 
 
@@ -116,11 +116,9 @@ class TestKron(testing.TestKron):
             JaxDia,
             JaxDia,
             JaxDia,
-        )
+        ),
     ]
 
 
 class TestPow(testing.TestPow):
-    specialisations = [
-        pytest.param(qutip_jax.pow_jaxarray, JaxArray, JaxArray)
-    ]
+    specialisations = [pytest.param(qutip_jax.pow_jaxarray, JaxArray, JaxArray)]

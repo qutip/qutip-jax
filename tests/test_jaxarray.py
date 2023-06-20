@@ -10,7 +10,7 @@ import qutip
     "backend",
     [pytest.param(jnp, id="jnp"), pytest.param(np, id="np")],
 )
-@pytest.mark.parametrize("shape", [(1,1), (10,), (3, 3), (1, 10)])
+@pytest.mark.parametrize("shape", [(1, 1), (10,), (3, 3), (1, 10)])
 @pytest.mark.parametrize("dtype", [int, float, complex])
 def test_init(backend, shape, dtype):
     """Tests creation of JaxArrays from NumPy and JAX-Numpy arrays"""
@@ -24,10 +24,11 @@ def test_init(backend, shape, dtype):
     assert jax_a.shape == shape
 
 
-@pytest.mark.parametrize("build",
+@pytest.mark.parametrize(
+    "build",
     [
         pytest.param(qutip.Qobj, id="Qobj"),
-        pytest.param(qutip.data.create, id="create")
+        pytest.param(qutip.data.create, id="create"),
     ],
 )
 def test_create(build):

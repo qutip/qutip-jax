@@ -10,7 +10,7 @@ import qutip
     "backend",
     [pytest.param(jnp, id="jnp"), pytest.param(np, id="np")],
 )
-@pytest.mark.parametrize("shape", [(1,1), (10, 1), (3, 3), (1, 10)])
+@pytest.mark.parametrize("shape", [(1, 1), (10, 1), (3, 3), (1, 10)])
 @pytest.mark.parametrize("dtype", [int, float, complex])
 def test_init(backend, shape, dtype):
     """Tests creation of JaxArrays from NumPy and JAX-Numpy arrays"""
@@ -37,13 +37,13 @@ def test_jit():
 
 def test_tidyup():
     big = JaxDia(((0,), jnp.arange(3)), shape=(3, 3))
-    small = JaxDia(((1,), jnp.arange(3)*1e-10), shape=(3, 3))
+    small = JaxDia(((1,), jnp.arange(3) * 1e-10), shape=(3, 3))
     data = big + small
     assert data.num_diags == 2
     assert tidyup_jaxdia(data, 1e-5).num_diags == 1
 
 
 def test_clean():
-    data = clean_diag(JaxDia(((0,-1), jnp.ones((2, 3))), shape=(3, 3)))
+    data = clean_diag(JaxDia(((0, -1), jnp.ones((2, 3))), shape=(3, 3)))
     assert data.offsets == (-1, 0)
-    assert data.data[0, 2] == 0.
+    assert data.data[0, 2] == 0.0

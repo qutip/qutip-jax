@@ -10,7 +10,7 @@ from qutip.core import data as _data
 from qutip.core.data import Data, Dense, CSR
 
 
-class TestSolve():
+class TestSolve:
     def op_numpy(self, A, b):
         return np.linalg.solve(A, b)
 
@@ -20,7 +20,7 @@ class TestSolve():
     def _gen_ket(self, N, dtype):
         return qutip.rand_ket(N, dtype=dtype).data
 
-    @pytest.mark.parametrize('method', ["solve", "lstsq"])
+    @pytest.mark.parametrize("method", ["solve", "lstsq"])
     def test_mathematically_correct_JaxArray(self, method):
         A = self._gen_op(10, JaxArray)
         b = self._gen_ket(10, JaxArray)
@@ -29,27 +29,29 @@ class TestSolve():
         test1 = _data.solve(A, b, method)
 
         assert test.shape == expected.shape
-        np.testing.assert_allclose(test.to_array(), expected,
-                                   atol=1e-7, rtol=1e-7)
-        np.testing.assert_allclose(test1.to_array(), expected,
-                                   atol=1e-7, rtol=1e-7)
+        np.testing.assert_allclose(
+            test.to_array(), expected, atol=1e-7, rtol=1e-7
+        )
+        np.testing.assert_allclose(
+            test1.to_array(), expected, atol=1e-7, rtol=1e-7
+        )
 
     def test_incorrect_shape_non_square(self):
         key = jax.random.PRNGKey(1)
-        A = JaxArray(jax.random.uniform(shape=(2,3), key=key))
-        b = JaxArray(jax.random.uniform(shape=(3,1), key=key))
+        A = JaxArray(jax.random.uniform(shape=(2, 3), key=key))
+        b = JaxArray(jax.random.uniform(shape=(3, 1), key=key))
         with pytest.raises(ValueError):
             test1 = solve_jaxarray(A, b)
 
     def test_incorrect_shape_mismatch(self):
         key = jax.random.PRNGKey(1)
-        A = JaxArray(jax.random.uniform(shape=(3,3), key=key))
-        b = JaxArray(jax.random.uniform(shape=(2,1), key=key))
+        A = JaxArray(jax.random.uniform(shape=(3, 3), key=key))
+        b = JaxArray(jax.random.uniform(shape=(2, 1), key=key))
         with pytest.raises(ValueError):
             test1 = solve_jaxarray(A, b)
 
 
-class TestSVD():
+class TestSVD:
     def op_numpy(self, A):
         return np.linalg.svd(A)
 
@@ -57,10 +59,10 @@ class TestSVD():
         return qutip.rand_dm(N, rank=rank, dtype=dtype).data
 
     def _gen_non_square(self, N):
-        mat = np.random.randn(N, N//2)
-        for i in range(N//2):
+        mat = np.random.randn(N, N // 2)
+        for i in range(N // 2):
             # Ensure no zeros singular values
-            mat[i,i] += 5
+            mat[i, i] += 5
         return _data.Dense(mat)
 
     @pytest.mark.parametrize("shape", ["square", "non-square"])
@@ -92,5 +94,6 @@ class TestSVD():
         np.testing.assert_allclose(
             matrix.to_array(),
             (test_U @ s_as_matrix @ test_V).to_array(),
-            atol=1e-7, rtol=1e-7
+            atol=1e-7,
+            rtol=1e-7,
         )

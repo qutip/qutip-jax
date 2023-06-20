@@ -30,7 +30,7 @@ class TestExpect(testing_expect.TestExpect):
             qutip_jax.JaxArray,
             qutip_jax.JaxArray,
             object,
-        )
+        ),
     ]
 
 
@@ -47,7 +47,7 @@ class TestExpectSuper(testing_expect.TestExpectSuper):
             qutip_jax.JaxDia,
             qutip_jax.JaxArray,
             object,
-        )
+        ),
     ]
 
 

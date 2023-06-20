@@ -1,5 +1,13 @@
 from qutip import (
-    coefficient, num, destroy, create, sesolve, MESolver, basis, settings, QobjEvo
+    coefficient,
+    num,
+    destroy,
+    create,
+    sesolve,
+    MESolver,
+    basis,
+    settings,
+    QobjEvo,
 )
 import qutip_jax
 import pytest
@@ -21,7 +29,7 @@ def fm(t, w):
 
 @jax.jit
 def pulse(t, A, u, sigma):
-    return A * jax.numpy.exp(-(t-u)**2 / sigma) / (sigma * np.pi)**0.5
+    return A * jax.numpy.exp(-((t - u) ** 2) / sigma) / (sigma * np.pi) ** 0.5
 
 
 @jax.jit
@@ -83,6 +91,6 @@ def test_ode_grad():
 
     val, (dt, dA) = df(solver, 0.2, 0.5)
 
-    assert val == pytest.approx(9 * np.exp(- 0.2 * 0.5))
-    assert dt == pytest.approx(9 * np.exp(- 0.2 * 0.5) * -0.5)
-    assert dA == pytest.approx(9 * np.exp(- 0.2 * 0.5) * -0.2)
+    assert val == pytest.approx(9 * np.exp(-0.2 * 0.5))
+    assert dt == pytest.approx(9 * np.exp(-0.2 * 0.5) * -0.5)
+    assert dA == pytest.approx(9 * np.exp(-0.2 * 0.5) * -0.2)

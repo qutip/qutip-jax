@@ -50,8 +50,7 @@ class TestTranspose(testing.TestTranspose):
 
 class TestExpm(testing.TestExpm):
     specialisations = [
-        pytest.param(
-            qutip_jax.expm_jaxarray, JaxArray, JaxArray)
+        pytest.param(qutip_jax.expm_jaxarray, JaxArray, JaxArray)
     ]
 
 
@@ -60,19 +59,18 @@ def _inv_jax(matrix):
     return qutip_jax.inv_jaxarray(
         data.add(
             matrix,
-            data.diag([1.1]*matrix.shape[0], shape=matrix.shape, dtype='JaxArray')
+            data.diag(
+                [1.1] * matrix.shape[0], shape=matrix.shape, dtype="JaxArray"
+            ),
         )
     )
 
+
 class TestInv(testing.TestInv):
-    specialisations = [
-        pytest.param(
-            _inv_jax, JaxArray, JaxArray)
-    ]
+    specialisations = [pytest.param(_inv_jax, JaxArray, JaxArray)]
 
 
 class TestProject(testing.TestProject):
     specialisations = [
-        pytest.param(
-            qutip_jax.project_jaxarray, JaxArray, JaxArray)
+        pytest.param(qutip_jax.project_jaxarray, JaxArray, JaxArray)
     ]

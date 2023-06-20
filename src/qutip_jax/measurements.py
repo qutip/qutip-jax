@@ -267,9 +267,15 @@ def expect_super_jaxarray(op, state):
 def trace_jaxarray(matrix):
     """Compute the trace (sum of digaonal elements) of a square matrix."""
     if matrix._jxa.shape[0] != matrix._jxa.shape[1]:
-        raise ValueError("".join([
-            "matrix ", str(matrix.shape), " is not a stacked square matrix."
-        ]))
+        raise ValueError(
+            "".join(
+                [
+                    "matrix ",
+                    str(matrix.shape),
+                    " is not a stacked square matrix.",
+                ]
+            )
+        )
     return jnp.trace(matrix._jxa)
 
 
@@ -280,11 +286,16 @@ def trace_oper_ket_jaxarray(matrix):
     """
     N = int(matrix.shape[0] ** 0.5)
     if matrix.shape[0] != N * N or matrix.shape[1] != 1:
-        raise ValueError("".join([
-            "matrix ", str(matrix.shape), " is not a stacked square matrix."
-        ]))
+        raise ValueError(
+            "".join(
+                [
+                    "matrix ",
+                    str(matrix.shape),
+                    " is not a stacked square matrix.",
+                ]
+            )
+        )
     return jnp.sum(matrix._jxa[:: N + 1])
-
 
 
 qutip.data.inner.add_specialisations(

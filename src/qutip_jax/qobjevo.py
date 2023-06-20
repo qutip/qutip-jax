@@ -100,6 +100,7 @@ class JaxQobjEvo(eqx.Module):
 
     It only support list based `QobjEvo`.
     """
+
     batched_data: jnp.ndarray
     coeffs: list
     dims: object = eqx.static_field()
