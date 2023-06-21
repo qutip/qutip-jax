@@ -158,7 +158,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
             out += jnp.diag(jnp.array(diag), offset)
         out = JaxArray(out)
     else:
-        out = jax_from_dense(
+        out = jaxarray_from_dense(
             qutip.core.data.dense.diags(diagonals, offsets, shape)
         )
 

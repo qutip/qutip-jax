@@ -49,4 +49,4 @@ def test_jit():
         return arr.trace()
 
     tr = func(arr)
-    assert isinstance(tr, jnp.Array)
+    assert isinstance(tr, jnp.ndarray)

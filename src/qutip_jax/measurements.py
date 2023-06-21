@@ -259,7 +259,7 @@ def trace_jaxarray(matrix):
 @jit
 def trace_jaxdia(matrix):
     """Compute the trace (sum of digaonal elements) of a square matrix."""
-    if matrix._jxa.shape[0] != matrix._jxa.shape[1]:
+    if matrix.shape[0] != matrix.shape[1]:
         raise ValueError(
             f"matrix {matrix.shape} is not a square matrix."
         )
@@ -315,6 +315,7 @@ qutip.data.expect_super.add_specialisations(
 qutip.data.trace.add_specialisations(
     [
         (JaxArray, trace_jaxarray),
+        (JaxDia, trace_jaxdia),
     ]
 )
 

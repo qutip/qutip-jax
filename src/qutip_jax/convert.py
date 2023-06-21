@@ -7,7 +7,13 @@ import numpy as np
 from qutip import settings
 
 
-__all__ = ["is_jax_array", "jax_from_dense", "dense_from_jax"]
+__all__ = [
+    "is_jax_array",
+    "jaxarray_from_dense",
+    "dense_from_jaxarray",
+    "jaxdia_from_jaxarray",
+    "jaxarray_from_jaxdia",
+]
 
 # Conversion function
 def jaxarray_from_dense(dense):

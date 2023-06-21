@@ -52,7 +52,7 @@ class JaxDia(Data):
         return jaxarray_from_jaxdia(self).to_array()
 
     def trace(self):
-        from .properties import trace_jaxdia
+        from .measurements import trace_jaxdia
 
         return trace_jaxdia(self)
 
