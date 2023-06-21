@@ -91,3 +91,9 @@ def test_convert():
 
     sx = qutip.qeye(5, dtype="JaxArray")
     assert isinstance(sx.data, JaxArray)
+
+
+def test_extract():
+    ones = jnp.ones((3, 3))
+    qobj = qutip.Qobj(ones)
+    assert isinstance(qobj.data_as("JaxArray"), jax.Array)
