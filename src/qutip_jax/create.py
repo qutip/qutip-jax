@@ -158,9 +158,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
             out += jnp.diag(jnp.array(diag), offset)
         out = JaxArray(out)
     else:
-        out = jaxarray_from_dense(
-            qutip.core.data.dense.diags(diagonals, offsets, shape)
-        )
+        out = jaxarray_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
 
     return out
 
@@ -273,8 +271,7 @@ def one_element_jaxarray(shape, position, value=None):
             + " in "
             + str(shape)
         )
-    if value is None:
-        value = 1.0
+    value = value or 1
     out = jnp.zeros(shape, dtype=jnp.complex128)
     return JaxArray(out.at[position].set(value))
 

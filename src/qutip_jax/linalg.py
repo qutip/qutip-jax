@@ -9,9 +9,7 @@ from .properties import isherm_jaxarray
 
 
 __all__ = [
-    "eigs_jaxarray",
-    "svd_jaxarray",
-    "solve_jaxarray",
+    "eigs_jaxarray", "svd_jaxarray", "solve_jaxarray",
 ]
 
 
@@ -48,7 +46,7 @@ def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
 
 
 # Can't jit it if we accept isherm=None
-def eigs_jaxarray(data, isherm=None, vecs=True, sort="low", eigvals=0):
+def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
     """
     Return eigenvalues and eigenvectors for a `Data` of type `"jax"`.  Takes no
     special keyword arguments; see the primary documentation in :func:`.eigs`.
@@ -56,7 +54,7 @@ def eigs_jaxarray(data, isherm=None, vecs=True, sort="low", eigvals=0):
     N = data.shape[0]
     if data.shape[0] != data.shape[1]:
         raise TypeError("Can only diagonalize square matrices")
-    if sort not in ("low", "high"):
+    if sort not in ('low', 'high'):
         raise ValueError("'sort' must be 'low' or 'high'")
     if eigvals > N:
         raise ValueError("Number of requested eigen vals/vecs must be <= N.")
@@ -71,9 +69,7 @@ def eigs_jaxarray(data, isherm=None, vecs=True, sort="low", eigvals=0):
 
 
 qutip.data.eigs.add_specialisations(
-    [
-        (JaxArray, eigs_jaxarray),
-    ]
+    [(JaxArray, eigs_jaxarray),]
 )
 
 
@@ -109,9 +105,7 @@ def svd_jaxarray(data, vecs=True, full_matrices=True, hermitian=False):
     """
     out = jnp.linalg.svd(
         data._jxa,
-        compute_uv=vecs,
-        full_matrices=full_matrices,
-        hermitian=hermitian,
+        compute_uv=vecs, full_matrices=full_matrices, hermitian=hermitian
     )
     if vecs:
         u, s, vh = out
@@ -120,15 +114,12 @@ def svd_jaxarray(data, vecs=True, full_matrices=True, hermitian=False):
 
 
 qutip.data.svd.add_specialisations(
-    [
-        (JaxArray, svd_jaxarray),
-    ]
+    [(JaxArray, svd_jaxarray),]
 )
 
 
-def solve_jaxarray(
-    matrix: JaxArray, target: JaxArray, method=None, options: dict = {}
-) -> JaxArray:
+def solve_jaxarray(matrix: JaxArray, target: JaxArray, method=None,
+            options: dict={}) -> JaxArray:
     """
     Solve ``Ax=b`` for ``x``.
 
@@ -162,17 +153,16 @@ def solve_jaxarray(
         out = jnp.linalg.solve(matrix._jxa, target._jxa)
     elif method == "lstsq":
         out, *_ = jnp.linalg.lstsq(
-            matrix._jxa, target._jxa, rcond=options.get("rcond", None)
+            matrix._jxa,
+            target._jxa,
+            rcond=options.get("rcond", None)
         )
     else:
-        raise ValueError(
-            f"Unknown solver {method}," " 'solve' and 'lstsq' are supported."
-        )
+        raise ValueError(f"Unknown solver {method},"
+                         " 'solve' and 'lstsq' are supported.")
     return JaxArray(out, copy=False)
 
 
 qutip.data.solve.add_specialisations(
-    [
-        (JaxArray, JaxArray, JaxArray, solve_jaxarray),
-    ]
+    [(JaxArray, JaxArray, JaxArray, solve_jaxarray),]
 )

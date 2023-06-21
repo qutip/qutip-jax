@@ -50,4 +50,4 @@ def jaxarray_from_jaxdia(matrix):
 
 
 def is_jax_array(data):
-    return isinstance(data, jnp.ndarray)
+    return isinstance(data, jax.Array)

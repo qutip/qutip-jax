@@ -41,14 +41,11 @@ def inner_jaxarray(left, right, scalar_is_ket=False):
     out : jax.Array
         The complex valued output.
     """
-    if (
-        left._jxa.shape[0] != 1 and left._jxa.shape[1] != 1
-    ) or right._jxa.shape[1] != 1:
+    if (left._jxa.shape[0] != 1 and left._jxa.shape[1] != 1) or right._jxa.shape[
+        1
+    ] != 1:
         raise ValueError(
-            "incompatible matrix shapes "
-            + str(left.shape)
-            + " and "
-            + str(right.shape)
+            "incompatible matrix shapes " + str(left.shape) + " and " + str(right.shape)
         )
     if (
         left._jxa.shape[1] == left._jxa.shape[0]
@@ -86,9 +83,9 @@ def inner_op_jaxarray(left, op, right, scalar_is_ket=False):
         The complex valued output.
     """
     left_shape = left._jxa.shape[0] == 1 or left._jxa.shape[1] == 1
-    left_op = (
-        left._jxa.shape[0] == 1 and left._jxa.shape[1] == op._jxa.shape[0]
-    ) or (left._jxa.shape[1] == 1 and left._jxa.shape[0] == op._jxa.shape[0])
+    left_op = (left._jxa.shape[0] == 1 and left._jxa.shape[1] == op._jxa.shape[0]) or (
+        left._jxa.shape[1] == 1 and left._jxa.shape[0] == op._jxa.shape[0]
+    )
     op_right = op._jxa.shape[1] == right._jxa.shape[0]
     right_shape = right._jxa.shape[1] == 1
     if not (left_shape and left_op and op_right and right_shape):
@@ -141,10 +138,7 @@ def expect_jaxarray(op, state):
         )
     ):
         raise ValueError(
-            "incompatible matrix shapes "
-            + str(op.shape)
-            + " and "
-            + str(state.shape)
+            "incompatible matrix shapes " + str(op.shape) + " and " + str(state.shape)
         )
     if state._jxa.shape[0] == state._jxa.shape[1]:
         out = jnp.sum(op._jxa * state._jxa.T)
@@ -221,10 +215,7 @@ def expect_super_jaxdia_jaxarray(op, state):
         raise ValueError("expected a column-stacked matrix")
     if not (op.shape[0] == op.shape[1] and op.shape[1] == state.shape[0]):
         raise ValueError(
-            "incompatible matrix shapes "
-            + str(op.shape)
-            + " and "
-            + str(state.shape)
+            f"incompatible matrix shapes {op.shape} and {state.shape}"
         )
 
     N = int(state._jxa.shape[0] ** 0.5)
@@ -249,14 +240,10 @@ def expect_super_jaxarray(op, state):
     if state._jxa.shape[1] != 1:
         raise ValueError("expected a column-stacked matrix")
     if not (
-        op._jxa.shape[0] == op._jxa.shape[1]
-        and op._jxa.shape[1] == state._jxa.shape[0]
+        op._jxa.shape[0] == op._jxa.shape[1] and op._jxa.shape[1] == state._jxa.shape[0]
     ):
         raise ValueError(
-            "incompatible matrix shapes "
-            + str(op.shape)
-            + " and "
-            + str(state.shape)
+            "incompatible matrix shapes " + str(op.shape) + " and " + str(state.shape)
         )
 
     N = int(state._jxa.shape[0] ** 0.5)
@@ -267,15 +254,9 @@ def expect_super_jaxarray(op, state):
 def trace_jaxarray(matrix):
     """Compute the trace (sum of digaonal elements) of a square matrix."""
     if matrix._jxa.shape[0] != matrix._jxa.shape[1]:
-        raise ValueError(
-            "".join(
-                [
-                    "matrix ",
-                    str(matrix.shape),
-                    " is not a stacked square matrix.",
-                ]
-            )
-        )
+        raise ValueError("".join([
+            "matrix ", str(matrix.shape), " is not a stacked square matrix."
+        ]))
     return jnp.trace(matrix._jxa)
 
 
@@ -286,15 +267,9 @@ def trace_oper_ket_jaxarray(matrix):
     """
     N = int(matrix.shape[0] ** 0.5)
     if matrix.shape[0] != N * N or matrix.shape[1] != 1:
-        raise ValueError(
-            "".join(
-                [
-                    "matrix ",
-                    str(matrix.shape),
-                    " is not a stacked square matrix.",
-                ]
-            )
-        )
+        raise ValueError("".join([
+            "matrix ", str(matrix.shape), " is not a stacked square matrix."
+        ]))
     return jnp.sum(matrix._jxa[:: N + 1])
 
 

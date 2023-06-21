@@ -36,7 +36,7 @@ def dimensions_jaxarray(matrix, dimensions, order):
 
     cumprod = np.ones(N, dtype=int)
     for i in range(N - 1):
-        cumprod[i + 1] = cumprod[i] * dims[order][-i - 1]
+        cumprod[i+1] = cumprod[i] * dims[order][-i-1]
     cumprod = cumprod[::-1][np.argsort(order)]
     idx = np.arange(size)
     permute = np.zeros(size, dtype=int)
@@ -51,15 +51,11 @@ def dimensions_jaxarray(matrix, dimensions, order):
     return indices_jaxarray(matrix, row_perm, col_perm)
 
 
-qutip.data.permute.indices.add_specialisations(
-    [
-        (JaxArray, JaxArray, indices_jaxarray),
-    ]
-)
+qutip.data.permute.indices.add_specialisations([
+    (JaxArray, JaxArray, indices_jaxarray),
+])
 
 
-qutip.data.permute.dimensions.add_specialisations(
-    [
-        (JaxArray, JaxArray, dimensions_jaxarray),
-    ]
-)
+qutip.data.permute.dimensions.add_specialisations([
+    (JaxArray, JaxArray, dimensions_jaxarray),
+])
