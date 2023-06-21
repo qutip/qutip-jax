@@ -25,7 +25,6 @@ class TestOneNorm(testing_norm.TestOneNorm):
     ]
 
 
-
 class TestFrobeniusNorm(testing_norm.TestFrobeniusNorm):
     specialisations = [
         pytest.param(
@@ -34,7 +33,6 @@ class TestFrobeniusNorm(testing_norm.TestFrobeniusNorm):
             object,
         )
     ]
-
 
 
 class TestMaxNorm(testing_norm.TestMaxNorm):
@@ -47,7 +45,6 @@ class TestMaxNorm(testing_norm.TestMaxNorm):
     ]
 
 
-
 class TestL2Norm(testing_norm.TestL2Norm):
     specialisations = [
         pytest.param(
@@ -56,7 +53,6 @@ class TestL2Norm(testing_norm.TestL2Norm):
             object,
         )
     ]
-
 
 
 class TestTraceNorm(testing_norm.TestTraceNorm):
