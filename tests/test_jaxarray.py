@@ -23,7 +23,6 @@ def test_init(backend, shape, dtype):
     array = backend.array(array)
     jax_a = JaxArray(array)
     assert isinstance(jax_a, JaxArray)
-    assert jax_a._jxa.dtype == jax.numpy.complex128
     if len(shape) == 1:
         shape = shape + (1,)
     assert jax_a.shape == shape
@@ -91,3 +90,12 @@ def test_convert():
 
     sx = qutip.qeye(5, dtype="JaxArray")
     assert isinstance(sx.data, JaxArray)
+
+
+def test_alternative_dtype():
+    ones = jnp.ones((3, 3))
+    real_array = JaxArray(ones, dtype=jnp.float64)
+    cplx_array = JaxArray(ones*1j, dtype=jnp.complex64)
+    assert (real_array * 5.)._jxa.dtype == jnp.float64
+    assert (cplx_array + cplx_array)._jxa.dtype == jnp.complex64
+    assert (cplx_array @ real_array)._jxa.dtype == jnp.complex128

@@ -97,6 +97,7 @@ class JaxQobjEvo(eqx.Module):
     batched_data: jnp.ndarray
     coeffs: list
     dims: object = eqx.static_field()
+    dtype: jnp.dtype
 
     def __init__(self, qobjevo):
         as_list = qobjevo.to_list()
@@ -106,26 +107,36 @@ class JaxQobjEvo(eqx.Module):
 
         constant = JaxJitCoeff(eqx.filter_jit(lambda t, **_: 1.))
 
+        dtype = None
+
         for part in as_list:
             if isinstance(part, Qobj):
                 qobjs.append(part)
                 self.coeffs.append(constant)
+                if isinstance(part.data, JaxArray):
+                    dtype = jnp.promote_types(dtype, part.data._jxa.dtype)
             elif (
                 isinstance(part, list)
                 and isinstance(part[0], Qobj)
             ):
                 qobjs.append(part[0])
                 self.coeffs.append(part[1])
+                if isinstance(part[0], JaxArray):
+                    dtype = jnp.promote_types(dtype, part[0].data._jxa.dtype)
             else:
                 # TODO:
                 raise NotImplementedError(
                     "Function based QobjEvo are not supported"
                 )
 
+        if dtype is None:
+            dtype=jnp.complex128
+        self.dtype = dtype
+
         if qobjs:
             shape = qobjs[0].shape
             self.batched_data = jnp.zeros(
-                shape + (len(qobjs),), dtype=np.complex128
+                shape + (len(qobjs),), dtype=dtype
             )
             for i, qobj in enumerate(qobjs):
                 self.batched_data = self.batched_data.at[:, :, i].set(
@@ -135,7 +146,7 @@ class JaxQobjEvo(eqx.Module):
     @eqx.filter_jit
     def _coeff(self, t, **args):
         list_coeffs = [coeff(t, **args) for coeff in self.coeffs]
-        return jnp.array(list_coeffs, dtype=np.complex128)
+        return jnp.array(list_coeffs, dtype=self.batched_data.dtype)
 
     def __call__(self, t, **kwargs):
         return Qobj(self.data(t, **kwargs), dims=self.dims)
