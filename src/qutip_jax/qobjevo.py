@@ -97,7 +97,6 @@ class JaxQobjEvo(eqx.Module):
     batched_data: jnp.ndarray
     coeffs: list
     dims: object = eqx.static_field()
-    dtype: jnp.dtype
 
     def __init__(self, qobjevo):
         as_list = qobjevo.to_list()
@@ -131,7 +130,6 @@ class JaxQobjEvo(eqx.Module):
 
         if dtype is None:
             dtype=jnp.complex128
-        self.dtype = dtype
 
         if qobjs:
             shape = qobjs[0].shape
