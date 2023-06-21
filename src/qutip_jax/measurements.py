@@ -15,6 +15,7 @@ __all__ = [
     "inner_jaxarray",
     "inner_op_jaxarray",
     "trace_jaxarray",
+    "trace_jaxdia",
     "trace_oper_ket_jaxarray",
 ]
 
@@ -253,6 +254,19 @@ def trace_jaxarray(matrix):
             f"matrix {matrix.shape} is not a square matrix."
         )
     return jnp.trace(matrix._jxa)
+
+
+@jit
+def trace_jaxdia(matrix):
+    """Compute the trace (sum of digaonal elements) of a square matrix."""
+    if matrix._jxa.shape[0] != matrix._jxa.shape[1]:
+        raise ValueError(
+            f"matrix {matrix.shape} is not a square matrix."
+        )
+    if 0 not in matrix.offsets:
+        return 0.0
+    idx = matrix.offsets.index(0)
+    return jnp.sum(matrix.data[idx])
 
 
 @jit
