@@ -4,7 +4,7 @@
 #   -T : display a full traceback if a Python exception occurs
 SPHINXOPTS    ?= -W --keep-going -T
 SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = .
+SOURCEDIR     = source
 BUILDDIR      = _build
 
 # Default target just prints the help (also lists all targets).

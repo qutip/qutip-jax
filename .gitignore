@@ -6,6 +6,7 @@
 .f2py_f2cmap
 .idea/
 .vscode/
+doc/_build/*
 
 # Packages
 *.egg
