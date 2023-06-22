@@ -18,7 +18,7 @@ class JaxArray(Data):
     _jxa: jnp.ndarray
     shape: tuple
 
-    def __init__(self, data, shape=None, copy=None, *, dtype=None):
+    def __init__(self, data, shape=None, copy=None, *, dtype=jnp.complex128):
         jxa = jnp.array(data, dtype=dtype)
 
         if shape is None:
@@ -82,8 +82,10 @@ class JaxArray(Data):
         return NotImplemented
 
     @classmethod
-    def _fast_constructor(cls, array, shape):
+    def _fast_constructor(cls, array, shape=None):
         out = cls.__new__(cls)
+        if shape is None:
+            shape = array.shape
         Data.__init__(out, shape)
         out._jxa = array
         return out

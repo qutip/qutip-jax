@@ -65,7 +65,7 @@ def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
 
     evals, evecs = _eigs_jaxarray(data._jxa, isherm, vecs, eigvals, low_first)
 
-    return (evals, JaxArray(evecs, copy=False)) if vecs else evals
+    return (evals, JaxArray._fast_constructor(evecs)) if vecs else evals
 
 
 qutip.data.eigs.add_specialisations(
@@ -109,7 +109,7 @@ def svd_jaxarray(data, vecs=True, full_matrices=True, hermitian=False):
     )
     if vecs:
         u, s, vh = out
-        return JaxArray(u, copy=False), s, JaxArray(vh, copy=False)
+        return JaxArray._fast_constructor(u), s, JaxArray._fast_constructor(vh)
     return out
 
 
@@ -160,7 +160,7 @@ def solve_jaxarray(matrix: JaxArray, target: JaxArray, method=None,
     else:
         raise ValueError(f"Unknown solver {method},"
                          " 'solve' and 'lstsq' are supported.")
-    return JaxArray(out, copy=False)
+    return JaxArray._fast_constructor(out)
 
 
 qutip.data.solve.add_specialisations(

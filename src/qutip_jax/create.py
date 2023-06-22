@@ -25,7 +25,7 @@ def zeros_jaxarray(rows, cols, *, dtype=jnp.complex128):
         rows, cols : int
             The number of rows and columns in the output matrix.
     """
-    return JaxArray(jnp.zeros((rows, cols), dtype=dtype))
+    return JaxArray._fast_constructor(jnp.zeros((rows, cols), dtype=dtype))
 
 
 def identity_jaxarray(dimensions, scale=None, *, dtype=jnp.complex128):
@@ -43,8 +43,8 @@ def identity_jaxarray(dimensions, scale=None, *, dtype=jnp.complex128):
         The element which should be placed on the diagonal.
     """
     if scale is None:
-        return JaxArray(jnp.eye(dimensions, dtype=dtype))
-    return JaxArray(jnp.eye(dimensions, dtype=dtype) * scale)
+        return JaxArray._fast_constructor(jnp.eye(dimensions, dtype=dtype))
+    return JaxArray._fast_constructor(jnp.eye(dimensions, dtype=dtype) * scale)
 
 
 def diag_jaxarray(diagonals, offsets=None, shape=None, *, dtype=jnp.complex128):
@@ -111,7 +111,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None, *, dtype=jnp.complex128):
         out = jnp.zeros((n_rows, n_cols), dtype=dtype)
         for offset, diag in zip(offsets, diagonals):
             out += jnp.diag(jnp.array(diag), offset)
-        out = JaxArray(out)
+        out = JaxArray._fast_constructor(out)
     else:
         out = jax_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
 
@@ -142,7 +142,7 @@ def one_element_jaxarray(shape, position, value=None, *, dtype=jnp.complex128):
         )
     value = value or 1
     out = jnp.zeros(shape, dtype=dtype)
-    return JaxArray(out.at[position].set(value))
+    return JaxArray._fast_constructor(out.at[position].set(value))
 
 
 qutip.data.zeros.add_specialisations(

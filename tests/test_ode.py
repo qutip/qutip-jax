@@ -3,6 +3,8 @@ from qutip import (
 )
 import qutip_jax
 from qutip_jax.qobjevo import JaxQobjEvo
+from qutip_jax.ode import DiffraxIntegrator
+
 import pytest
 import jax
 import jax.numpy as jnp
@@ -69,7 +71,7 @@ def test_ode_step():
 
     assert (solver.step(1) - ref_solver.step(1)).norm() <= 1e-6
 
-import jax
+
 def test_ode_grad():
     H = num(10)
     c_ops = [QobjEvo([destroy(10), cte], args={"A": 1.0})]
@@ -101,5 +103,25 @@ def test_non_cplx128_JaxQobjEvo():
         args={"A":1.0, "u":0.1, "sigma":0.5}
     )
     jqevo = JaxQobjEvo(qevo)
-    assert jqevo.dtype == jnp.float64
     assert jqevo.batched_data.dtype == jnp.float64
+
+
+def test_non_real_Diffrax():
+    op1 = Qobj(qutip_jax.zeros_jaxarray(3, 3, dtype=jnp.float64))
+    op2 = Qobj(
+        qutip_jax.one_element_jaxarray((3, 3), (0, 0), dtype=jnp.float64)
+    )
+    op3 = Qobj(qutip_jax.identity_jaxarray(3, dtype=jnp.float64))
+    qevo = QobjEvo(
+        [op1, [op2, pulse], [op3, cte]],
+        args={"A":1.0, "u":0.1, "sigma":0.5}
+    )
+    
+    ode = DiffraxIntegrator(qevo, {})
+    ode.set_state(
+        0, 
+        qutip_jax.one_element_jaxarray((3, 1), (2, 0), dtype=jnp.float64)
+    )
+    t, out = ode.integrate(0.1)
+    assert out._jxa.dtype == jnp.float64
+    

@@ -58,7 +58,7 @@ def column_unstack_jaxarray(matrix, rows):
 @jit
 def split_columns_jaxarray(matrix):
     return [
-        JaxArray(matrix._jxa[:, k]) for k in range(matrix.shape[1])
+        JaxArray._fast_constructor(matrix._jxa[:, k:k+1]) for k in range(matrix.shape[1])
     ]
 
 
@@ -117,7 +117,7 @@ def ptrace_jaxarray(matrix, dims, sel):
         + sel + [nd + q for q in sel]
     )
 
-    return JaxArray(
+    return JaxArray._fast_constructor(
         _ptrace_core(matrix._jxa, dims2, transpose_idx, dtrace, dkeep)
     )
 

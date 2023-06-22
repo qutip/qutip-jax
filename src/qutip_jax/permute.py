@@ -12,7 +12,7 @@ def indices_jaxarray(matrix, row_perm=None, col_perm=None):
         data = data[np.argsort(row_perm), :]
     if col_perm is not None:
         data = data[:, np.argsort(col_perm)]
-    return JaxArray(data)
+    return JaxArray._fast_constructor(data)
 
 
 def dimensions_jaxarray(matrix, dimensions, order):

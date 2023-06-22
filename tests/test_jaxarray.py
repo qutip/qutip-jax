@@ -98,4 +98,7 @@ def test_alternative_dtype():
     cplx_array = JaxArray(ones*1j, dtype=jnp.complex64)
     assert (real_array * 5.)._jxa.dtype == jnp.float64
     assert (cplx_array + cplx_array)._jxa.dtype == jnp.complex64
-    assert (cplx_array @ real_array)._jxa.dtype == jnp.complex128
+
+    cplx_array = JaxArray(ones*1j, dtype=jnp.complex64)
+    real_array = JaxArray(ones, dtype=jnp.float32)
+    assert (cplx_array @ real_array)._jxa.dtype == jnp.complex64

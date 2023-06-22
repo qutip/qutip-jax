@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import numpy as np
 from .jaxarray import JaxArray
 from qutip.core.coefficient import coefficient_builders
-from qutip.core.cy.coefficient import Coefficient
+from qutip.core.cy.coefficient import Coefficient, coefficient_function_parameters
 from qutip import Qobj
 
 
@@ -18,16 +18,26 @@ class JaxJitCoeff(Coefficient):
 
     def __init__(self, func, args={}, **_):
         self.func = func
+        _f_pythonic, _f_parameters = coefficient_function_parameters(func)
+        if _f_parameters is not None:
+            args = {key:val for key, val in args.items() if key in _f_parameters}
+        else:
+            args = args.copy()
+        if not _f_pythonic:
+            raise TypeError("Jitted coefficient should use a pythonic signature.")
         Coefficient.__init__(self, args)
 
     @eqx.filter_jit
     def __call__(self, t, _args=None, **kwargs):
         if _args:
             kwargs.update(_args)
-        args = self.args.copy()
-        for key in kwargs:
-            if key in args:
-                args[key] = kwargs[key]
+        if kwargs:
+            args = self.args.copy()
+            for key in kwargs:
+                if key in args:
+                    args[key] = kwargs[key]
+        else:
+            args = self.args
         return self.func(t, **args)
 
     def replace_arguments(self, _args=None, **kwargs):
@@ -153,12 +163,12 @@ class JaxQobjEvo(eqx.Module):
     def data(self, t, **kwargs):
         coeff = self._coeff(t, **kwargs)
         data = jnp.dot(self.batched_data, coeff)
-        return JaxArray(data)
+        return JaxArray._fast_constructor(data)
 
     @eqx.filter_jit
     def matmul_data(self, t, y, **kwargs):
         coeffs = self._coeff(t, **kwargs)
-        out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
+        out = JaxArray._fast_constructor(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
         return out
 
     def arguments(self, args):
