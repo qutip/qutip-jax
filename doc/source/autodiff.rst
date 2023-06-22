@@ -5,7 +5,7 @@ Auto differentiation in Qutip's Solver
 **************************************
 
 
-.. _autodiff_exemple:
+.. _autodiff_example:
 
 Auto differentiation in ``sesolve``
 ===================================

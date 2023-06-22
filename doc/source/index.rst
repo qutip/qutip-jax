@@ -30,6 +30,13 @@ qutip-jax: JAX backend for QuTiP
 
 .. toctree::
     :maxdepth: 2
+    :caption: API documentation
+
+    apidoc.rst
+
+
+.. toctree::
+    :maxdepth: 2
     :caption: Changelog
 
     changelog.rst

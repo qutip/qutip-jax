@@ -10,7 +10,10 @@ Jax in Qutip
 Basic Usages
 ============
 
-Once imported, there re 3many ways to tell Qutip to use the jax backend.
+Once imported, jax array will be available to contain ``qutip.Qobj``'s data and diffrax ODE will be available for solver (``sesolve``, ``mcsolve``, etc.).
+None of the function in the module are expected to be used directly, they will be used by qutip when the options to use this backend is used.
+
+There are many ways to tell Qutip to use the jax backend.
 
 - Pass Jax array to the Qobj constructor.
 
