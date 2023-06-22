@@ -121,7 +121,7 @@ def extract_jaxarray(matrix, format=None, _=None):
         Type of the output.
     """
     if format not in [None, "Array", "JaxArray"]:
-        raise ValueError("Diag can only be extracted to 'JaxArray'")
+        raise ValueError("JaxArray can only be extracted to 'JaxArray'")
     return matrix._jxa
 
 
