@@ -4,6 +4,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from .jaxarray import JaxArray
+from .binops import matmul_jaxdia_jaxarray_jaxarray
+from .create import zeros_jaxdia
 from qutip.core.coefficient import coefficient_builders
 from qutip.core.cy.coefficient import Coefficient
 from qutip import Qobj
@@ -103,65 +105,94 @@ class JaxQobjEvo(eqx.Module):
 
     batched_data: jnp.ndarray
     coeffs: list
+    sparse_part: list
     dims: object = eqx.static_field()
+    shape: tuple = eqx.static_field()
 
     def __init__(self, qobjevo):
         as_list = qobjevo.to_list()
-        self.coeffs = []
+        coeffs = []
         qobjs = []
         self.dims = qobjevo.dims
+        self.shape = qobjevo.shape
+        self.coeffs = []
+        self.sparse_part = []
+        self.batched_data = None
 
         constant = JaxJitCoeff(eqx.filter_jit(lambda t, **_: 1.0))
 
         for part in as_list:
             if isinstance(part, Qobj):
                 qobjs.append(part)
-                self.coeffs.append(constant)
+                coeffs.append(constant)
             elif (
                 isinstance(part, list) and isinstance(part[0], Qobj)
             ):
                 qobjs.append(part[0])
-                self.coeffs.append(part[1])
+                coeffs.append(part[1])
             else:
-                # TODO:
                 raise NotImplementedError(
                     "Function based QobjEvo are not supported"
                 )
 
-        if qobjs:
-            shape = qobjs[0].shape
+        dense_part = []
+        for qobj, coeff in zip(qobjs, coeffs):
+            if type(qobj.data) in ["JaxDia"]:
+                # TODO: CSR also?
+                self.sparse_part.append(qobj.data, coeff)
+            else:
+                dense_part.append((qobj, coeff))
+
+        if dense_part:
             self.batched_data = jnp.zeros(
-                shape + (len(qobjs),), dtype=np.complex128
+                self.shape + (len(dense_part),), dtype=np.complex128
             )
-            for i, qobj in enumerate(qobjs):
+            for i, (qobj, coeff) in enumerate(dense_part):
                 self.batched_data = self.batched_data.at[:, :, i].set(
                     qobj.to("jax").data._jxa
                 )
+                self.coeffs.append(coeff)
 
     @eqx.filter_jit
     def _coeff(self, t, **args):
         list_coeffs = [coeff(t, **args) for coeff in self.coeffs]
-        return jnp.array(list_coeffs, dtype=np.complex128)
+        return jnp.array(list_coeffs, dtype=jnp.complex128)
 
     def __call__(self, t, **kwargs):
         return Qobj(self.data(t, **kwargs), dims=self.dims)
 
     @eqx.filter_jit
     def data(self, t, **kwargs):
-        coeff = self._coeff(t, **kwargs)
-        data = jnp.dot(self.batched_data, coeff)
-        return JaxArray(data)
+        if self.batched_data is not None:
+            coeff = self._coeff(t, **kwargs)
+            data = jnp.dot(self.batched_data, coeff)
+            out = JaxArray(data)
+        else:
+            out = zeros_jaxdia(*self.shape)
+        for data, coeff in self.sparse_part:
+            out = out + data
+        return out
 
     @eqx.filter_jit
     def matmul_data(self, t, y, **kwargs):
-        coeffs = self._coeff(t, **kwargs)
-        out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
+        if self.batched_data is not None:
+            coeffs = self._coeff(t, **kwargs)
+            out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
+        else:
+            out = zeros_jaxdia(self.shape[1], 1)
+        for data, coeff in self.sparse_part:
+            out = matmul_jaxdia_jaxarray_jaxarray(data, y, coeff(t), out)
         return out
 
     def arguments(self, args):
         out = JaxQobjEvo.__new__(JaxQobjEvo)
         coeffs = [coeff.replace_arguments(args) for coeff in self.coeffs]
+        sparse_part = [
+            (data, coeff.replace_arguments(args))
+            for data, coeff in self.sparse_part
+        ]
         object.__setattr__(out, "coeffs", coeffs)
+        object.__setattr__(out, "sparse_part", sparse_part)
         object.__setattr__(out, "batched_data", self.batched_data)
         object.__setattr__(out, "dims", self.dims)
         return out

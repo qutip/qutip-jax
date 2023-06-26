@@ -84,14 +84,15 @@ def isdiag_jaxdia(matrix):
     return True
 
 
-def iszero_jaxarray(matrix, tol):
+def iszero_jaxarray(matrix, tol=None):
     if tol is None:
         tol = qutip.settings.core["atol"]
     return jnp.allclose(matrix._jxa, 0.0, atol=tol)
 
 
-def iszero_jaxdia(matrix, tol):
-    tol = tol or qutip.settings.core["atol"]
+def iszero_jaxdia(matrix, tol=None):
+    if tol is None:
+        tol = qutip.settings.core["atol"]
     if matrix.num_diags == 0:
         return True
     # We must ensure the values outside the dims are not included
