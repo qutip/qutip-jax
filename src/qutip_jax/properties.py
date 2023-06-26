@@ -18,7 +18,8 @@ def _isherm(matrix, tol):
 def isherm_jaxarray(matrix, tol=None):
     if matrix.shape[0] != matrix.shape[1]:
         return False
-    tol = tol or qutip.settings.core["atol"]
+    if tol is None:
+        tol = qutip.settings.core["atol"]
     return _isherm(matrix._jxa, tol)
 
 
@@ -28,8 +29,9 @@ def isdiag_jaxarray(matrix):
     return jnp.trace(mat_abs) == jnp.sum(mat_abs)
 
 
-def iszero_jaxarray(matrix, tol):
-    tol = tol or qutip.settings.core["atol"]
+def iszero_jaxarray(matrix, tol=None):
+    if tol is None:
+        tol = qutip.settings.core["atol"]
     return jnp.allclose(matrix._jxa, 0.0, atol=tol)
 
 
