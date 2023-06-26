@@ -113,7 +113,9 @@ def diag_jaxarray(diagonals, offsets=None, shape=None, *, dtype=jnp.complex128):
             out += jnp.diag(jnp.array(diag), offset)
         out = JaxArray._fast_constructor(out)
     else:
-        out = jax_from_dense(qutip.core.data.dense.diags(diagonals, offsets, shape))
+        out = jax_from_dense(
+            qutip.core.data.dense.diags(diagonals, offsets, shape)
+        )
 
     return out
 
@@ -135,12 +137,10 @@ def one_element_jaxarray(shape, position, value=None, *, dtype=jnp.complex128):
     """
     if not (0 <= position[0] < shape[0] and 0 <= position[1] < shape[1]):
         raise ValueError(
-            "Position of the elements out of bound: "
-            + str(position)
-            + " in "
-            + str(shape)
+            f"Position of the elements out of bound: {position} in {shape}"
         )
-    value = value or 1
+    if value is None:
+        value = 1.0
     out = jnp.zeros(shape, dtype=dtype)
     return JaxArray._fast_constructor(out.at[position].set(value))
 

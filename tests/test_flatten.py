@@ -37,4 +37,4 @@ def test_QobjEvo_flatten():
 
     # This call require jit to be able to jit QobjEvos
     assert func(0.5, H, state) == pytest.approx(expect(H(0.5), state))
-    assert func(1.5, H, state)  == pytest.approx(expect(H(1.5), state))
+    assert func(1.5, H, state) == pytest.approx(expect(H(1.5), state))

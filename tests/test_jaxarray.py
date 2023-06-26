@@ -81,8 +81,8 @@ def test_convert():
     """Tests if the conversions from Qobj to JaxArray work"""
     ones = jnp.ones((3, 3))
     qobj = qutip.Qobj(ones)
-    prod = qobj * jnp.array([0.5])
-    assert_array_almost_equal(prod.data.to_array(), ones * jnp.array([0.5]))
+    prod = qobj * jnp.array(0.5)
+    assert_array_almost_equal(prod.data.to_array(), ones * jnp.array(0.5))
 
     sx = qutip.qeye(5, dtype="csr")
     assert isinstance(sx.data, qutip.core.data.CSR)
@@ -102,3 +102,9 @@ def test_alternative_dtype():
     cplx_array = JaxArray(ones*1j, dtype=jnp.complex64)
     real_array = JaxArray(ones, dtype=jnp.float32)
     assert (cplx_array @ real_array)._jxa.dtype == jnp.complex64
+
+
+def test_extract():
+    ones = jnp.ones((3, 3))
+    qobj = qutip.Qobj(ones)
+    assert isinstance(qobj.data_as("JaxArray"), jax.Array)

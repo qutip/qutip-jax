@@ -1,14 +1,13 @@
 import jax.numpy as jnp
 from jax import tree_util
 from jax.config import config
+import numbers
+import numpy as np
 
 config.update("jax_enable_x64", True)
 
-import numpy as np
-
 from qutip.core.data.base import Data
-
-import numbers
+from qutip.core.data.extract import extract
 
 
 __all__ = ["JaxArray"]
@@ -109,3 +108,23 @@ class JaxArray(Data):
 tree_util.register_pytree_node(
     JaxArray, JaxArray._tree_flatten, JaxArray._tree_unflatten
 )
+
+
+def extract_jaxarray(matrix, format=None, _=None):
+    """
+    Return ``jaxarray`` as a jax Array.
+
+    Parameters
+    ----------
+    matrix : Data
+        The matrix to convert to common type.
+
+    format : str, {"Array"}
+        Type of the output.
+    """
+    if format not in [None, "Array", "JaxArray"]:
+        raise ValueError("JaxArray can only be extracted to 'JaxArray'")
+    return matrix._jxa
+
+
+extract.add_specialisations([(JaxArray, extract_jaxarray)], _defer=True)

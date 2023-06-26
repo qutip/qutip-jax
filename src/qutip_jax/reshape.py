@@ -18,10 +18,9 @@ __all__ = [
 # jit slower
 def reshape_jaxarray(matrix, n_rows_out, n_cols_out):
     if n_rows_out * n_cols_out != matrix.shape[0] * matrix.shape[1]:
-        message = "".join([
-            "cannot reshape ", str(matrix.shape), " to ",
-            "(", str(n_rows_out), ", ", str(n_cols_out), ")",
-        ])
+        message = (
+            f"cannot reshape {matrix.shape} to ({n_rows_out}, {n_cols_out})"
+        )
         raise ValueError(message)
     if n_rows_out <= 0 or n_cols_out <= 0:
         raise ValueError("must have > 0 rows and columns")
@@ -71,14 +70,17 @@ def _parse_ptrace_inputs(dims, sel, shape):
         raise ValueError("ptrace is only defined for square density matrices")
 
     if shape[0] != np.prod(dims, dtype=int):
-        raise ValueError(f"the input matrix shape, {shape} and the"
-                         f" dimension argument, {dims}, are not compatible.")
+        raise ValueError(
+            f"the input matrix shape, {shape} and the"
+            f" dimension argument, {dims}, are not compatible."
+        )
     if sel.ndim != 1:
         raise ValueError("Selection must be one-dimensional")
 
     if any(d < 1 for d in dims):
-        raise ValueError("dimensions must be greated than zero but where"
-                         f" dims={dims}.")
+        raise ValueError(
+            f"dimensions must be greated than zero but where dims={dims}."
+        )
 
     for i in range(sel.shape[0]):
         if sel[i] < 0 or sel[i] >= dims.size:

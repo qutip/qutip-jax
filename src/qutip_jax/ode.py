@@ -94,7 +94,7 @@ class DiffraxIntegrator(Integrator):
             self.solver_state,
         )
         if self._is_set:
-            children += (self.t, self.state,)
+            children += (self.t, self.state)
         aux_data = {
             "_is_set": self._is_set,
         }
@@ -137,8 +137,8 @@ class DiffraxIntegrator(Integrator):
         Integrator.options.fset(self, new_options)
 
 
-MESolver.add_integrator(DiffraxIntegrator, 'diffrax')
-SESolver.add_integrator(DiffraxIntegrator, 'diffrax')
+MESolver.add_integrator(DiffraxIntegrator, "diffrax")
+SESolver.add_integrator(DiffraxIntegrator, "diffrax")
 jax.tree_util.register_pytree_node(
     DiffraxIntegrator, DiffraxIntegrator._flatten, DiffraxIntegrator._unflatten
 )
