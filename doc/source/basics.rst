@@ -10,12 +10,12 @@ Jax in Qutip
 Basic Usages
 ============
 
-Once imported, jax array will be available to contain ``qutip.Qobj``'s data and diffrax ODE will be available for solver (``sesolve``, ``mcsolve``, etc.).
-None of the function in the module are expected to be used directly, they will be used by qutip when the options to use this backend is used.
+In orther to enable qutip-jax, it is just necessary to import the module. Once imported, ``qutip.Qobj``'s data can be represented as a JAX array. Furthermore, diffrax ODE will be available as an option for qutip's solvers (``sesolve``, ``mcsolve``, etc.).
+None of the functions in the module are expected to be used directly. Instead, they will be used by qutip, allowing the user to interact only with the already familiar QuTiP interface.
 
-There are many ways to tell Qutip to use the jax backend.
+There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
 
-- Pass Jax array to the Qobj constructor.
+- Passing JAX array to the ``Qobj`` constructor.
 
 .. code-block::
 
@@ -25,7 +25,7 @@ There are many ways to tell Qutip to use the jax backend.
 
     jax_eye_qobj = qutip.Qobj(jnp.eye(3))
 
-- Manually convert a ``Qobj`` or ``QobjEvo``.
+- Converting a ``Qobj`` or ``QobjEvo`` using the ``to`` method.
 
 .. code-block::
 
@@ -34,7 +34,7 @@ There are many ways to tell Qutip to use the jax backend.
 
     jax_eye_qobj = qutip.qeye(3).to("jax")
 
-- Use qutip state and operator function with ``dtype="jax"``.
+- Using QuTiP's native constructors' ``dtype`` parameter.
 
 .. code-block::
 
@@ -43,7 +43,7 @@ There are many ways to tell Qutip to use the jax backend.
 
     jax_eye_qobj = qutip.qeye(3, dtype="jax")
 
-- Use qutip settings to set jax as the default backend.
+- Changing QuTiP's default settings to set JAX as the default backend.
 
 .. code-block::
 
@@ -53,7 +53,7 @@ There are many ways to tell Qutip to use the jax backend.
 
     jax_eye_qobj = qutip.qeye(3)
 
-- Use qutip settings in a context.
+- Changing QuTiP's default settings within a context.
 
 .. code-block::
 

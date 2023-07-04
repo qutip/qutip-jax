@@ -4,7 +4,7 @@ Installation
 
 .. _quickstart:
 
-Qutip-Jax needs the development version of Qutip and installation is only possible from source
+Qutip-Jax needs the development version of Qutip and installation is only possible from source.
 
 .. code-block:: bash
 
@@ -18,16 +18,6 @@ Prerequisites
 =============
 This package use the development version of QuTiP, Jax, equinox and diffrax.
 
-The following to packages are used for plotting and testing:
+We use ``pytest`` for testing.
 
-.. code-block:: bash
-
-    matplotlib pytest
-
-In addition
-
-.. code-block:: bash
-
-    sphinx numpydoc sphinx sphinx_rtd_theme
-
-are used to build and test the documentation.
+See doc/requirementes.txt for a list of package needed to build the documentation.

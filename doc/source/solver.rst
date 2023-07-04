@@ -1,7 +1,7 @@
 .. _qtjax_solver:
 
 *****************************
-Jax BackEnd in Qutip's Solver
+Jax Backend in Qutip's Solver
 *****************************
 
 
@@ -11,11 +11,13 @@ Using Jax in ``mesolve``
 ========================
 
 
-To use the jax arrays in Qutip solver such as ``mesolve``, two conditions must be fullfill:
+To use JAX's arrays in QuTiP's solvers such as ``mesolve``, two conditions must be met:
 
-1. All opertors and states must use jax arrays.
+1. All opertors and states must use JAX arrays.
 2. An ODE integrator supporting Jax must be used.
-   ODE solver from the diffrax project are made available when importing qutip-jax
+   Currently, an ODE solver from the diffrax project is made available when importing qutip-jax.
+   
+The following code shows an example of how to use JAX:
 
 .. code-block::
 
