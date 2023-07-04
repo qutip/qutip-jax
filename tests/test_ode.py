@@ -106,7 +106,7 @@ def test_non_cplx128_JaxQobjEvo():
     assert jqevo.batched_data.dtype == jnp.float64
 
 
-def test_non_real_Diffrax():
+def test_non_cplx128_Diffrax():
     op1 = Qobj(qutip_jax.zeros_jaxarray(3, 3, dtype=jnp.float64))
     op2 = Qobj(
         qutip_jax.one_element_jaxarray((3, 3), (0, 0), dtype=jnp.float64)
@@ -116,12 +116,11 @@ def test_non_real_Diffrax():
         [op1, [op2, pulse], [op3, cte]],
         args={"A":1.0, "u":0.1, "sigma":0.5}
     )
-    
+
     ode = DiffraxIntegrator(qevo, {})
     ode.set_state(
-        0, 
+        0,
         qutip_jax.one_element_jaxarray((3, 1), (2, 0), dtype=jnp.float64)
     )
     t, out = ode.integrate(0.1)
     assert out._jxa.dtype == jnp.float64
-    
