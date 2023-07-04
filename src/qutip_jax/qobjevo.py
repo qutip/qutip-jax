@@ -4,11 +4,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from .jaxarray import JaxArray
+from .jaxdia import JaxDia
 from .binops import matmul_jaxdia_jaxarray_jaxarray
-from .create import zeros_jaxdia
+from .create import zeros_jaxdia, zeros_jaxarray
 from qutip.core.coefficient import coefficient_builders
 from qutip.core.cy.coefficient import Coefficient
 from qutip import Qobj
+from qutip.core.data.matmul import matmul
+from functools import partial
 
 
 __all__ = []
@@ -170,18 +173,37 @@ class JaxQobjEvo(eqx.Module):
         else:
             out = zeros_jaxdia(*self.shape)
         for data, coeff in self.sparse_part:
-            out = out + data
+            out = out + data * coeff(t, **kwargs)
         return out
 
-    @eqx.filter_jit
-    def matmul_data(self, t, y, **kwargs):
-        if self.batched_data is not None:
-            coeffs = self._coeff(t, **kwargs)
-            out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
-        else:
-            out = zeros_jaxdia(self.shape[1], 1)
+    @partial(jax.jit, donate_argnums=(3,))
+    def matmul_data(self, t, y, out=None):
+        print("jitting matmul_data")
+        if out is None and self.batched_data is not None:
+            coeffs = self._coeff(t)
+            out = JaxArray._fast_constructor(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa),
+                y.shape
+            )
+        elif type(out) is JaxArray and self.batched_data is not None:
+            coeffs = self._coeff(t)
+            out = JaxArray._fast_constructor(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa) + out._jxa,
+                y.shape
+            )
+        elif self.batched_data is not None:
+            out = JaxArray._fast_constructor(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa),
+                y.shape
+            ) + out
+        elif out is None:
+            out = zeros_jaxarray(*y.shape)
+
         for data, coeff in self.sparse_part:
-            out = matmul_jaxdia_jaxarray_jaxarray(data, y, coeff(t), out)
+            if isinstance(y, JaxArray):
+                out = matmul_jaxdia_jaxarray_jaxarray(data, y, coeff(t), out)
+            else:
+                out = out + matmul(data, y, coeff(t))
         return out
 
     def arguments(self, args):

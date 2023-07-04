@@ -1,8 +1,9 @@
 import jax.numpy as jnp
-from jax import tree_util
+from jax import tree_util, jit
 from jax.config import config
 import numbers
 import numpy as np
+from functools import partial
 
 config.update("jax_enable_x64", True)
 
@@ -81,6 +82,7 @@ class JaxArray(Data):
         return NotImplemented
 
     @classmethod
+    @partial(jit, static_argnames=["cls", "shape"])
     def _fast_constructor(cls, array, shape):
         out = cls.__new__(cls)
         Data.__init__(out, shape)

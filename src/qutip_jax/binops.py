@@ -4,6 +4,7 @@ from .jaxdia import JaxDia, clean_diag
 import jax.numpy as jnp
 import jax
 from jax import vmap, jit
+from functools import partial
 
 __all__ = [
     "add_jaxarray",
@@ -49,6 +50,7 @@ def _check_matmul_shape(left, right, out):
         )
 
 
+@jit
 def add_jaxarray(left, right, scale=1):
     """
     Perform the operation
@@ -57,6 +59,7 @@ def add_jaxarray(left, right, scale=1):
     scalar.
     """
     _check_same_shape(left, right)
+    print("jitting add_jaxarray")
 
     if scale == 1 and isinstance(scale, int):
         out = JaxArray._fast_constructor(
@@ -113,6 +116,7 @@ def add_jaxdia(left, right, scale=None):
     return JaxDia((tuple(offsets), jnp.array(data)), left.shape, False)
 
 
+@jit
 def sub_jaxarray(left, right):
     """
     Perform the operation
@@ -122,6 +126,7 @@ def sub_jaxarray(left, right):
     return add_jaxarray(left, right, -1)
 
 
+@jit
 def sub_jaxdia(left, right):
     """
     Perform the operation
@@ -131,7 +136,17 @@ def sub_jaxdia(left, right):
     return add_jaxdia(left, right, -1)
 
 
+@jit
 def mul_jaxarray(matrix, value):
+    """Multiply a matrix element-wise by a scalar."""
+    # We don't want to check values type in case jax pass a tracer etc.
+    # But we want to ensure the output is a matrix, thus don't use the
+    # fast constructor.
+    return JaxArray(matrix._jxa * value)
+
+
+@partial(jit, donate_argnums=[0])
+def imul_jaxarray(matrix, value):
     """Multiply a matrix element-wise by a scalar."""
     # We don't want to check values type in case jax pass a tracer etc.
     # But we want to ensure the output is a matrix, thus don't use the
@@ -147,6 +162,7 @@ def mul_jaxdia(matrix, value):
     )
 
 
+@partial(jit, donate_argnums=(3,))
 def matmul_jaxarray(left, right, scale=1, out=None):
     """
     Compute the matrix multiplication of two matrices, with the operation
@@ -178,7 +194,7 @@ def matmul_jaxarray(left, right, scale=1, out=None):
         out._jxa = result + out._jxa
 
 
-@jit
+@partial(jit, donate_argnums=(3,))
 def matmul_jaxdia(left, right, scale=1.0, out=None):
     _check_matmul_shape(left, right, out)
     out_dict = {}
@@ -229,8 +245,9 @@ def matmul_jaxdia(left, right, scale=1.0, out=None):
     return out_dia
 
 
-@jit
-def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=1.0, out=None):
+@partial(jit, donate_argnums=(3,))
+def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=None, out=None):
+    print("jitting matmul_jaxdia_jaxarray_jaxarray")
     _check_matmul_shape(left, right, out)
     mul = vmap(jnp.multiply, (0, 0))
     if out is None:
@@ -244,14 +261,19 @@ def matmul_jaxdia_jaxarray_jaxarray(left, right, scale=1.0, out=None):
         top = max(0, -offset)
         bottom = top + end - start
 
-        out = out.at[top:bottom, :].add(
-            mul(data[start:end], right._jxa[start:end, :]) * scale
-        )
+        if scale is not None:
+            out = out.at[top:bottom, :].add(
+                mul(data[start:end], right._jxa[start:end, :]) * scale
+            )
+        else:
+            out = out.at[top:bottom, :].add(
+                mul(data[start:end], right._jxa[start:end, :])
+            )
 
     return JaxArray(out, shape=(left.shape[0], right.shape[1]), copy=False)
 
 
-@jit
+@partial(jit, donate_argnums=(3,))
 def matmul_jaxarray_jaxdia_jaxarray(left, right, scale=1.0, out=None):
     _check_matmul_shape(left, right, out)
     mul = vmap(jnp.multiply, (1, 0))
@@ -273,6 +295,7 @@ def matmul_jaxarray_jaxdia_jaxarray(left, right, scale=1.0, out=None):
     return JaxArray(out, shape=(left.shape[0], right.shape[1]), copy=False)
 
 
+@jit
 def multiply_jaxarray(left, right):
     """Element-wise multiplication of matrices."""
     _check_same_shape(left, right)
@@ -305,6 +328,7 @@ def multiply_jaxdia(left, right):
     return out
 
 
+@jit
 def kron_jaxarray(left, right):
     """
     Compute the Kronecker product of two matrices.  This is used to represent
@@ -410,6 +434,12 @@ qutip.data.sub.add_specialisations(
     [
         (JaxArray, JaxArray, JaxArray, sub_jaxarray),
         (JaxDia, JaxDia, JaxDia, sub_jaxdia),
+    ]
+)
+
+qutip.data.imul.add_specialisations(
+    [
+        (JaxArray, JaxArray, imul_jaxarray),
     ]
 )
 
