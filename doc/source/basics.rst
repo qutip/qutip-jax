@@ -24,6 +24,7 @@ There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
     import jax.numpy as jnp
 
     jax_eye_qobj = qutip.Qobj(jnp.eye(3))
+    assert isinstance(jax_eye_qobj.data, qutip_jax.JaxArray)
 
 - Converting a ``Qobj`` or ``QobjEvo`` using the ``to`` method.
 
@@ -33,6 +34,7 @@ There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
     import qutip_jax
 
     jax_eye_qobj = qutip.qeye(3).to("jax")
+    assert isinstance(jax_eye_qobj.data, qutip_jax.JaxArray)
 
 - Using QuTiP's native constructors' ``dtype`` parameter.
 
@@ -42,6 +44,7 @@ There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
     import qutip_jax
 
     jax_eye_qobj = qutip.qeye(3, dtype="jax")
+    assert isinstance(jax_eye_qobj.data, qutip_jax.JaxArray)
 
 - Changing QuTiP's default settings to set JAX as the default backend.
 
@@ -52,6 +55,7 @@ There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
     qutip.settings.core["default_dtype"] = "jax"
 
     jax_eye_qobj = qutip.qeye(3)
+    assert isinstance(jax_eye_qobj.data, qutip_jax.JaxArray)
 
 - Changing QuTiP's default settings within a context.
 
@@ -62,3 +66,5 @@ There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
 
     with qutip.CoreOptions("default_dtype"="jax"):
         jax_eye_qobj = qutip.qeye(3)
+
+    assert isinstance(jax_eye_qobj.data, qutip_jax.JaxArray)
