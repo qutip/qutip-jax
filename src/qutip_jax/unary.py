@@ -35,6 +35,7 @@ def neg_jaxarray(matrix):
     return mul_jaxarray(matrix, -1)
 
 
+@jit
 def neg_jaxdia(matrix):
     """Unary element-wise negation of a matrix."""
     return mul_jaxdia(matrix, -1)

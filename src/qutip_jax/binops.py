@@ -122,6 +122,7 @@ def sub_jaxarray(left, right):
     return add_jaxarray(left, right, -1)
 
 
+@jit
 def sub_jaxdia(left, right):
     """
     Perform the operation

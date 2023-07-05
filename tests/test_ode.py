@@ -101,6 +101,6 @@ def test_ode_grad(dtype):
 
     val, (dt, dA) = df(solver, 0.2, 0.5)
 
-    assert val == pytest.approx(9 * np.exp(-0.2 * 0.5))
-    assert dt == pytest.approx(9 * np.exp(-0.2 * 0.5) * -0.5)
-    assert dA == pytest.approx(9 * np.exp(-0.2 * 0.5) * -0.2)
+    assert val == pytest.approx(9 * np.exp(-0.2 * 0.5**2))
+    assert dt == pytest.approx(9 * np.exp(-0.2 * 0.5**2) * -0.5**2)
+    assert dA == pytest.approx(9 * np.exp(-0.2 * 0.5**2) * -0.2)

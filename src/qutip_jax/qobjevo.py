@@ -1,31 +1,35 @@
-import equinox as eqx
 import jaxlib
 import jax
+from jax import jit
 import jax.numpy as jnp
 import numpy as np
 from .jaxarray import JaxArray
 from .binops import matmul_jaxdia_jaxarray_jaxarray
 from .create import zeros_jaxdia
+from qutip import Qobj, Coefficient
 from qutip.core.coefficient import coefficient_builders
-from qutip.core.cy.coefficient import Coefficient
-from qutip import Qobj
 
 
 __all__ = []
 
 
 class JaxJitCoeff(Coefficient):
-    func: callable = eqx.static_field()
+    func: callable
+    static_argnames: tuple
     args: dict
 
-    def __init__(self, func, args={}, **_):
+    def __init__(self, func, args={}, static_argnames=(), **_):
         self.func = func
+        self.static_argnames = static_argnames
         Coefficient.__init__(self, args)
+        self.jit_call = jit(self._caller, static_argnames=self.static_argnames)
 
-    @eqx.filter_jit
     def __call__(self, t, _args=None, **kwargs):
         if _args:
             kwargs.update(_args)
+        return self.jit_call(t, **kwargs)
+
+    def _caller(self, t, **kwargs):
         args = self.args.copy()
         for key in kwargs:
             if key in args:
@@ -35,38 +39,66 @@ class JaxJitCoeff(Coefficient):
     def replace_arguments(self, _args=None, **kwargs):
         if _args:
             kwargs.update(_args)
-        return JaxJitCoeff(self.func, {**self.args, **kwargs})
+        args = self.args.copy()
+        for key in kwargs:
+            if key in args:
+                args[key] = kwargs[key]
+        return JaxJitCoeff(self.func, args=args)
 
     def __add__(self, other):
         if isinstance(other, JaxJitCoeff):
+            merge_static = tuple(
+                set(self.static_argnames) | set(other.static_argnames)
+            )
 
             def f(t, **kwargs):
-                return self(t, **kwargs) + other(t, **kwargs)
-            return JaxJitCoeff(eqx.filter_jit(f), {})
+                return self._caller(t, **kwargs) + other._caller(t, **kwargs)
+
+            return JaxJitCoeff(
+                jit(f, static_argnames=merge_static),
+                args={**self.args, **other.args},
+                static_argnames=merge_static,
+            )
 
         return NotImplemented
 
     def __mul__(self, other):
         if isinstance(other, JaxJitCoeff):
+            merge_static = tuple(
+                set(self.static_argnames) | set(other.static_argnames)
+            )
 
             def f(t, **kwargs):
-                return self(t, **kwargs) * other(t, **kwargs)
-            return JaxJitCoeff(eqx.filter_jit(f), {})
+                return self._caller(t, **kwargs) * self._caller(t, **kwargs)
+
+            return JaxJitCoeff(
+                jit(f, static_argnames=merge_static),
+                args={**self.args, **other.args},
+                static_argnames=merge_static,
+            )
 
         return NotImplemented
 
     def conj(self):
         def f(t, **kwargs):
-            return jnp.conj(self(t, **kwargs))
+            return jnp.conj(self._caller(t, **kwargs))
 
-        return JaxJitCoeff(eqx.filter_jit(f), {})
+        return JaxJitCoeff(
+            jit(f, static_argnames=self.static_argnames),
+            args=self.args,
+            static_argnames=self.static_argnames,
+        )
 
     def _cdc(self):
         def f(t, **kwargs):
             val = self(t, **kwargs)
             return jnp.conj(val) * val
 
-        return JaxJitCoeff(eqx.filter_jit(f), {})
+        return JaxJitCoeff(
+            jit(f, static_argnames=self.static_argnames),
+            args=self.args,
+            static_argnames=self.static_argnames,
+        )
 
     def copy(self):
         return self
@@ -75,28 +107,48 @@ class JaxJitCoeff(Coefficient):
         # Jitted function cannot be pickled.
         # Extract the original function and re-jit it.
         # This can fail depending on the wrapped object.
-        return (self.restore, (self.func.__wrapped__, self.args))
+        return (
+            self.restore,
+            (self.func.__wrapped__, self.args, self.static_argnames)
+        )
 
     @classmethod
-    def restore(cls, func, args):
-        return cls(eqx.filter_jit(func), args)
+    def restore(cls, func, args, static_argnames):
+        return cls(
+            jit(func, static_argnames=static_argnames),
+            args,
+            static_argnames
+        )
 
     def flatten(self):
-        return (self.args,), (self.func,)
+        static_args = {
+            key: val for key, val in self.args.items()
+            if key in self.static_argnames
+        }
+        jax_args = {
+            key: val for key, val in self.args.items()
+            if key not in self.static_argnames
+        }
+        return (jax_args,), (self.func, static_args, self.static_argnames)
 
     @classmethod
     def unflatten(cls, aux_data, children):
-        return JaxJitCoeff(*aux_data, *children)
+        func, static_args, static_argnames = aux_data
+
+        return JaxJitCoeff(
+            func,
+            args={**children[0], **static_args},
+            static_argnames=static_argnames
+        )
 
 
-coefficient_builders[eqx._jit._JitWrapper] = JaxJitCoeff
 coefficient_builders[jaxlib.xla_extension.PjitFunction] = JaxJitCoeff
 jax.tree_util.register_pytree_node(
     JaxJitCoeff, JaxJitCoeff.flatten, JaxJitCoeff.unflatten
 )
 
 
-class JaxQobjEvo(eqx.Module):
+class JaxQobjEvo:
     """
     Pytree friendly QobjEvo for the Diffrax integrator.
 
@@ -104,10 +156,11 @@ class JaxQobjEvo(eqx.Module):
     """
 
     batched_data: jnp.ndarray
+    sparse_part: list
     coeffs: list
     sparse_part: list
-    dims: object = eqx.static_field()
-    shape: tuple = eqx.static_field()
+    shape: tuple
+    dims: object
 
     def __init__(self, qobjevo):
         as_list = qobjevo.to_list()
@@ -119,7 +172,7 @@ class JaxQobjEvo(eqx.Module):
         self.sparse_part = []
         self.batched_data = None
 
-        constant = JaxJitCoeff(eqx.filter_jit(lambda t, **_: 1.0))
+        constant = JaxJitCoeff(jit(lambda t, **_: 1.0))
 
         for part in as_list:
             if isinstance(part, Qobj):
@@ -153,31 +206,39 @@ class JaxQobjEvo(eqx.Module):
                 )
                 self.coeffs.append(coeff)
 
-    @eqx.filter_jit
-    def _coeff(self, t, **args):
-        list_coeffs = [coeff(t, **args) for coeff in self.coeffs]
-        return jnp.array(list_coeffs, dtype=jnp.complex128)
+    @jit
+    def _coeff(self, t):
+        list_coeffs = [coeff(t) for coeff in self.coeffs]
+        return jnp.array(list_coeffs, dtype=np.complex128)
 
-    def __call__(self, t, **kwargs):
-        return Qobj(self.data(t, **kwargs), dims=self.dims)
+    def __call__(self, t, _args=None, **kwargs):
+        if args is not None:
+            kwargs.update(_args)
+        if kwargs:
+            caller = self.arguments(kwargs)
+        else:
+            caller = self
+        return Qobj(caller.data(t), dims=self.dims)
 
-    @eqx.filter_jit
-    def data(self, t, **kwargs):
+    @jit
+    def data(self, t):
         if self.batched_data is not None:
-            coeff = self._coeff(t, **kwargs)
+            coeff = self._coeff(t)
             data = jnp.dot(self.batched_data, coeff)
             out = JaxArray(data)
         else:
             out = zeros_jaxdia(*self.shape)
         for data, coeff in self.sparse_part:
-            out = out + data
+            out = out + data * coeff(t)
         return out
 
-    @eqx.filter_jit
-    def matmul_data(self, t, y, **kwargs):
+    @jit
+    def matmul_data(self, t, y):
         if self.batched_data is not None:
-            coeffs = self._coeff(t, **kwargs)
-            out = JaxArray(jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa))
+            coeffs = self._coeff(t)
+            out = JaxArray(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa)
+            )
         else:
             out = zeros_jaxdia(self.shape[1], 1)
         for data, coeff in self.sparse_part:
@@ -195,4 +256,26 @@ class JaxQobjEvo(eqx.Module):
         object.__setattr__(out, "sparse_part", sparse_part)
         object.__setattr__(out, "batched_data", self.batched_data)
         object.__setattr__(out, "dims", self.dims)
+        object.__setattr__(out, "shape", self.shape)
         return out
+
+    def flatten(self):
+        return (
+            (self.batched_data, self.coeffs, self.sparse_part),
+            {"dims": self.dims, "shape": self.shape}
+        )
+
+    @classmethod
+    def unflatten(cls, aux_data, children):
+        out = cls.__new__(cls)
+        out.batched_data = children[0]
+        out.coeffs = children[1]
+        out.sparse_part = children[2]
+        out.dims = aux_data["dims"]
+        out.shape = aux_data["shape"]
+        return out
+
+
+jax.tree_util.register_pytree_node(
+    JaxQobjEvo, JaxQobjEvo.flatten, JaxQobjEvo.unflatten
+)
