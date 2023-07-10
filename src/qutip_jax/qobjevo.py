@@ -4,10 +4,14 @@ from jax import jit
 import jax.numpy as jnp
 import numpy as np
 from .jaxarray import JaxArray
+from .jaxdia import JaxDia
 from .binops import matmul_jaxdia_jaxarray_jaxarray
-from .create import zeros_jaxdia
-from qutip import Qobj, Coefficient
+from .create import zeros_jaxdia, zeros_jaxarray
 from qutip.core.coefficient import coefficient_builders
+from qutip.core.cy.coefficient import Coefficient
+from qutip import Qobj
+from qutip.core.data.matmul import matmul
+from functools import partial
 
 
 __all__ = []
@@ -232,17 +236,33 @@ class JaxQobjEvo:
             out = out + data * coeff(t)
         return out
 
-    @jit
-    def matmul_data(self, t, y):
-        if self.batched_data is not None:
+    @partial(jax.jit, donate_argnums=(3,))
+    def matmul_data(self, t, y, out=None):
+        if out is None and self.batched_data is not None:
             coeffs = self._coeff(t)
-            out = JaxArray(
-                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa)
+            out = JaxArray._fast_constructor(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa),
+                y.shape
             )
-        else:
-            out = zeros_jaxdia(self.shape[1], 1)
+        elif type(out) is JaxArray and self.batched_data is not None:
+            coeffs = self._coeff(t)
+            out = JaxArray._fast_constructor(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa) + out._jxa,
+                y.shape
+            )
+        elif self.batched_data is not None:
+            out = JaxArray._fast_constructor(
+                jnp.dot(jnp.dot(self.batched_data, coeffs), y._jxa),
+                y.shape
+            ) + out
+        elif out is None:
+            out = zeros_jaxarray(*y.shape)
+
         for data, coeff in self.sparse_part:
-            out = matmul_jaxdia_jaxarray_jaxarray(data, y, coeff(t), out)
+            if isinstance(y, JaxArray):
+                out = matmul_jaxdia_jaxarray_jaxarray(data, y, coeff(t), out)
+            else:
+                out = out + matmul(data, y, coeff(t))
         return out
 
     def arguments(self, args):

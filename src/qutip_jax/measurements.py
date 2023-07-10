@@ -168,7 +168,6 @@ def expect_jaxdia_jaxarray(op, state):
     out = 0
     if state.shape[0] == state.shape[1]:
         for offset, data in zip(op.offsets, op.data):
-            print(offset, op.shape)
             if offset >= 0:
                 out += jnp.sum(
                     data[offset:]

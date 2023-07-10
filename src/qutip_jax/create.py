@@ -22,6 +22,7 @@ __all__ = [
 ]
 
 
+@partial(jit, static_argnames=["rows", "cols"])
 def zeros_jaxarray(rows, cols):
     """
     Creates a matrix representation of zeros with the given dimensions.
@@ -31,7 +32,9 @@ def zeros_jaxarray(rows, cols):
         rows, cols : int
             The number of rows and columns in the output matrix.
     """
-    return JaxArray(jnp.zeros((rows, cols), dtype=jnp.complex128))
+    return JaxArray._fast_constructor(
+        jnp.zeros((rows, cols), dtype=jnp.complex128), (rows, cols)
+    )
 
 
 @partial(jit, static_argnames=["rows", "cols"])

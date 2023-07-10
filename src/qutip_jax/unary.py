@@ -60,7 +60,6 @@ def conj_jaxarray(matrix):
 @jit
 def conj_jaxdia(matrix):
     """Element-wise conjugation of a matrix."""
-    print(matrix.shape, matrix.offsets)
     return JaxDia._fast_constructor(
         matrix.offsets, matrix.data.conj(), matrix.shape
     )
