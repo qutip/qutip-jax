@@ -1,14 +1,14 @@
 .. _qtjax_intro:
 
 ************
-Jax in Qutip
+Jax in QuTiP
 ************
 
 
 .. _basic_usage:
 
-Basic Usages
-============
+Basic usage
+===========
 
 In orther to enable qutip-jax, it is just necessary to import the module. Once imported, ``qutip.Qobj``'s data can be represented as a JAX array. Furthermore, diffrax ODE will be available as an option for qutip's solvers (``sesolve``, ``mcsolve``, etc.).
 None of the functions in the module are expected to be used directly. Instead, they will be used by qutip, allowing the user to interact only with the already familiar QuTiP interface.

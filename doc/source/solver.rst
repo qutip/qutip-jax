@@ -1,7 +1,7 @@
 .. _qtjax_solver:
 
 *****************************
-Jax Backend in Qutip's Solver
+Jax Backend in QuTiP's Solver
 *****************************
 
 

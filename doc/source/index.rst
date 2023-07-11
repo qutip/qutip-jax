@@ -8,8 +8,6 @@
 qutip-jax |version|: Jax-backend for QuTiP 
 *********************************************************
 
-qutip-jax: JAX backend for QuTiP
-==============================================
 
 .. toctree::
     :maxdepth: 2
