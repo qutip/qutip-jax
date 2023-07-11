@@ -194,9 +194,9 @@ class JaxQobjEvo:
 
         dense_part = []
         for qobj, coeff in zip(qobjs, coeffs):
-            if type(qobj.data) in ["JaxDia"]:
+            if type(qobj.data) in [JaxDia]:
                 # TODO: CSR also?
-                self.sparse_part.append(qobj.data, coeff)
+                self.sparse_part.append((qobj.data, coeff))
             else:
                 dense_part.append((qobj, coeff))
 
