@@ -39,7 +39,7 @@ def _check_imported_local_package():
 
 def _version():
     _check_imported_local_package()
-    filename = pathlib.Path(__file__).absolute().parents[1] / 'VERSION'
+    filename = pathlib.Path(__file__).absolute().parents[2] / 'VERSION'
     with open(filename, "r") as file:
         version = file.read().strip()
     # Canonicalise the version format, just in case.
