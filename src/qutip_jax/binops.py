@@ -1,6 +1,6 @@
 import qutip
 from .jaxarray import JaxArray
-from .jaxdia import JaxDia, clean_diag
+from .jaxdia import JaxDia, clean_dia
 import jax.numpy as jnp
 import jax
 from jax import vmap, jit
@@ -344,8 +344,8 @@ def _multiply_outer(left, right):
 def kron_jaxdia(left, right):
     nrows = left.shape[0] * right.shape[0]
     ncols = left.shape[1] * right.shape[1]
-    left = clean_diag(left)
-    right = clean_diag(right)
+    left = clean_dia(left)
+    right = clean_dia(right)
     out = {}
 
     if right.shape[0] == right.shape[1]:
@@ -398,7 +398,7 @@ def kron_jaxdia(left, right):
     out = JaxDia(
         (tuple(out.keys()), jnp.array(list(out.values()))), shape=(nrows, ncols)
     )
-    out = clean_diag(out)
+    out = clean_dia(out)
     return out
 
 

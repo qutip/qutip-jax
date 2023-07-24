@@ -107,7 +107,7 @@ tree_util.register_pytree_node(
 
 
 @jit
-def clean_diag(matrix):
+def clean_dia(matrix):
     idx = np.argsort(matrix.offsets)
     new_offset = tuple(matrix.offsets[i] for i in idx)
     new_data = matrix.data[idx, :]
@@ -122,7 +122,7 @@ def clean_diag(matrix):
 
 
 def tidyup_jaxdia(matrix, tol, _=None):
-    matrix = clean_diag(matrix)
+    matrix = clean_dia(matrix)
     new_offset = []
     new_data = []
     for offset, data in zip(matrix.offsets, matrix.data):
@@ -170,7 +170,7 @@ def extract_jaxdia(matrix, format=None, _=None):
     elif format in ["tuple"]:
         out = (matrix.offsets, matrix.data)
     else:
-        raise ValueError("Diag can only be extracted to 'dict' or 'tuple'")
+        raise ValueError("Dia can only be extracted to 'dict' or 'tuple'")
     return out
 
 

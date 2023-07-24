@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 from .jaxarray import JaxArray
-from .jaxdia import JaxDia, clean_diag
+from .jaxdia import JaxDia, clean_dia
 import qutip
 from jax import jit
 from functools import partial
@@ -96,7 +96,7 @@ def iszero_jaxdia(matrix, tol=None):
     if matrix.num_diags == 0:
         return True
     # We must ensure the values outside the dims are not included
-    return jnp.allclose(clean_diag(matrix).data, 0.0, atol=tol)
+    return jnp.allclose(clean_dia(matrix).data, 0.0, atol=tol)
 
 
 qutip.data.isherm.add_specialisations(

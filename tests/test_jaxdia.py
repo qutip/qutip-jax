@@ -2,7 +2,7 @@ import jax.numpy as jnp
 from jax import jit
 import numpy as np
 import pytest
-from qutip_jax.jaxdia import JaxDia, tidyup_jaxdia, clean_diag
+from qutip_jax.jaxdia import JaxDia, tidyup_jaxdia, clean_dia
 import qutip
 
 
@@ -44,6 +44,6 @@ def test_tidyup():
 
 
 def test_clean():
-    data = clean_diag(JaxDia(((0, -1), jnp.ones((2, 3))), shape=(3, 3)))
+    data = clean_dia(JaxDia(((0, -1), jnp.ones((2, 3))), shape=(3, 3)))
     assert data.offsets == (-1, 0)
     assert data.data[0, 2] == 0.0
