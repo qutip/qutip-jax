@@ -1,4 +1,7 @@
-import diffrax
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", category=UserWarning)
+    import diffrax
 from qutip.solver.integrator import Integrator
 import jax
 import jax.numpy as jnp
