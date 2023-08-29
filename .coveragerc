@@ -1,5 +1,5 @@
 [run]
-source = src
+source = src/qutip_jax
 
 [report]
 exclude_lines =
