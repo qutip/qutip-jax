@@ -42,6 +42,7 @@ def test_convert_explicit_jaxarray(to_, back_):
     [
         pytest.param(qutip.data.Dense, id="to Dense type"),
         pytest.param(qutip.data.CSR, id="to CSR type"),
+        pytest.param(qutip.data.Dia, id="to Dia type"),
         pytest.param(JaxArray, id="to JaxArray type"),
     ],
 )

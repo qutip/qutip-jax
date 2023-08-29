@@ -13,7 +13,10 @@ __all__ = [
     "dense_from_jaxarray",
     "jaxdia_from_jaxarray",
     "jaxarray_from_jaxdia",
+    "jaxdia_from_dia",
+    "dia_from_jaxdia",
 ]
+
 
 # Conversion function
 def jaxarray_from_dense(dense):
@@ -22,6 +25,15 @@ def jaxarray_from_dense(dense):
 
 def dense_from_jaxarray(jax_array):
     return qutip.data.Dense(jax_array.to_array(), copy=False)
+
+
+def jaxdia_from_dia(dia_mat):
+    as_scipy = dia_mat.as_scipy()
+    return JaxDia((as_scipy.data, as_scipy.offsets), shape=dia_mat.shape)
+
+
+def dia_from_jaxdia(jaxdiag):
+    return qutip.data.Dia((jaxdiag.data, jaxdiag.offsets), shape=jaxdiag.shape)
 
 
 def jaxdia_from_jaxarray(jax_array):

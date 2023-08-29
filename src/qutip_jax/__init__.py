@@ -2,13 +2,7 @@ import qutip
 from .jaxarray import JaxArray
 from .jaxdia import JaxDia
 
-from .convert import (
-    is_jax_array,
-    jaxarray_from_dense,
-    dense_from_jaxarray,
-    jaxarray_from_jaxdia,
-    jaxdia_from_jaxarray,
-)
+from .convert import *
 from .version import version as __version__
 
 
@@ -19,6 +13,8 @@ qutip.data.to.add_conversions(
         (qutip.data.Dense, JaxArray, dense_from_jaxarray, 2),
         (JaxArray, JaxDia, jaxarray_from_jaxdia),
         (JaxDia, JaxArray, jaxdia_from_jaxarray),
+        (qutip.data.Dia, JaxDia, dia_from_jaxdia),
+        (JaxDia, qutip.data.Dia, jaxdia_from_dia),
     ]
 )
 
@@ -31,7 +27,7 @@ qutip.data.create.add_creators(
         (is_jax_array, JaxArray, 85),
     ]
 )
-
+del is_jax_array
 
 from .binops import *
 from .unary import *
