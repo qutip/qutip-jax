@@ -66,7 +66,7 @@ jobs:
         # to see if something hung.
         timeout-minutes: 60
         run: |
-          pytest --durations=0 --durations-min=1.0 --verbosity=1 --cov=qutip_jax --color=yes -W ignore::UserWarning:qutip
+          pytest --durations=0 --durations-min=1.0 --verbosity=1 --cov=qutip_jax --cov-report= --color=yes -W ignore::UserWarning:qutip
           # Above flags are:
           #  --durations=0 --durations-min=1.0
           #     at the end, show a list of all the tests that took longer than a
@@ -78,6 +78,9 @@ jobs:
           #     limit coverage reporting to code that's within the qutip_jax package
           #  --color=yes
           #     force coloured output in the terminal
+          #  --cov-report=
+          #     don't print the coverage report to the terminal---it just adds
+          #     cruft, and we're going to upload the .coverage file to Coveralls
           #  -W ignore::UserWarning:qutip
           #     Ignore matplotlib missing warnings
           # These flags are added to those in pyproject.toml.
