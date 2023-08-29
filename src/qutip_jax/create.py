@@ -247,7 +247,7 @@ def diag_jaxdia(diagonals, offsets=None, shape=None):
             out[offset] = out_data
 
     out = JaxDia(
-        (tuple(out.keys()), jnp.array(list(out.values()))),
+        (jnp.array(list(out.values())), tuple(out.keys()),),
         shape=(n_rows, n_cols),
         copy=False,
     )

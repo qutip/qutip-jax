@@ -112,7 +112,7 @@ def add_jaxdia(left, right, scale=None):
             else:
                 data.append(right.data[diag_right, :] * scale)
 
-    return JaxDia((tuple(offsets), jnp.array(data)), left.shape, False)
+    return JaxDia((jnp.array(data), tuple(offsets),), left.shape, False)
 
 
 @jit
@@ -396,7 +396,8 @@ def kron_jaxdia(left, right):
                         out[out_diag] = data
 
     out = JaxDia(
-        (tuple(out.keys()), jnp.array(list(out.values()))), shape=(nrows, ncols)
+        (jnp.array(list(out.values())), tuple(out.keys())),
+        shape=(nrows, ncols)
     )
     out = clean_dia(out)
     return out

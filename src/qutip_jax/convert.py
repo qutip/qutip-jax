@@ -51,7 +51,7 @@ def jaxdia_from_jaxarray(jax_array):
 
     offsets = tuple(data.keys())
     data = jnp.array(list(data.values()))
-    return JaxDia((offsets, data), shape=jax_array.shape, copy=False)
+    return JaxDia((data, offsets), shape=jax_array.shape, copy=False)
 
 
 @jax.jit

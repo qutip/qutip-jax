@@ -55,7 +55,7 @@ def test_convert_explicit_jaxarray(to_, back_):
 )
 def test_convert_explicit_jaxdia(to_, back_):
     """Test that it can convert to and from other types"""
-    arr = JaxDia(((0,), jnp.arange(3)), shape=(3, 3))
+    arr = JaxDia((jnp.arange(3), (0,)), shape=(3, 3))
     converted = qutip.data.to(to_, arr)
     assert isinstance(converted, to_)
     back = qutip.data.to[back_](converted)

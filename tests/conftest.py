@@ -17,4 +17,4 @@ def _random_dia(shape):
     offsets = tuple(offsets[: min(3, shape[0] + shape[1] - 1)])
     data_shape = len(offsets), shape[1]
     data = np.random.rand(*data_shape) + 1j * np.random.rand(*data_shape)
-    return qutip_jax.JaxDia((offsets, data), shape=shape)
+    return qutip_jax.JaxDia((data, offsets), shape=shape)

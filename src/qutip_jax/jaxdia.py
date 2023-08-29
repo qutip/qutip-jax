@@ -20,7 +20,7 @@ class JaxDia(Data):
     shape: tuple
 
     def __init__(self, arg, shape=None, copy=None):
-        offsets, data = arg
+        data, offsets = arg
         offsets = tuple(np.atleast_1d(offsets).astype(jnp.int64))
         data = jnp.atleast_2d(data).astype(jnp.complex128)
 
@@ -43,7 +43,7 @@ class JaxDia(Data):
         super().__init__(shape)
 
     def copy(self):
-        return self.__class__((self.offsets, self.data), self.shape, copy=True)
+        return self.__class__((self.data, self.offsets), self.shape, copy=True)
 
     def to_array(self):
         from .convert import jaxarray_from_jaxdia
