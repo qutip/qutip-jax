@@ -2,16 +2,11 @@
 # "checks" dialogue box - it looks like
 #     Tests / ubuntu-latest, python-3.9, defaults
 # or similar.
-name: Tests
+name: Weekly
 
 on:
-  push:
-    branches:
-      - master
-
-  pull_request:
-    branches:
-      - master
+  schedule:
+    - cron: "0 12 * * 0"  # Every Sunday at noon UTC
 
 defaults:
   run:
@@ -22,6 +17,7 @@ defaults:
     shell: bash -l {0}
 
 jobs:
+  if: github.repository == 'qutip/qutip-jax'
   cases:
     name: ${{ matrix.os }}, ${{ matrix.case-name }}
     runs-on: ${{ matrix.os }}
@@ -50,7 +46,6 @@ jobs:
         # relative to the git repository root as well.
         run: |
             python -mpip install -e .[full]
-            python -mpip install pytest-cov coveralls
 
       - name: Package information
         run: |
@@ -63,7 +58,7 @@ jobs:
         # to see if something hung.
         timeout-minutes: 60
         run: |
-          pytest --durations=0 --durations-min=1.0 --verbosity=1 --cov=qutip_jax --cov-report= --color=yes -W ignore::UserWarning:qutip
+          pytest --durations=0 --durations-min=1.0 --verbosity=1 --color=yes -W ignore::UserWarning:qutip
           # Above flags are:
           #  --durations=0 --durations-min=1.0
           #     at the end, show a list of all the tests that took longer than a
@@ -82,22 +77,26 @@ jobs:
           #     Ignore matplotlib missing warnings
           # These flags are added to those in pyproject.toml.
 
-      - name: Upload to Coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
-          COVERALLS_FLAG_NAME: ${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.case-name }}
-          COVERALLS_PARALLEL: true
-        run: coveralls --service=github
-
   finalise:
-    name: Finalise coverage reporting
+    name: Send Email on Failure
     needs: cases
+    if: failure()
     runs-on: ubuntu-latest
-    container: python:3-slim
-    steps:
-      - name: Finalise coverage reporting
-        env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
-        run: |
-          python -mpip install coveralls
-          coveralls --service=github --finish
+    uses: dawidd6/action-send-mail@v3
+      with:
+        # Required mail server address if not connection_url:
+        server_address: smtp-mail.outlook.com
+        server_port: 587
+        secure: true
+        # Optional (recommended) mail server username:
+        username: ${{ secrets.OUTLOOK_ADR }}
+        # Optional (recommended) mail server password:
+        password: ${{ secrets.OUTLOOK_PWD }}
+        # Required mail subject:
+        subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
+        # Required recipients' addresses:
+        to: qutip-admin@googlegroups.com
+        # Required sender full name (address can be skipped):
+        from: QuTiP-Jax
+        # Optional plain body:
+        body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
