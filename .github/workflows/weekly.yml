@@ -23,8 +23,8 @@ defaults:
     shell: bash -l {0}
 
 jobs:
-  if: github.repository == 'qutip/qutip-jax'
   cases:
+    if: github.repository == 'qutip/qutip-jax'
     name: ${{ matrix.os }}, ${{ matrix.case-name }}
     runs-on: ${{ matrix.os }}
     strategy:
