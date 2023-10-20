@@ -104,20 +104,20 @@ jobs:
         if: ${{ steps.dest_email.outputs.destination }} != ""
 
         uses: dawidd6/action-send-mail@v3
-          with:
-            # Required mail server address if not connection_url:
-            server_address: smtp-mail.outlook.com
-            server_port: 587
-            secure: true
-            # Optional (recommended) mail server username:
-            username: ${{ secrets.OUTLOOK_ADR }}
-            # Optional (recommended) mail server password:
-            password: ${{ secrets.OUTLOOK_PWD }}
-            # Required mail subject:
-            subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
-            # Required recipients' addresses:
-            to: ${{ steps.dest_email.outputs.destination }}
-            # Required sender full name (address can be skipped):
-            from: QuTiP-Jax
-            # Optional plain body:
-            body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
+        with:
+          # Required mail server address if not connection_url:
+          server_address: smtp-mail.outlook.com
+          server_port: 587
+          secure: true
+          # Optional (recommended) mail server username:
+          username: ${{ secrets.OUTLOOK_ADR }}
+          # Optional (recommended) mail server password:
+          password: ${{ secrets.OUTLOOK_PWD }}
+          # Required mail subject:
+          subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
+          # Required recipients' addresses:
+          to: ${{ steps.dest_email.outputs.destination }}
+          # Required sender full name (address can be skipped):
+          from: QuTiP-Jax
+          # Optional plain body:
+          body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
