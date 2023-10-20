@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: "0 12 * * 0"  # Every Sunday at noon UTC
 
+  workflow_dispatch:
+    inputs:
+      email:
+        description: "Destination email on failure (optional):"
+        default: "None"
+
 defaults:
   run:
     # The slightly odd shell call is to force bash to read .bashrc, which is
@@ -70,33 +76,48 @@ jobs:
           #     limit coverage reporting to code that's within the qutip_jax package
           #  --color=yes
           #     force coloured output in the terminal
-          #  --cov-report=
-          #     don't print the coverage report to the terminal---it just adds
-          #     cruft, and we're going to upload the .coverage file to Coveralls
           #  -W ignore::UserWarning:qutip
           #     Ignore matplotlib missing warnings
           # These flags are added to those in pyproject.toml.
 
   finalise:
-    name: Send Email on Failure
     needs: cases
     if: failure()
     runs-on: ubuntu-latest
-    uses: dawidd6/action-send-mail@v3
-      with:
-        # Required mail server address if not connection_url:
-        server_address: smtp-mail.outlook.com
-        server_port: 587
-        secure: true
-        # Optional (recommended) mail server username:
-        username: ${{ secrets.OUTLOOK_ADR }}
-        # Optional (recommended) mail server password:
-        password: ${{ secrets.OUTLOOK_PWD }}
-        # Required mail subject:
-        subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
-        # Required recipients' addresses:
-        to: qutip-admin@googlegroups.com
-        # Required sender full name (address can be skipped):
-        from: QuTiP-Jax
-        # Optional plain body:
-        body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
+    steps:
+      - name: Check destination
+        id: dest_email
+        run: |
+          if [[ -z "${{ inputs.email }}" ]]; then
+            # Trigerred by schedule
+            echo "destination='qutip-admin@googlegroups.com' " >> $GITHUB_OUTPUT;
+          elif [[ "${{ inputs.email }}" != "None" ]]; then
+            # Trigerred manually with email entered
+            echo "destination=${{ inputs.email }}" >> $GITHUB_OUTPUT;
+          else
+            # Trigerred manually without email entered
+            echo "destination=" >> $GITHUB_OUTPUT;
+          fi
+
+      - name: Send Email on Failure
+        # No email sent if trigerred manually and no address is provided.
+        if: ${{ steps.dest_email.outputs.destination }} != ""
+
+        uses: dawidd6/action-send-mail@v3
+          with:
+            # Required mail server address if not connection_url:
+            server_address: smtp-mail.outlook.com
+            server_port: 587
+            secure: true
+            # Optional (recommended) mail server username:
+            username: ${{ secrets.OUTLOOK_ADR }}
+            # Optional (recommended) mail server password:
+            password: ${{ secrets.OUTLOOK_PWD }}
+            # Required mail subject:
+            subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
+            # Required recipients' addresses:
+            to: ${{ steps.dest_email.outputs.destination }}
+            # Required sender full name (address can be skipped):
+            from: QuTiP-Jax
+            # Optional plain body:
+            body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
