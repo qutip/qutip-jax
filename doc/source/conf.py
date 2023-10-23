@@ -6,40 +6,13 @@ import packaging.version
 
 needs_sphinx = '4.0'
 
-project = 'qutip-jax'
+project = 'qutip_jax'
 author = 'QuTiP developers'
 copyright = '2022 and later, ' + author
 
 
-def _check_imported_local_package():
-    """
-    Warn if the importable version of the package is not in the same repository
-    as this documentation.  The imported version is expected to have been made
-    available by ::
-
-        pip install -e .
-
-    or similar; if someone is trying to use a release version to build the docs
-    from a local checkout, the versions likely will not match and they'll end
-    up with a chimera.
-    """
-    import qutip_jax
-    repo_dir = pathlib.Path(__file__).absolute().parents[1]
-    expected_import_dir = repo_dir / 'src' / 'qutip_jax'
-    imported_dir = pathlib.Path(qutip_jax.__file__).parent
-    if expected_import_dir != imported_dir:
-        warnings.warn(
-            "The version of qutip_jax available on the path is not "
-            "from the same location as the documentation.  This may result in "
-            "the documentation containing text from different sources."
-            f"\nDocumentation source   : {str(repo_dir)}"
-            f"\nImported package source: {str(imported_dir)}"
-        )
-
-
 def _version():
-    _check_imported_local_package()
-    filename = pathlib.Path(__file__).absolute().parents[2] / 'VERSION'
+    filename = pathlib.Path(__file__).absolute().parents[3] / 'VERSION'
     with open(filename, "r") as file:
         version = file.read().strip()
     # Canonicalise the version format, just in case.
@@ -48,13 +21,19 @@ def _version():
 
 release = _version()
 
-extensions = [
-    'sphinx.ext.mathjax',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-]
+extensions = ['sphinx.ext.mathjax',
+              'matplotlib.sphinxext.plot_directive',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.todo',
+              'sphinx.ext.doctest',
+              'sphinx.ext.autosummary',
+              'numpydoc',
+              'sphinx.ext.extlinks',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.napoleon',
+              'sphinx_gallery.gen_gallery',
+              'sphinxcontrib.bibtex']
 
 # Patterns to exclude when looking for sources in the build.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -76,3 +55,23 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'cython': ('https://cython.readthedocs.io/en/latest/', None),
 }
+
+# -- Options for numpydoc ---------------------------------------
+
+numpydoc_show_class_members = False
+napoleon_numpy_docstring = True
+napoleon_use_admonition_for_notes = True
+
+# -- Options for api doc ---------------------------------------
+# autosummary_generate can be turned on to automatically generate files
+# in the apidoc folder. This is particularly useful for modules with
+# lots of functions/classes like qutip_qip.operations. However, pay
+# attention that some api docs files are adjusted manually for better illustration
+# and should not be overwritten.
+autosummary_generate = False
+autosummary_imported_members = True
+
+# -- Options for biblatex ---------------------------------------
+
+bibtex_bibfiles = ['references.bib']
+bibtex_default_style = 'unsrt'
