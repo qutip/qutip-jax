@@ -15,8 +15,6 @@ sphinxcontrib-serializinghtml==1.1.5
 readthedocs-sphinx-search==0.1.2
 numpydoc==1.4.0
 matplotlib==3.7.1
-docutils==0.17.1
-pyqir-generator==0.6.2
-pyqir-parser==0.6.2
+docutils==0.18.1
 jax
 jaxlib
