@@ -21,19 +21,21 @@ def _version():
 
 release = _version()
 
-extensions = ['sphinx.ext.mathjax',
-              'matplotlib.sphinxext.plot_directive',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.todo',
-              'sphinx.ext.doctest',
-              'sphinx.ext.autosummary',
-              'numpydoc',
-              'sphinx.ext.extlinks',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.ifconfig',
-              'sphinx.ext.napoleon',
-              # 'sphinx_gallery.gen_gallery',
-              'sphinxcontrib.bibtex']
+extensions = [
+    'sphinx.ext.mathjax',
+    'matplotlib.sphinxext.plot_directive',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
+    'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
+    'numpydoc',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.napoleon',
+    # 'sphinx_gallery.gen_gallery',
+    # 'sphinxcontrib.bibtex',
+]
 
 # Patterns to exclude when looking for sources in the build.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -73,5 +75,5 @@ autosummary_imported_members = True
 
 # -- Options for biblatex ---------------------------------------
 
-bibtex_bibfiles = ['references.bib']
-bibtex_default_style = 'unsrt'
+# bibtex_bibfiles = ['references.bib']
+# bibtex_default_style = 'unsrt'
