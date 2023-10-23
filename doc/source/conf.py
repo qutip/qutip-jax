@@ -12,7 +12,7 @@ copyright = '2022 and later, ' + author
 
 
 def _version():
-    filename = pathlib.Path(__file__).absolute().parents[3] / 'VERSION'
+    filename = pathlib.Path(__file__).absolute().parents[2] / 'VERSION'
     with open(filename, "r") as file:
         version = file.read().strip()
     # Canonicalise the version format, just in case.
@@ -32,7 +32,7 @@ extensions = ['sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinx.ext.ifconfig',
               'sphinx.ext.napoleon',
-              'sphinx_gallery.gen_gallery',
+              # 'sphinx_gallery.gen_gallery',
               'sphinxcontrib.bibtex']
 
 # Patterns to exclude when looking for sources in the build.
