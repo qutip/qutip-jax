@@ -114,10 +114,10 @@ jobs:
           # Optional (recommended) mail server password:
           password: ${{ secrets.OUTLOOK_PWD }}
           # Required mail subject:
-          subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
+          subject: Qutip-jax weekly test failed!
           # Required recipients' addresses:
           to: ${{ steps.dest_email.outputs.destination }}
           # Required sender full name (address can be skipped):
           from: QuTiP-Jax
           # Optional plain body:
-          body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
+          body: Qutip-jax weekly test failed!
