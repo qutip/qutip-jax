@@ -1,4 +1,5 @@
 import diffrax
+import warnings
 from qutip.solver.integrator import Integrator
 import jax
 import jax.numpy as jnp
@@ -64,16 +65,22 @@ class DiffraxIntegrator(Integrator):
         return self.t, JaxArray(_float2cplx(self.state))
 
     def integrate(self, t, copy=False, **kwargs):
-        sol = diffrax.diffeqsolve(
-            self.ODEsystem,
-            t0=self.t,
-            t1=t,
-            y0=self.state,
-            saveat=diffrax.SaveAt(t1=True, solver_state=True),
-            solver_state=self.solver_state,
-            args=(self.system, kwargs),
-            **self._options,
-        )
+        with warnings.catch_warnings():
+            # Diffrax added partial support for complex number, but raise a
+            # warning when it find a complex anywhere in the tree.
+            warnings.filterwarnings("ignore",
+                message="Complex dtype support is work in progress,"
+            )
+            sol = diffrax.diffeqsolve(
+                self.ODEsystem,
+                t0=self.t,
+                t1=t,
+                y0=self.state,
+                saveat=diffrax.SaveAt(t1=True, solver_state=True),
+                solver_state=self.solver_state,
+                args=(self.system, kwargs),
+                **self._options,
+            )
         self.t = t
         self.state = sol.ys[0, :]
         self.solver_state = sol.solver_state
