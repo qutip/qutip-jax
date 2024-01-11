@@ -64,7 +64,7 @@ jobs:
         # to see if something hung.
         timeout-minutes: 60
         run: |
-          pytest --durations=0 --durations-min=1.0 --verbosity=1 --color=yes -W ignore::UserWarning:qutip
+          pytest --durations=0 --durations-min=1.0 --verbosity=1 --color=yes -W ignore::UserWarning:qutip -W "ignore:Complex dtype:UserWarning"
           # Above flags are:
           #  --durations=0 --durations-min=1.0
           #     at the end, show a list of all the tests that took longer than a
@@ -108,7 +108,7 @@ jobs:
           # Required mail server address if not connection_url:
           server_address: smtp-mail.outlook.com
           server_port: 587
-          secure: true
+          secure: False
           # Optional (recommended) mail server username:
           username: ${{ secrets.OUTLOOK_ADR }}
           # Optional (recommended) mail server password:
