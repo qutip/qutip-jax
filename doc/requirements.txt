@@ -12,7 +12,7 @@ sphinxcontrib-htmlhelp==2.0.1
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
-readthedocs-sphinx-search==0.1.2
+readthedocs-sphinx-search==0.3.2
 numpydoc==1.4.0
 matplotlib==3.7.1
 docutils==0.18.1
