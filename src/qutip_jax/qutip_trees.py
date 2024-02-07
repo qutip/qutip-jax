@@ -9,9 +9,7 @@ __all__ = []
 def qobj_tree_flatten(qobj):
     children = (qobj.to("jax").data,)
     aux_data = {
-        "dims": qobj.dims,
-        "type": qobj.type,
-        "superrep": qobj.superrep,
+        "_dims": qobj._dims,
         # Attribute that depend on the data are not safe to be set.
         "_isherm": None,
         "_isunitary": None,

@@ -1,6 +1,5 @@
 import jax.numpy as jnp
-from jax import tree_util
-from jax.config import config
+from jax import tree_util, config
 import numbers
 import numpy as np
 
