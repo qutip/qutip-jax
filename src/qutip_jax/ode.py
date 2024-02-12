@@ -9,7 +9,7 @@ import numpy as np
 from qutip_jax import JaxArray
 from qutip_jax.qobjevo import JaxQobjEvo
 
-__all__ = []
+__all__ = ["DiffraxIntegrator"]
 
 
 @jax.jit

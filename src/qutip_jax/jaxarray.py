@@ -1,6 +1,5 @@
 import jax.numpy as jnp
-from jax import tree_util, jit
-from jax.config import config
+from jax import tree_util, config, jit
 import numbers
 import numpy as np
 from functools import partial

@@ -3,6 +3,8 @@ from .jaxarray import JaxArray
 from jax import jit
 import numpy as np
 
+__all__ = []
+
 
 def indices_jaxarray(matrix, row_perm=None, col_perm=None):
     if row_perm is None and col_perm is None:
