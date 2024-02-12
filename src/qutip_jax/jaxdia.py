@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import numpy as np
-from jax import tree_util, jit
-from jax.config import config
+from jax import tree_util, jit, config
 from qutip.core.data.extract import extract
 import qutip.core.data as _data
 import numpy as np
