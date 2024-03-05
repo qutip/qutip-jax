@@ -74,7 +74,7 @@ def mul_jaxarray(matrix, value):
     # We don't want to check values type in case jax pass a tracer etc.
     # But we want to ensure the output is a matrix, thus don't use the
     # fast constructor.
-    return JaxArray(matrix._jxa * value)
+    return JaxArray._fast_constructor(matrix._jxa * value, shape=matrix.shape)
 
 
 def matmul_jaxarray(left, right, scale=1, out=None):
@@ -119,7 +119,7 @@ def kron_jaxarray(left, right):
     Compute the Kronecker product of two matrices.  This is used to represent
     quantum tensor products of vector spaces.
     """
-    return JaxArray(jnp.kron(left._jxa, right._jxa))
+    return JaxArray._fast_constructor(jnp.kron(left._jxa, right._jxa))
 
 
 def pow_jaxarray(matrix, n):
@@ -138,7 +138,7 @@ def pow_jaxarray(matrix, n):
     """
     if matrix.shape[0] != matrix.shape[1]:
         raise ValueError("matrix power only works with square matrices")
-    return JaxArray(jnp.linalg.matrix_power(matrix._jxa, n))
+    return JaxArray._fast_constructor(jnp.linalg.matrix_power(matrix._jxa, n))
 
 
 qutip.data.add.add_specialisations(

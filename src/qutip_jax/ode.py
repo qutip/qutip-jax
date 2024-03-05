@@ -14,12 +14,16 @@ __all__ = ["DiffraxIntegrator"]
 
 @jax.jit
 def _cplx2float(arr):
-    return jnp.stack([arr.real, arr.imag])
+    if jnp.iscomplexobj(arr):
+        return jnp.stack([arr.real, arr.imag])
+    return arr
 
 
 @jax.jit
 def _float2cplx(arr):
-    return arr[0] + 1j * arr[1]
+    if arr.ndim == 3:
+        return arr[0] + 1j * arr[1]
+    return arr
 
 
 class DiffraxIntegrator(Integrator):
@@ -49,7 +53,7 @@ class DiffraxIntegrator(Integrator):
     def dstate(t, y, args):
         state = _float2cplx(y)
         H, kwargs = args
-        d_state = H.matmul_data(t, JaxArray(state), **kwargs)
+        d_state = H.matmul_data(t, JaxArray._fast_constructor(state), **kwargs)
         return _cplx2float(d_state._jxa)
 
     def set_state(self, t, state0):
@@ -61,7 +65,7 @@ class DiffraxIntegrator(Integrator):
         self._is_set = True
 
     def get_state(self, copy=False):
-        return self.t, JaxArray(_float2cplx(self.state))
+        return self.t, JaxArray._fast_constructor(_float2cplx(self.state))
 
     def integrate(self, t, copy=False, **kwargs):
         sol = diffrax.diffeqsolve(

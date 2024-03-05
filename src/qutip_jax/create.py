@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-def zeros_jaxarray(rows, cols):
+def zeros_jaxarray(rows, cols, *, dtype=jnp.complex128):
     """
     Creates a matrix representation of zeros with the given dimensions.
 
@@ -25,10 +25,10 @@ def zeros_jaxarray(rows, cols):
         rows, cols : int
             The number of rows and columns in the output matrix.
     """
-    return JaxArray(jnp.zeros((rows, cols), dtype=jnp.complex128))
+    return JaxArray._fast_constructor(jnp.zeros((rows, cols), dtype=dtype))
 
 
-def identity_jaxarray(dimensions, scale=None):
+def identity_jaxarray(dimensions, scale=None, *, dtype=jnp.complex128):
     """
     Creates a square identity matrix of the given dimension.
 
@@ -43,11 +43,11 @@ def identity_jaxarray(dimensions, scale=None):
         The element which should be placed on the diagonal.
     """
     if scale is None:
-        return JaxArray(jnp.eye(dimensions, dtype=jnp.complex128))
-    return JaxArray(jnp.eye(dimensions, dtype=jnp.complex128) * scale)
+        return JaxArray._fast_constructor(jnp.eye(dimensions, dtype=dtype))
+    return JaxArray._fast_constructor(jnp.eye(dimensions, dtype=dtype) * scale)
 
 
-def diag_jaxarray(diagonals, offsets=None, shape=None):
+def diag_jaxarray(diagonals, offsets=None, shape=None, *, dtype=jnp.complex128):
     """
     Constructs a matrix from diagonals and their offsets.
 
@@ -108,10 +108,10 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
 
     if n_rows == n_cols:
         # jax diag only create square matrix
-        out = jnp.zeros((n_rows, n_cols), dtype=jnp.complex128)
+        out = jnp.zeros((n_rows, n_cols), dtype=dtype)
         for offset, diag in zip(offsets, diagonals):
             out += jnp.diag(jnp.array(diag), offset)
-        out = JaxArray(out)
+        out = JaxArray._fast_constructor(out)
     else:
         out = jax_from_dense(
             qutip.core.data.dense.diags(diagonals, offsets, shape)
@@ -120,7 +120,7 @@ def diag_jaxarray(diagonals, offsets=None, shape=None):
     return out
 
 
-def one_element_jaxarray(shape, position, value=None):
+def one_element_jaxarray(shape, position, value=None, *, dtype=jnp.complex128):
     """
     Creates a matrix with only one nonzero element.
 
@@ -141,8 +141,8 @@ def one_element_jaxarray(shape, position, value=None):
         )
     if value is None:
         value = 1.0
-    out = jnp.zeros(shape, dtype=jnp.complex128)
-    return JaxArray(out.at[position].set(value))
+    out = jnp.zeros(shape, dtype=dtype)
+    return JaxArray._fast_constructor(out.at[position].set(value))
 
 
 qutip.data.zeros.add_specialisations(

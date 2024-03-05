@@ -31,12 +31,12 @@ def neg_jaxarray(matrix):
 @jit
 def adjoint_jaxarray(matrix):
     """Hermitian adjoint (matrix conjugate transpose)."""
-    return JaxArray(matrix._jxa.T.conj())
+    return JaxArray._fast_constructor(matrix._jxa.T.conj())
 
 
 def transpose_jaxarray(matrix):
     """Transpose of a matrix."""
-    return JaxArray(matrix._jxa.T)
+    return JaxArray._fast_constructor(matrix._jxa.T)
 
 
 def conj_jaxarray(matrix):
@@ -79,7 +79,7 @@ def project_jaxarray(state):
         out = _project_bra(state._jxa)
     else:
         raise ValueError("state must be a ket or a bra.")
-    return JaxArray(out)
+    return JaxArray._fast_constructor(out)
 
 
 qutip.data.neg.add_specialisations(

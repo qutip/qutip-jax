@@ -16,8 +16,8 @@ class JaxArray(Data):
     _jxa: jnp.ndarray
     shape: tuple
 
-    def __init__(self, data, shape=None, copy=None):
-        jxa = jnp.array(data, dtype=jnp.complex128)
+    def __init__(self, data, shape=None, copy=None, *, dtype=jnp.complex128):
+        jxa = jnp.array(data, dtype=dtype)
 
         if shape is None:
             shape = data.shape
@@ -44,19 +44,19 @@ class JaxArray(Data):
         Data.__init__(self, shape)
 
     def copy(self):
-        return self.__class__(self._jxa, copy=True)
+        return JaxArray._fast_constructor(self._jxa.copy(), shape=self.shape)
 
     def to_array(self):
         return np.array(self._jxa)
 
     def conj(self):
-        return self.__class__(self._jxa.conj())
+        return JaxArray._fast_constructor(self._jxa.conj(), shape=self.shape)
 
     def transpose(self):
-        return self.__class__(self._jxa.T)
+        return JaxArray._fast_constructor(self._jxa.T, shape=self.shape[::-1])
 
     def adjoint(self):
-        return self.__class__(self._jxa.T.conj())
+        return JaxArray._fast_constructor(self._jxa.T.conj(), shape=self.shape[::-1])
 
     def trace(self):
         return jnp.trace(self._jxa)
@@ -80,8 +80,10 @@ class JaxArray(Data):
         return NotImplemented
 
     @classmethod
-    def _fast_constructor(cls, array, shape):
+    def _fast_constructor(cls, array, shape=None):
         out = cls.__new__(cls)
+        if shape is None:
+            shape = array.shape
         Data.__init__(out, shape)
         out._jxa = array
         return out
