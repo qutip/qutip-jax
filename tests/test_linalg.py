@@ -29,8 +29,12 @@ class TestSolve:
         test1 = _data.solve(A, b, method)
 
         assert test.shape == expected.shape
-        np.testing.assert_allclose(test.to_array(), expected, atol=1e-7, rtol=1e-7)
-        np.testing.assert_allclose(test1.to_array(), expected, atol=1e-7, rtol=1e-7)
+        np.testing.assert_allclose(
+            test.to_array(), expected, atol=1e-7, rtol=1e-7
+        )
+        np.testing.assert_allclose(
+            test1.to_array(), expected, atol=1e-7, rtol=1e-7
+        )
 
     def test_incorrect_shape_non_square(self):
         key = jax.random.PRNGKey(1)

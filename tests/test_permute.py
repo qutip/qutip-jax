@@ -1,7 +1,8 @@
 import qutip
 from qutip_jax import JaxArray
 
-class TestPermute():
+
+class TestPermute:
     def test_psi(self):
         A = qutip.basis(3, 0, dtype="jax")
         B = qutip.basis(5, 4, dtype="jax")
@@ -55,8 +56,10 @@ class TestPermute():
 
             rho_vec_bra = qutip.operator_to_vector(rho).dag()
             rho2_vec_bra = rho_vec_bra.permute([[1, 0, 2], [4, 3, 5]])
-            assert (rho2_vec_bra
-                    == qutip.operator_to_vector(qutip.tensor(B, A, C)).dag())
+            assert (
+                rho2_vec_bra
+                == qutip.operator_to_vector(qutip.tensor(B, A, C)).dag()
+            )
             assert isinstance(rho2_vec_bra.data, JaxArray)
 
     def test_super(self):

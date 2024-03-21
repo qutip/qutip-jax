@@ -1,5 +1,7 @@
 import jax.numpy as jnp
 from .jaxarray import JaxArray
+from .jaxdia import JaxDia
+from .binops import matmul_jaxdia_jaxarray_jaxarray
 import qutip
 from jax import jit
 from functools import partial
@@ -7,10 +9,13 @@ from functools import partial
 
 __all__ = [
     "expect_jaxarray",
+    "expect_jaxdia_jaxarray",
     "expect_super_jaxarray",
+    "expect_super_jaxdia_jaxarray",
     "inner_jaxarray",
     "inner_op_jaxarray",
     "trace_jaxarray",
+    "trace_jaxdia",
     "trace_oper_ket_jaxarray",
 ]
 
@@ -122,7 +127,10 @@ def expect_jaxarray(op, state):
     if (
         op._jxa.shape[0] != op._jxa.shape[1]
         or op._jxa.shape[1] != state._jxa.shape[0]
-        or not (state._jxa.shape[1] == 1 or state._jxa.shape[0] == state._jxa.shape[1])
+        or not (
+            state._jxa.shape[1] == 1
+            or state._jxa.shape[0] == state._jxa.shape[1]
+        )
     ):
         raise ValueError(
             f"incompatible matrix shapes {op.shape} and {state.shape}"
@@ -132,6 +140,80 @@ def expect_jaxarray(op, state):
     else:
         out = (state._jxa.T.conj() @ op._jxa @ state._jxa)[0, 0]
     return out
+
+
+@jit
+def expect_jaxdia_jaxarray(op, state):
+    """Computes the expectation value between op and state assuming they are
+    operators and state representations (density matrix/ket).
+
+    Parameters
+    ----------
+    op, state : :class:`qutip.Qobj`
+        Quantum objects from which the underlying JAX array can be accessed.
+
+    Returns
+    -------
+    out : jax.interpreters.xla.DeviceArray
+        The complex valued output.
+    """
+    if (
+        op.shape[0] != op.shape[1]
+        or op.shape[1] != state.shape[0]
+        or not (state.shape[1] == 1 or state.shape[0] == state.shape[1])
+    ):
+        raise ValueError(
+            f"incompatible matrix shapes {op.shape} and {state.shape}"
+        )
+    out = 0
+    if state.shape[0] == state.shape[1]:
+        for offset, data in zip(op.offsets, op.data):
+            if offset >= 0:
+                out += jnp.sum(
+                    data[offset:]
+                    * state._jxa.ravel()[
+                        offset * op.shape[0] :: (op.shape[0] + 1)
+                    ]
+                )
+            else:
+                out += jnp.sum(
+                    data[:offset]
+                    * state._jxa.ravel()[
+                        -offset : (offset * op.shape[0]) : (op.shape[0] + 1)
+                    ]
+                )
+    else:
+        out = (
+            state._jxa.T.conj()
+            @ matmul_jaxdia_jaxarray_jaxarray(op, state)._jxa
+        )[0, 0]
+    return out
+
+
+@jit
+def expect_super_jaxdia_jaxarray(op, state):
+    """Computes the expectation value between op and state assuming they
+    represent a superoperator and a state (vectorized).
+
+    Parameters
+    ----------
+    op, state : :class:`qutip.Qobj`
+        Quantum objects from which the underlying JAX array can be accessed.
+
+    Returns
+    -------
+    out : jax.interpreters.xla.DeviceArray
+        The complex valued output.
+    """
+    if state.shape[1] != 1:
+        raise ValueError("expected a column-stacked matrix")
+    if not (op.shape[0] == op.shape[1] and op.shape[1] == state.shape[0]):
+        raise ValueError(
+            f"incompatible matrix shapes {op.shape} and {state.shape}"
+        )
+
+    N = int(state._jxa.shape[0] ** 0.5)
+    return jnp.sum(matmul_jaxdia_jaxarray_jaxarray(op, state)._jxa[:: N + 1])
 
 
 @jit
@@ -174,6 +256,19 @@ def trace_jaxarray(matrix):
 
 
 @jit
+def trace_jaxdia(matrix):
+    """Compute the trace (sum of digaonal elements) of a square matrix."""
+    if matrix.shape[0] != matrix.shape[1]:
+        raise ValueError(
+            f"matrix {matrix.shape} is not a square matrix."
+        )
+    if 0 not in matrix.offsets:
+        return 0.0
+    idx = matrix.offsets.index(0)
+    return jnp.sum(matrix.data[idx])
+
+
+@jit
 def trace_oper_ket_jaxarray(matrix):
     """
     Compute the trace (sum of digaonal elements) of a stacked square matrix .
@@ -184,7 +279,6 @@ def trace_oper_ket_jaxarray(matrix):
             f"matrix {matrix.shape} is not a stacked square matrix."
         )
     return jnp.sum(matrix._jxa[:: N + 1])
-
 
 
 qutip.data.inner.add_specialisations(
@@ -204,6 +298,7 @@ qutip.data.inner_op.add_specialisations(
 qutip.data.expect.add_specialisations(
     [
         (JaxArray, JaxArray, expect_jaxarray),
+        (JaxDia, JaxArray, expect_jaxdia_jaxarray),
     ]
 )
 
@@ -211,6 +306,7 @@ qutip.data.expect.add_specialisations(
 qutip.data.expect_super.add_specialisations(
     [
         (JaxArray, JaxArray, expect_super_jaxarray),
+        (JaxDia, JaxArray, expect_super_jaxdia_jaxarray),
     ]
 )
 
@@ -218,6 +314,7 @@ qutip.data.expect_super.add_specialisations(
 qutip.data.trace.add_specialisations(
     [
         (JaxArray, trace_jaxarray),
+        (JaxDia, trace_jaxdia),
     ]
 )
 

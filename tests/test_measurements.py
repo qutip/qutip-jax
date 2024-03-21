@@ -8,21 +8,29 @@ from . import conftest
 
 
 testing._ALL_CASES = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
+    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
+    qutip_jax.JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
 }
 testing._RANDOM = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
+    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
+    qutip_jax.JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
 }
 
 
 class TestExpect(testing_expect.TestExpect):
     specialisations = [
         pytest.param(
+            qutip_jax.expect_jaxdia_jaxarray,
+            qutip_jax.JaxDia,
+            qutip_jax.JaxArray,
+            object,
+        ),
+        pytest.param(
             qutip_jax.expect_jaxarray,
             qutip_jax.JaxArray,
             qutip_jax.JaxArray,
             object,
-        )
+        ),
     ]
 
 
@@ -33,7 +41,13 @@ class TestExpectSuper(testing_expect.TestExpectSuper):
             qutip_jax.JaxArray,
             qutip_jax.JaxArray,
             object,
-        )
+        ),
+        pytest.param(
+            qutip_jax.expect_super_jaxdia_jaxarray,
+            qutip_jax.JaxDia,
+            qutip_jax.JaxArray,
+            object,
+        ),
     ]
 
 
