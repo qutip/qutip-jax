@@ -8,6 +8,10 @@ benefit from [auto differentiation](https://jax.readthedocs.io/en/latest/noteboo
 
 We are actively developing the plug-in and in the pre-alpha state. Therefore it is a work-in-progress and is not ready for use yet. You are welcome to contribute or take part in the development by posting issues, PRs and through discussions.
 
+Documentation
+-------------
+https://qutip-jax.readthedocs.io/en/latest/index.html
+
 Support
 -------
 
