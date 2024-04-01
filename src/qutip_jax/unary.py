@@ -1,14 +1,21 @@
 import qutip
 from .jaxarray import JaxArray
-from .binops import mul_jaxarray
+from .jaxdia import JaxDia
+from .binops import mul_jaxarray, mul_jaxdia
 import jax.scipy.linalg as linalg
 from jax import jit
+import numpy as np
+import jax.numpy as jnp
 
 __all__ = [
     "neg_jaxarray",
+    "neg_jaxdia",
     "adjoint_jaxarray",
+    "adjoint_jaxdia",
     "transpose_jaxarray",
+    "transpose_jaxdia",
     "conj_jaxarray",
+    "conj_jaxdia",
     "inv_jaxarray",
     "expm_jaxarray",
     "project_jaxarray",
@@ -29,6 +36,12 @@ def neg_jaxarray(matrix):
 
 
 @jit
+def neg_jaxdia(matrix):
+    """Unary element-wise negation of a matrix."""
+    return mul_jaxdia(matrix, -1)
+
+
+@jit
 def adjoint_jaxarray(matrix):
     """Hermitian adjoint (matrix conjugate transpose)."""
     return JaxArray(matrix._jxa.T.conj())
@@ -42,6 +55,50 @@ def transpose_jaxarray(matrix):
 def conj_jaxarray(matrix):
     """Element-wise conjugation of a matrix."""
     return JaxArray._fast_constructor(matrix._jxa.conj(), matrix.shape)
+
+
+@jit
+def conj_jaxdia(matrix):
+    """Element-wise conjugation of a matrix."""
+    return JaxDia._fast_constructor(
+        matrix.offsets, matrix.data.conj(), matrix.shape
+    )
+
+
+@jit
+def transpose_jaxdia(matrix):
+    """Transpose of a matrix."""
+    new_offset = tuple(-diag for diag in matrix.offsets[::-1])
+    new_data = jnp.zeros(
+        (matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128
+    )
+    for i, diag in enumerate(matrix.offsets):
+        old_start = max(0, diag)
+        old_end = min(matrix.shape[1], matrix.shape[0] + diag)
+        new_start = max(0, -diag)
+        new_end = min(matrix.shape[0], matrix.shape[1] - diag)
+        new_data = new_data.at[-i - 1, new_start:new_end].set(
+            matrix.data[i, old_start:old_end]
+        )
+    return JaxDia._fast_constructor(new_offset, new_data, matrix.shape[::-1])
+
+
+@jit
+def adjoint_jaxdia(matrix):
+    """Hermitian adjoint (matrix conjugate transpose)."""
+    new_offset = tuple(-diag for diag in matrix.offsets[::-1])
+    new_data = jnp.zeros(
+        (matrix.data.shape[0], matrix.shape[0]), dtype=jnp.complex128
+    )
+    for i, diag in enumerate(matrix.offsets):
+        old_start = max(0, diag)
+        old_end = min(matrix.shape[1], matrix.shape[0] + diag)
+        new_start = max(0, -diag)
+        new_end = min(matrix.shape[0], matrix.shape[1] - diag)
+        new_data = new_data.at[-i - 1, new_start:new_end].set(
+            matrix.data[i, old_start:old_end].conj()
+        )
+    return JaxDia._fast_constructor(new_offset, new_data, matrix.shape[::-1])
 
 
 def expm_jaxarray(matrix):
@@ -85,6 +142,7 @@ def project_jaxarray(state):
 qutip.data.neg.add_specialisations(
     [
         (JaxArray, JaxArray, neg_jaxarray),
+        (JaxDia, JaxDia, neg_jaxdia),
     ]
 )
 
@@ -92,6 +150,7 @@ qutip.data.neg.add_specialisations(
 qutip.data.adjoint.add_specialisations(
     [
         (JaxArray, JaxArray, adjoint_jaxarray),
+        (JaxDia, JaxDia, adjoint_jaxdia),
     ]
 )
 
@@ -99,6 +158,7 @@ qutip.data.adjoint.add_specialisations(
 qutip.data.transpose.add_specialisations(
     [
         (JaxArray, JaxArray, transpose_jaxarray),
+        (JaxDia, JaxDia, transpose_jaxdia),
     ]
 )
 
@@ -106,6 +166,7 @@ qutip.data.transpose.add_specialisations(
 qutip.data.conj.add_specialisations(
     [
         (JaxArray, JaxArray, conj_jaxarray),
+        (JaxDia, JaxDia, conj_jaxdia),
     ]
 )
 

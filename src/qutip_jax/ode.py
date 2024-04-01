@@ -22,6 +22,14 @@ def _float2cplx(arr):
     return arr[0] + 1j * arr[1]
 
 
+@jax.jit
+def dstate(t, y, args):
+    state = _float2cplx(y)
+    H, = args
+    d_state = H.matmul_data(t, JaxArray(state))
+    return _cplx2float(d_state._jxa)
+
+
 class DiffraxIntegrator(Integrator):
     method: str = "diffrax"
     supports_blackbox: bool = False  # No feedback support
@@ -38,19 +46,12 @@ class DiffraxIntegrator(Integrator):
         self._is_set = False  # get_state can be used and return a valid state.
         self._options = self.integrator_options.copy()
         self.options = options
-        self.ODEsystem = diffrax.ODETerm(self.dstate)
+        self.ODEsystem = diffrax.ODETerm(dstate)
         self.solver_state = None
         self.name = f"{self.method}: {self.options['solver']}"
 
     def _prepare(self):
         pass
-
-    @staticmethod
-    def dstate(t, y, args):
-        state = _float2cplx(y)
-        H, kwargs = args
-        d_state = H.matmul_data(t, JaxArray(state), **kwargs)
-        return _cplx2float(d_state._jxa)
 
     def set_state(self, t, state0):
         self.solver_state = None
@@ -64,6 +65,8 @@ class DiffraxIntegrator(Integrator):
         return self.t, JaxArray(_float2cplx(self.state))
 
     def integrate(self, t, copy=False, **kwargs):
+        if kwargs:
+            self.arguments(kwargs)
         sol = diffrax.diffeqsolve(
             self.ODEsystem,
             t0=self.t,
@@ -71,7 +74,7 @@ class DiffraxIntegrator(Integrator):
             y0=self.state,
             saveat=diffrax.SaveAt(t1=True, solver_state=True),
             solver_state=self.solver_state,
-            args=(self.system, kwargs),
+            args=(self.system,),
             **self._options,
         )
         self.t = t
