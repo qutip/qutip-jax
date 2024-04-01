@@ -302,12 +302,7 @@ def multiply_jaxarray(left, right):
 
 @jit
 def multiply_jaxdia(left, right):
-    """
-    Perform the operation
-        left + scale*right
-    where `left` and `right` are matrices, and `scale` is an optional complex
-    scalar.
-    """
+    """Element-wise multiplication of matrices."""
     _check_same_shape(left, right)
     diag_left = 0
     diag_right = 0
@@ -342,6 +337,10 @@ def _multiply_outer(left, right):
 
 @jit
 def kron_jaxdia(left, right):
+    """
+    Compute the Kronecker product of two matrices.  This is used to represent
+    quantum tensor products of vector spaces.
+    """
     nrows = left.shape[0] * right.shape[0]
     ncols = left.shape[1] * right.shape[1]
     left = clean_dia(left)
