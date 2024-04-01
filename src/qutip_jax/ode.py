@@ -29,7 +29,7 @@ class DiffraxIntegrator(Integrator):
     integrator_options: dict = {
         "dt0": 0.0001,
         "solver": diffrax.Tsit5(),
-        "stepsize_controller": diffrax.ConstantStepSize(),
+        "stepsize_controller": diffrax.PIDController(atol=1e-8, rtol=1e-6),
         "max_steps": 100000,
     }
 
