@@ -36,15 +36,16 @@ jobs:
 
       - name: Install QuTiP from GitHub
         run: |
-          python -mpip install git+https://github.com/qutip/qutip.git@master
+          python -m pip install git+https://github.com/qutip/qutip.git@master
           python -c 'import qutip; qutip.about()'
 
       - name: Install qutip-jax and dependencies
         # Install in editable mode so Coveralls detects the tree structure
         # relative to the git repository root as well.
         run: |
-            python -mpip install -e .[full]
-            python -mpip install pytest-cov coveralls
+            python -m pip install jax jax[cpu]
+            python -m pip install -e .[full]
+            python -m pip install pytest-cov coveralls
 
       - name: Package information
         run: |
