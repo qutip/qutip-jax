@@ -18,16 +18,17 @@ jobs:
 
       - name: Install documentation dependencies
         run: |
-          python -mpip install -r doc/requirements.txt
+          python -m pip install -r doc/requirements.txt
 
       - name: Install QuTiP from GitHub
         run: |
-          python -mpip install git+https://github.com/qutip/qutip.git@master
+          python -m pip install git+https://github.com/qutip/qutip.git@master
           python -c 'import qutip; qutip.about()'
 
       - name: Install qutip-jax from GitHub
         run: |
-          python -mpip install .[full]
+          python -m pip install jax jax[cpu]
+          python -m pip install .[full]
           python -c 'import qutip_jax; print(qutip_jax.__version__)'
 
       - name: Build documentation
