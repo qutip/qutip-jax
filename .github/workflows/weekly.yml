@@ -12,7 +12,6 @@ on:
     inputs:
       open_issue:
         description: 'Open issue on failure'
-        required: false
         default: "False"
 
 
@@ -33,11 +32,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.9]
+        python-version: [3.11]
         case-name: [defaults]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
@@ -88,7 +87,7 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Open Issue on Failure
         env:
           GITHUB_TOKEN: ${{ github.token }}
