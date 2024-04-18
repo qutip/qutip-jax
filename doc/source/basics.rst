@@ -64,7 +64,7 @@ There are many ways to create a QuTiP ``Qobj`` backed by JAX's array class.
     import qutip
     import qutip_jax
 
-    with qutip.CoreOptions("default_dtype"="jax"):
+    with qutip.CoreOptions(default_dtype="jax"):
         jax_eye_qobj = qutip.qeye(3)
 
     assert isinstance(jax_eye_qobj.data, qutip_jax.JaxArray)

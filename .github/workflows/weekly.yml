@@ -53,7 +53,8 @@ jobs:
         # Install in editable mode so Coveralls detects the tree structure
         # relative to the git repository root as well.
         run: |
-            python -mpip install -e .[full]
+            python -m pip install jax jax[cpu]
+            python -m pip install -e .[full]
 
       - name: Package information
         run: |
