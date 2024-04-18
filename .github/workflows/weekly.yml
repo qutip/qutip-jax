@@ -10,9 +10,11 @@ on:
 
   workflow_dispatch:
     inputs:
-      email:
-        description: "Destination email on failure (optional):"
-        default: "None"
+      open_issue:
+        description: 'Open issue on failure'
+        required: false
+        default: "False"
+
 
 defaults:
   run:
@@ -35,7 +37,7 @@ jobs:
         case-name: [defaults]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
@@ -86,39 +88,13 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      - name: Check destination
-        id: dest_email
+      - uses: actions/checkout@v3
+      - name: Open Issue on Failure
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [[ -z "${{ inputs.email }}" ]]; then
-            # Trigerred by schedule
-            echo "destination='qutip-admin@googlegroups.com' " >> $GITHUB_OUTPUT;
-          elif [[ "${{ inputs.email }}" != "None" ]]; then
-            # Trigerred manually with email entered
-            echo "destination=${{ inputs.email }}" >> $GITHUB_OUTPUT;
-          else
-            # Trigerred manually without email entered
-            echo "destination=" >> $GITHUB_OUTPUT;
+          if [[ -z "${{ inputs.open_issue }}" ]] || [[ "${{ inputs.open_issue }}" != "False" ]];
+          then
+            pip install requests argparse datetime
+            python tools/report_failing_tests.py $GITHUB_TOKEN
           fi
-
-      - name: Send Email on Failure
-        # No email sent if trigerred manually and no address is provided.
-        if: ${{ steps.dest_email.outputs.destination }} != ""
-
-        uses: dawidd6/action-send-mail@v3
-        with:
-          # Required mail server address if not connection_url:
-          server_address: smtp-mail.outlook.com
-          server_port: 587
-          secure: False
-          # Optional (recommended) mail server username:
-          username: ${{ secrets.OUTLOOK_ADR }}
-          # Optional (recommended) mail server password:
-          password: ${{ secrets.OUTLOOK_PWD }}
-          # Required mail subject:
-          subject: Qutip-jax weekly test failed!
-          # Required recipients' addresses:
-          to: ${{ steps.dest_email.outputs.destination }}
-          # Required sender full name (address can be skipped):
-          from: QuTiP-Jax
-          # Optional plain body:
-          body: Qutip-jax weekly test failed!
