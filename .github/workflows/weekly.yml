@@ -94,6 +94,6 @@ jobs:
         run: |
           if [[ -z "${{ inputs.open_issue }}" ]] || [[ "${{ inputs.open_issue }}" != "False" ]];
           then
-            pip install requests argparse datetime
+            pip install requests
             python tools/report_failing_tests.py $GITHUB_TOKEN
           fi
