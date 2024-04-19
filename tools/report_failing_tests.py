@@ -5,7 +5,7 @@ import argparse
 from datetime import date
 
 def open_issue(token):
-    url = "https://api.github.com/repos/ericgig/qutip-jax/issues"
+    url = "https://api.github.com/repos/qutip/qutip-jax/issues"
     data = json.dumps({
         "title": f"Automated tests failed on {date.today()}",
         "labels": ["bug"],
