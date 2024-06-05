@@ -55,7 +55,7 @@ The following code demonstrates the evolution of :math:`10` trajectories with ``
     with qutip.CoreOptions(default_dtype="jaxdia"):
         a = qutip.tensor(qutip.qeye(2), qutip.destroy(N))
         sm = qutip.tensor(qutip.destroy(2), qutip.qeye(N))
-        H = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm + 2.0 * jnp.pi * 0.25 * (sm * a.dag() + sm.dag() * a)
+    H = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm + 2.0 * jnp.pi * 0.25 * (sm * a.dag() + sm.dag() * a)
     # using ``jax`` dtype since ``DiffraxIntegrator`` anyway converts the final state to ``jax``
     state = qutip.tensor(qutip.fock(2, 0, dtype="jax"), qutip.fock(N, 8, dtype="jax"))
     c_ops = [jnp.sqrt(0.1) * a]
@@ -88,9 +88,8 @@ Note that the coefficient function of a time-dependent Hamiltonian needs to be j
     def H_1_coeff(t, omega):
         return 2.0 * jnp.pi * 0.25 * jnp.cos(2.0 * omega * t)
 
-    with qutip.CoreOptions(default_dtype="jaxdia"):
-        H_0 = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm
-        H_1_op = sm * a.dag() + sm.dag() * a
+    H_0 = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm
+    H_1_op = sm * a.dag() + sm.dag() * a
     H = [H_0, [H_1_op, H_1_coeff]]
     result = qutip.mcsolve(H, state, tlist, c_ops, e_ops, ntraj=10, options={
         "method": "diffrax"
