@@ -55,7 +55,9 @@ def column_unstack_jaxarray(matrix, rows):
 
 
 @jit
-def split_columns_jaxarray(matrix):
+def split_columns_jaxarray(matrix, copy=None):
+    # `copy` is passed by some `Qobj` methods
+    # but JaxArray always creates a new array.
     return [
         JaxArray(matrix._jxa[:, k]) for k in range(matrix.shape[1])
     ]
