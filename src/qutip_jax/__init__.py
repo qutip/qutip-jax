@@ -12,8 +12,8 @@ qutip.data.to.add_conversions(
         (JaxArray, qutip.data.Dense, jaxarray_from_dense),
         (qutip.data.Dense, JaxArray, dense_from_jaxarray, 2),
         (JaxArray, JaxDia, jaxarray_from_jaxdia),
-        (JaxDia, JaxArray, jaxdia_from_jaxarray),
-        (qutip.data.Dia, JaxDia, dia_from_jaxdia),
+        (JaxDia, JaxArray, jaxdia_from_jaxarray, 1.2),
+        (qutip.data.Dia, JaxDia, dia_from_jaxdia, 2),
         (JaxDia, qutip.data.Dia, jaxdia_from_dia),
     ]
 )

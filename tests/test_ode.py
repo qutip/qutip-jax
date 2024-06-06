@@ -36,6 +36,8 @@ def cte(t, A):
     return A
 
 
+# diffrax use clip with deprecated parameters
+@pytest.mark.filterwarnings("ignore:Passing arguments 'a'")
 @pytest.mark.parametrize("dtype", ("jax", "jaxdia"))
 def test_ode_run(dtype):
     with CoreOptions(default_dtype=dtype):
@@ -57,6 +59,7 @@ def test_ode_run(dtype):
     np.testing.assert_allclose(result.expect[0], expected.expect[0], atol=1e-6)
 
 
+@pytest.mark.filterwarnings("ignore:Passing arguments 'a'")
 @pytest.mark.parametrize("dtype", ("jax", "jaxdia"))
 def test_ode_step(dtype):
     with CoreOptions(default_dtype=dtype):
@@ -79,6 +82,7 @@ def test_ode_step(dtype):
     assert (solver.step(1) - ref_solver.step(1)).norm() <= 1e-6
 
 
+@pytest.mark.filterwarnings("ignore:Passing arguments 'a'")
 @pytest.mark.parametrize("dtype", ("jax", "jaxdia"))
 def test_ode_grad(dtype):
     with CoreOptions(default_dtype=dtype):
