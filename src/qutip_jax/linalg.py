@@ -25,14 +25,12 @@ def nonherm_with_vecs(data):
 def herm_no_vecs(data):
     evals = jnp.linalg.eigvalsh(data)
     evals = evals.astype(jnp.complex64)
-    dummy_evecs = jnp.zeros((data.shape[0], data.shape[0]), dtype=jnp.complex64)
-    return (evals, dummy_evecs)
+    return (evals, None)
 
 def nonherm_no_vecs(data):
     evals = jnp.linalg.eigvals(data)
     evals = evals.astype(jnp.complex64)
-    dummy_evecs = jnp.zeros((data.shape[0], data.shape[0]), dtype=jnp.complex64)
-    return (evals, dummy_evecs)
+    return (evals, None)
 
 
 @partial(jit, static_argnums=[2, 3, 4])
@@ -41,20 +39,17 @@ def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
     Internal function to dispatch the eigenvalue solver to `eigh`, `eig`,
     `eigvalsh` or `eigvals` based on the parameters.
     """
-    def compute_with_vecs():
-        return lax.cond(
+    if vecs:
+        evals, evecs = lax.cond(
             isherm, herm_with_vecs,
             nonherm_with_vecs, data
         )
-
-    def compute_no_vecs():
-        return lax.cond(
+    else:
+        evals, evecs = lax.cond(
             isherm, herm_no_vecs,
             nonherm_no_vecs, data
         )
-
-    evals, evecs = lax.cond(vecs, compute_with_vecs, compute_no_vecs)
-
+    
     perm = jnp.argsort(evals.real)
     evals = evals[perm]
     if not low_first:
@@ -66,9 +61,6 @@ def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
         if not low_first:
             evecs = evecs[:, ::-1]
         evecs = evecs[:, :eigvals]
-
-    else:
-        evecs = None
 
     return evals, evecs
 
