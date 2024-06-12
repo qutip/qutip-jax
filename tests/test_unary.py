@@ -70,6 +70,12 @@ class TestInv(testing.TestInv):
     specialisations = [pytest.param(_inv_jax, JaxArray, JaxArray)]
 
 
+class TestSqrtm(testing.TestSqrtm):
+    specialisations = [
+        pytest.param(qutip_jax.sqrtm_jaxarray, JaxArray, JaxArray)
+    ]
+
+
 class TestProject(testing.TestProject):
     specialisations = [
         pytest.param(qutip_jax.project_jaxarray, JaxArray, JaxArray)
