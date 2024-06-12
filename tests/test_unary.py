@@ -70,7 +70,7 @@ class TestInv(testing.TestInv):
     specialisations = [pytest.param(_inv_jax, JaxArray, JaxArray)]
 
 
-class TestExpm(testing.TestExpm):
+class TestSqrtm(testing.TestExpm):
     specialisations = [
         pytest.param(qutip_jax.sqrtm_jaxarray, JaxArray, JaxArray)
     ]
