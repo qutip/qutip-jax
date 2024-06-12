@@ -18,6 +18,7 @@ __all__ = [
     "conj_jaxdia",
     "inv_jaxarray",
     "expm_jaxarray",
+    "sqrtm_jaxarray",
     "project_jaxarray",
 ]
 
@@ -113,6 +114,12 @@ def inv_jaxarray(matrix):
     return JaxArray._fast_constructor(linalg.inv(matrix._jxa), matrix.shape)
 
 
+def sqrtm_jaxarray(matrix):
+    """Matrix square root `sqrt(A)` for a matrix `A`."""
+    _check_square_shape(matrix)
+    return JaxArray._fast_constructor(linalg.sqrtm(matrix._jxa), matrix.shape)
+
+
 @jit
 def _project_ket(array):
     return array @ array.T.conj()
@@ -182,6 +189,11 @@ qutip.data.inv.add_specialisations(
     [
         (JaxArray, JaxArray, inv_jaxarray),
     ]
+)
+
+
+qutip.data.sqrtm.add_specialisations(
+    [(JaxArray, JaxArray, sqrtm_jaxarray),]
 )
 
 
