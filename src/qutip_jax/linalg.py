@@ -13,21 +13,24 @@ __all__ = [
 ]
 
 
-@partial(jit, static_argnums=[1, 2, 3, 4])
+@partial(jit, static_argnums=[2, 3, 4])
 def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
     """
     Internal function to dispatch the eigenvalue solver to `eigh`, `eig`,
     `eigvalsh` or `eigvals` based on the parameters.
     """
-    if isherm and vecs:
-        evals, evecs = jnp.linalg.eigh(data)
-    elif vecs:
-        evals, evecs = jnp.linalg.eig(data)
-    elif isherm:
-        evals = jnp.linalg.eigvalsh(data)
-        evecs = None
+    if vecs:
+        evals_herm, evecs_herm = jnp.linalg.eigh(data)
+        evals_nonherm, evecs_nonherm = jnp.linalg.eig(data)
+
+        evals = jnp.where(isherm, evals_herm, evals_nonherm)
+        evecs = jnp.where(isherm, evecs_herm, evecs_nonherm)
+    
     else:
-        evals = jnp.linalg.eigvals(data)
+        evals_herm= jnp.linalg.eigvalsh(data)
+        evals_nonherm = jnp.linalg.eigvals(data)
+
+        evals = jnp.where(isherm, evals_herm, evals_nonherm)
         evecs = None
 
     perm = jnp.argsort(evals.real)
@@ -61,7 +64,7 @@ def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
     eigvals = eigvals or N
     # Let dict raise keyerror of
     low_first = {"low": True, "high": False}[sort]
-    isherm = isherm if isherm is not None else bool(isherm_jaxarray(data))
+    isherm = isherm if isherm is not None else jnp.bool(isherm_jaxarray(data))
 
     evals, evecs = _eigs_jaxarray(data._jxa, isherm, vecs, eigvals, low_first)
 
