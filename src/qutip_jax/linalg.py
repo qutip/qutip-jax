@@ -14,40 +14,51 @@ __all__ = [
 
 def herm_with_vecs(data):
     evals, evecs = jnp.linalg.eigh(data)
-    evals, evecs = evals.astype(jnp.complex64), evecs.astype(jnp.complex64)
-    return (evals, evecs)
+    evals, evecs = evals.astype(data.dtype), evecs.astype(data.dtype)
+    return evals, evecs
 
 def nonherm_with_vecs(data):
     evals, evecs = jnp.linalg.eig(data)
-    evals, evecs = evals.astype(jnp.complex64), evecs.astype(jnp.complex64)
-    return (evals, evecs)
+    evals, evecs = evals.astype(data.dtype), evecs.astype(data.dtype)
+    return evals, evecs
 
 def herm_no_vecs(data):
     evals = jnp.linalg.eigvalsh(data)
-    evals = evals.astype(jnp.complex64)
-    return (evals, None)
+    evals = evals.astype(data.dtype)
+    return evals, None
 
 def nonherm_no_vecs(data):
     evals = jnp.linalg.eigvals(data)
-    evals = evals.astype(jnp.complex64)
-    return (evals, None)
+    evals = evals.astype(data.dtype)
+    return evals, None
 
 
-@partial(jit, static_argnums=[2, 3, 4])
-def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
+@partial(jit, static_argnums=[1, 2, 3, 4])
+def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
     """
-    Internal function to dispatch the eigenvalue solver to `eigh`, `eig`,
-    `eigvalsh` or `eigvals` based on the parameters.
+    Return eigenvalues and eigenvectors for a `Data` of type `"jax"`. Takes no
+    special keyword arguments; see the primary documentation in :func:`.eigs`.
     """
+    N = data.shape[0]
+    if data.shape[0] != data.shape[1]:
+        raise TypeError("Can only diagonalize square matrices")
+    if sort not in ('low', 'high'):
+        raise ValueError("'sort' must be 'low' or 'high'")
+    if eigvals > N:
+        raise ValueError("Number of requested eigen vals/vecs must be <= N.")
+    eigvals = eigvals or N
+    low_first = {"low": True, "high": False}[sort]
+    isherm = isherm if isherm is not None else jnp.bool_(isherm_jaxarray(data))
+
     if vecs:
         evals, evecs = lax.cond(
             isherm, herm_with_vecs,
-            nonherm_with_vecs, data
+            nonherm_with_vecs, data._jxa
         )
     else:
         evals, evecs = lax.cond(
             isherm, herm_no_vecs,
-            nonherm_no_vecs, data
+            nonherm_no_vecs, data._jxa
         )
     
     perm = jnp.argsort(evals.real)
@@ -61,29 +72,6 @@ def _eigs_jaxarray(data, isherm, vecs, eigvals, low_first):
         if not low_first:
             evecs = evecs[:, ::-1]
         evecs = evecs[:, :eigvals]
-
-    return evals, evecs
-
-
-# Can't jit it if we accept isherm=None
-def eigs_jaxarray(data, isherm=None, vecs=True, sort='low', eigvals=0):
-    """
-    Return eigenvalues and eigenvectors for a `Data` of type `"jax"`.  Takes no
-    special keyword arguments; see the primary documentation in :func:`.eigs`.
-    """
-    N = data.shape[0]
-    if data.shape[0] != data.shape[1]:
-        raise TypeError("Can only diagonalize square matrices")
-    if sort not in ('low', 'high'):
-        raise ValueError("'sort' must be 'low' or 'high'")
-    if eigvals > N:
-        raise ValueError("Number of requested eigen vals/vecs must be <= N.")
-    eigvals = eigvals or N
-    # Let dict raise keyerror of
-    low_first = {"low": True, "high": False}[sort]
-    isherm = isherm if isherm is not None else jnp.bool(isherm_jaxarray(data))
-
-    evals, evecs = _eigs_jaxarray(data._jxa, isherm, vecs, eigvals, low_first)
 
     return (evals, JaxArray(evecs, copy=False)) if vecs else evals
 
