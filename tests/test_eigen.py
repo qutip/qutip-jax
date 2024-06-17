@@ -20,16 +20,15 @@ def test_eigen_known_oper():
 
 
 @pytest.mark.parametrize(
-    ["rand"],
+    ["rand", "isherm"],
     [
-        pytest.param(qutip.rand_herm, id="hermitian"),
-        pytest.param(qutip.rand_unitary, id="non-hermitian"),
+        pytest.param(qutip.rand_herm, True, id="hermitian"),
+        pytest.param(qutip.rand_unitary, None, id="non-hermitian"),
     ],
 )
 @pytest.mark.parametrize("order", ["low", "high"])
-def test_eigen_rand_oper(rand, order):
+def test_eigen_rand_oper(rand, isherm, order):
     mat = rand(10, dtype="jax").data
-    isherm = rand is qutip.rand_herm
     kw = {"isherm": isherm, "sort": order}
     spvals, spvecs = qutip_jax.eigs_jaxarray(mat, vecs=True, **kw)
     sp_energies = qutip_jax.eigs_jaxarray(mat, vecs=False, **kw)
@@ -42,17 +41,16 @@ def test_eigen_rand_oper(rand, order):
 
 
 @pytest.mark.parametrize(
-    "rand",
+    ["rand", "isherm"],
     [
-        pytest.param(qutip.rand_herm, id="hermitian"),
-        pytest.param(qutip.rand_unitary, id="non-hermitian"),
+        pytest.param(qutip.rand_herm, True, id="hermitian"),
+        pytest.param(qutip.rand_unitary, None, id="non-hermitian"),
     ],
 )
 @pytest.mark.parametrize("order", ["low", "high"])
 @pytest.mark.parametrize("N", [1, 5, 8, 9])
-def test_eigvals_parameter(rand, order, N):
+def test_eigvals_parameter(rand, isherm, order, N):
     mat = rand(10, dtype="jax").data
-    isherm = rand is qutip.rand_herm
     kw = {"isherm": isherm, "sort": order}
     spvals, spvecs = qutip_jax.eigs_jaxarray(mat, vecs=True, eigvals=N, **kw)
     sp_energies = qutip_jax.eigs_jaxarray(mat, vecs=False, eigvals=N, **kw)
