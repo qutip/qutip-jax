@@ -34,6 +34,7 @@ from .unary import *
 from .permute import *
 from .reshape import *
 from . import norm
+from .settings import *
 from .measurements import *
 from .properties import *
 from .linalg import *
