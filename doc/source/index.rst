@@ -22,6 +22,7 @@ qutip-jax |version|: Jax-backend for QuTiP
     :caption: User guide
 
     basics.rst
+    metrics.rst
     solver.rst
     autodiff.rst
 
