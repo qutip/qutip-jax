@@ -8,6 +8,10 @@ Setting Up the JAX Backend
 
 To enable JAX as the backend for QuTiP, you need to set the backend to `jax` using the `use_jax_backend` function. This allows you to use JAX's `grad` and `jit` with QuTiP functions.
 
+.. note::
+
+    This feature is not available in a released version of QuTiP. It is only available on an experimental development branch.
+
 .. code-block:: python
 
     import qutip
@@ -101,12 +105,9 @@ To compute the gradient, you need a function that returns a scalar. Note that `j
     grad_fidelity = jax.grad(fidelity_jax, argnums=0)
 
     # Calculate the gradient
-    try:
-        grad_result = grad_fidelity(bra_state_jax, ket_state_jax)
-        print("Gradient of Fidelity:", grad_result)
-    except Exception as e:
-        print("Error:", e)
-
+    grad_result = grad_fidelity(bra_state_jax, ket_state_jax)
+    print("Gradient of Fidelity:", grad_result)
+    
 ### Example with `trace_dist` from `qutip.core.metrics`
 
 The `trace_dist` function supports `oper` states for gradient computation.
