@@ -66,12 +66,7 @@ jobs:
         # to see if something hung.
         timeout-minutes: 60
         run: |
-          pytest -Werror --durations=0 --durations-min=1.0 --verbosity=1 --color=yes \
-            -W ignore::UserWarning:qutip \
-            -W "ignore:Complex dtype:UserWarning" \
-            -W "ignore:jax.core.pp_eqn_rules is deprecated.:DeprecationWarning" \
-            -W "ignore:unhashable type:FutureWarning" \
-            -W "ignore:In a future release of JAX,:DeprecationWarning"
+          pytest -Werror --durations=0 --durations-min=1.0 --verbosity=1 --color=yes
           # Above flags are:
           #  --durations=0 --durations-min=1.0
           #     at the end, show a list of all the tests that took longer than a
@@ -79,20 +74,8 @@ jobs:
           #  --verbosity=1
           #     turn the verbosity up so pytest prints the names of the tests
           #     it's currently working on
-          #  --cov=qutip_jax
-          #     limit coverage reporting to code that's within the qutip_jax package
           #  --color=yes
           #     force coloured output in the terminal
-          #  -Werror
-          #     Unless explicitly ignored, warnings are errors.
-          #  -W ignore::UserWarning:qutip
-          #     Ignore matplotlib missing warnings
-          #  -W "ignore:Complex dtype:UserWarning"
-          #     Ignore diffrax's partial complex support
-          #  -W "ignore:jax.core.pp_eqn_rules is deprecated.:DeprecationWarning"
-          #  -W "ignore:unhashable type:FutureWarning"
-          #  -W "ignore:In a future release of JAX,:DeprecationWarning"
-          #     Diffrax / equinox are have warning with latest jax
           # These flags are added to those in pyproject.toml.
 
   finalise:
