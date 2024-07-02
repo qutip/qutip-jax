@@ -5,9 +5,3 @@ requires = [
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
-
-[tool.pytest.ini_options]
-addopts = "-Werror --strict-config --strict-markers -W \"ignore:Complex dtype:UserWarning\""
-testpaths = [
-    "tests",
-]
