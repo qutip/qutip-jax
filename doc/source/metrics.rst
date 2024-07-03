@@ -10,7 +10,7 @@ To enable JAX as the backend for QuTiP, you need to set the backend to `jax` usi
 
 .. note::
 
-    This feature is not available in a released version of QuTiP. It is only available on an experimental development branch.
+    This feature is not available in a released version of QuTiP. It is only available on an experimental development branch called `dev-major` in QuTiP.
 
 .. code-block:: python
 
