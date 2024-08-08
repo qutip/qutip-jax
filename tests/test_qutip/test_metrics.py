@@ -1,7 +1,7 @@
 import pytest
 import jax.numpy as jnp
 from jax import jit, grad
-from qutip import basis, tensor
+from qutip import basis
 from qutip.core.metrics import (fidelity, tracedist, bures_dist, bures_angle, 
                            hellinger_dist, hilbert_dist)
 import qutip.settings
@@ -16,11 +16,6 @@ with qutip.CoreOptions(default_dtype="jax"):
     rho2 = qutip.rand_dm(dimensions=5)
     ket_state = basis(2, 0)
     oper_state = qutip.rand_dm(2)
-
-with qutip.CoreOptions(default_dtype="jax"):
-    X = qutip.sigmax()
-    I = qutip.qeye(2)
-    CNOT = qutip.tensor(qutip.basis(2, 0) * qutip.basis(2, 0).dag(), I) + qutip.tensor(qutip.basis(2, 1) * qutip.basis(2, 1).dag(), X)
 
 @pytest.mark.parametrize("func, name, args", [
     (fidelity, "fidelity", (rho1, rho2)),
