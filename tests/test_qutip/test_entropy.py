@@ -1,7 +1,9 @@
 import pytest
 import jax.numpy as jnp
 from jax import jit, grad
-from qutip.entropy import entropy_vn, entropy_linear, entropy_mutual, concurrence, entropy_conditional, entangling_power, participation_ratio
+from qutip import bell_state
+from qutip.entropy import (entropy_vn, entropy_linear, entropy_mutual, concurrence, 
+                        entropy_conditional, participation_ratio)
 import qutip.settings
 import qutip_jax
 
@@ -10,9 +12,7 @@ qutip_jax.use_jax_backend()
 tol = 1e-6  # Tolerance for assertion
 
 with qutip.CoreOptions(default_dtype="jax"):
-    basis_0 = qutip.basis(2, 0)
-    basis_1 = qutip.basis(2, 1)
-    bell_state = (qutip.tensor(basis_0, basis_1) + qutip.tensor(basis_1, basis_0)).unit()
+    bell_state = bell_state("10")
     bell_dm = bell_state * bell_state.dag()
     dm = qutip.rand_dm([5, 5], distribution="pure")
 
@@ -35,13 +35,10 @@ def test_jit(func, name, args):
     (entropy_mutual, "entropy_mutual", (dm, [0], [1])),  
     (concurrence, "concurrence", (bell_dm,)),
     (entropy_conditional, "entropy_conditional", (bell_dm, 0)),
-    #(entangling_power, "entangling_power", (CNOT)),
 ])
 def test_grad(func, name, args):
     func_grad = grad(func)
-    result = func(*args)
     result_grad = func_grad(*args)
-    print(f"{name} (GRAD):", result_grad)
     assert result_grad is not None
 
 
