@@ -16,8 +16,8 @@ def H_1_coeff(t, omega):
 
 # Test setup for gradient calculation
 def setup_system(size=2):
-    a = qt.destroy(size).to("jax")  
-    sm = qt.sigmax().to("jax")  
+    a = qt.tensor(qt.destroy(size), qt.qeye(2)).to('jaxdia')  
+    sm = qt.qeye(size).to('jaxdia') & qt.sigmax().to('jaxdia')  
 
     # Define the Hamiltonian
     H_0 = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm
@@ -25,7 +25,7 @@ def setup_system(size=2):
 
     H = [H_0, [H_1_op, qt.coefficient(H_1_coeff, args={"omega": 1.0})]]
 
-    state = qt.basis(size, size-1).to("jax")
+    state = qt.basis(size, size - 1).to('jax') & qt.basis(2, 1).to('jax')
 
     # Define collapse operators and observables
     c_ops = [jnp.sqrt(0.1) * a]
@@ -47,7 +47,7 @@ def f(omega, H, state, tlist, c_ops, e_ops):
 # Pytest test case for gradient computation
 @pytest.mark.parametrize("omega_val", [1.0, 2.0, 3.0])
 def test_gradient_mcsolve(omega_val):
-    H, state, tlist, c_ops, e_ops = setup_system(size=2)
+    H, state, tlist, c_ops, e_ops = setup_system(size=10)
     
     # Compute the gradient with respect to omega
     grad_func = jax.grad(lambda omega: f(omega, H, state, tlist, c_ops, e_ops))
