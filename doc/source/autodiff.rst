@@ -68,18 +68,17 @@ Auto differentiation in ``mcsolve``
     def H_1_coeff(t, omega):
         return 2.0 * jnp.pi * 0.25 * jnp.cos(2.0 * omega * t)
     # Define operators and states
-    size = 2
-    a = qt.destroy(size).to("jax")  # Annihilation operator
-    sm = qt.sigmax().to("jax")  # Example spin operator
+    size = 10
+    a = qt.tensor(qt.destroy(size), qt.qeye(2)).to('jaxdia')    # Annihilation operator
+    sm = qt.qeye(size).to('jaxdia') & qt.sigmax().to('jaxdia')  # Example spin operator
     # Define the Hamiltonian
     H_0 = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm
     H_1_op = sm * a.dag() + sm.dag() * a
     # Initialize the Hamiltonian with time-dependent coefficients
     H = [H_0, [H_1_op, qt.coefficient(H_1_coeff, args={"omega": 1.0})]]
-    # Define initial states
-    pure_state = qt.basis(size, size-1).to("jax")
-    mixed_state = qt.maximally_mixed_dm(size).to("jax")
-    state = pure_state
+    # Define initial states, mixed states are not supported
+    state = state = qt.basis(size, size - 1).to('jax') & qt.basis(2, 1).to('jax')
+    
     # Define collapse operators and observables
     c_ops = [jnp.sqrt(0.1) * a]
     e_ops = [a.dag() * a, sm.dag() * sm]
