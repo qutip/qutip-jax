@@ -53,6 +53,10 @@ Auto differentiation in ``mcsolve``
    the development (`dev.major`) branch of QuTiP. Ensure you are using the appropriate 
    version if you wish to replicate these results.
 
+   The automatic differentiation (`jax.grad`) in `mcsolve` does not support parallel map operations. 
+   To ensure accurate gradient computations, please use the default serial execution instead of 
+   parallel mapping within `mcsolve`.
+
 
 .. code-block:: python
     import qutip_jax as qjax
@@ -77,7 +81,7 @@ Auto differentiation in ``mcsolve``
     # Initialize the Hamiltonian with time-dependent coefficients
     H = [H_0, [H_1_op, qt.coefficient(H_1_coeff, args={"omega": 1.0})]]
     # Define initial states, mixed states are not supported
-    state = state = qt.basis(size, size - 1).to('jax') & qt.basis(2, 1).to('jax')
+    state = qt.basis(size, size - 1).to('jax') & qt.basis(2, 1).to('jax')
     
     # Define collapse operators and observables
     c_ops = [jnp.sqrt(0.1) * a]
