@@ -58,36 +58,45 @@ Auto differentiation in ``mcsolve``
    parallel mapping within `mcsolve`.
 
 
-.. code-block:: python
+.. code-block::
+
     import qutip_jax as qjax
     import qutip as qt
     import jax
     import jax.numpy as jnp
     from functools import partial
     from qutip import mcsolve
+    
     # Use JAX backend for QuTiP
     qjax.use_jax_backend()
+
     # Define time-dependent functions
     @partial(jax.jit, static_argnames=("omega",))
     def H_1_coeff(t, omega):
         return 2.0 * jnp.pi * 0.25 * jnp.cos(2.0 * omega * t)
+
     # Define operators and states
     size = 10
     a = qt.tensor(qt.destroy(size), qt.qeye(2)).to('jaxdia')    # Annihilation operator
     sm = qt.qeye(size).to('jaxdia') & qt.sigmax().to('jaxdia')  # Example spin operator
+
     # Define the Hamiltonian
     H_0 = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm
     H_1_op = sm * a.dag() + sm.dag() * a
+
     # Initialize the Hamiltonian with time-dependent coefficients
     H = [H_0, [H_1_op, qt.coefficient(H_1_coeff, args={"omega": 1.0})]]
+
     # Define initial states, mixed states are not supported
     state = qt.basis(size, size - 1).to('jax') & qt.basis(2, 1).to('jax')
     
     # Define collapse operators and observables
     c_ops = [jnp.sqrt(0.1) * a]
     e_ops = [a.dag() * a, sm.dag() * sm]
+
     # Time list
     tlist = jnp.linspace(0.0, 10.0, 101)
+
     # Define the function for which we want to compute the gradient
     def f(omega):
         # Update the Hamiltonian with the new coefficient
@@ -98,6 +107,6 @@ Auto differentiation in ``mcsolve``
         
         # Return the expectation value of the number operator at the final time
         return result.expect[0][-1].real
+
     # Compute the gradient
     gradient = jax.grad(f)(1.0)
-    print("Gradient:", gradient)
