@@ -7,7 +7,7 @@ from qutip import mcsolve
 from functools import partial
 
 # Use JAX backend for QuTiP
-qjax.use_jax_backend()
+qjax.set_as_default()
 
 # Define time-dependent functions
 @partial(jax.jit, static_argnames=("omega",))
