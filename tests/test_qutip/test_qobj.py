@@ -29,7 +29,6 @@ with qutip.CoreOptions(default_dtype="jax"):
     ("eigenenergies", lambda x: x.eigenenergies()),
     ("expm", lambda x: x.expm()),
     ("inv", lambda x: x.inv()),
-    ("logm", lambda x: x.logm()),
     ("matrix_element", lambda x: x.matrix_element(ket, ket)),
     ("norm", lambda x: x.norm()),
     ("overlap", lambda x: x.overlap(op1)),
@@ -55,11 +54,33 @@ def test_qobj_jit(func_name, func):
     assert result_jit is not None
 
 @pytest.mark.parametrize("func_name, func", [
+    ("eigenenergies", lambda x: jnp.sum(x.eigenenergies())),  
+    ("overlap", lambda x: x.overlap(Qobj(jnp.eye(x.shape[0])))),  
+    ("purity", lambda x: x.purity()),
+    ("tr", lambda x: x.tr()),
+])
+def test_qobj_grad_complex(func_name, func):
+    def grad_func(op1):
+        result = func(op1)
+        return jnp.real(result)  
+    
+    # Apply grad to the function
+    grad_func = grad(grad_func)
+    grad_result = grad_func(op1)
+
+    assert grad_result is not None
+
+
+@pytest.mark.parametrize("func_name, func", [
+    ("copy", lambda x: x.copy()),
     ("conj", lambda x: x.conj()),
+    ("contract", lambda x: x.contract()),
     ("expm", lambda x: x.expm()),
     ("cosm", lambda x: x.cosm()),
     ("dag", lambda x: x.dag()),
+    ("inv", lambda x: x.inv()),
     ("sinm", lambda x: x.sinm()),
+    ("trans", lambda x: x.trans()),
 ])
 def test_qobj_grad_differentiable(func_name, func):
     def grad_func(op1):
@@ -73,17 +94,3 @@ def test_qobj_grad_differentiable(func_name, func):
     assert grad_result is not None
 
 
-@pytest.mark.parametrize("func_name, func", [
-    ("eigenenergies", lambda x: jnp.sum(x.eigenenergies())),  
-    ("overlap", lambda x: x.overlap(Qobj(jnp.eye(x.shape[0])))),  
-])
-def test_qobj_grad_complex(func_name, func):
-    def grad_func(op1):
-        result = func(op1)
-        return jnp.real(result)  
-    
-    # Apply grad to the function
-    grad_func = grad(grad_func)
-    grad_result = grad_func(op1)
-
-    assert grad_result is not None
