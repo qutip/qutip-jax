@@ -8,7 +8,7 @@ import qutip.settings
 import qutip_jax
 
 qutip.settings.core["auto_real_casting"] = False
-qutip_jax.use_jax_backend()
+qutip_jax.set_as_default()
 tol = 1e-6  # Tolerance for assertion
 
 with qutip.CoreOptions(default_dtype="jax"):
