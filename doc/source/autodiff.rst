@@ -49,10 +49,6 @@ Auto differentiation in ``mcsolve``
 
 .. note::
 
-   The functionality demonstrated in this example is currently available only in 
-   the development (`dev.major`) branch of QuTiP. Ensure you are using the appropriate 
-   version if you wish to replicate these results.
-
    The automatic differentiation (`jax.grad`) in `mcsolve` does not support parallel map operations. 
    To ensure accurate gradient computations, please use the default serial execution instead of 
    parallel mapping within `mcsolve`.
@@ -99,12 +95,11 @@ Auto differentiation in ``mcsolve``
 
     # Define the function for which we want to compute the gradient
     def f(omega):
-        # Update the Hamiltonian with the new coefficient
-        H[1][1] = qt.coefficient(H_1_coeff, args={"omega": omega})
-        
-        # Run the Monte Carlo solver
-        result = mcsolve(H, state, tlist, c_ops, e_ops, ntraj=10, options={"method": "diffrax"})
-        
+        result = mcsolve(
+            H, state, tlist, c_ops, e_ops, ntraj=10, 
+            args={"omega": omega}, 
+            options={"method": "diffrax"}
+        )
         # Return the expectation value of the number operator at the final time
         return result.expect[0][-1].real
 
