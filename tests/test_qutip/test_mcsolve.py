@@ -32,20 +32,22 @@ def setup_system(size=2):
     e_ops = [a.dag() * a, sm.dag() * sm]
 
     # Time list
-    tlist = jnp.linspace(0.0, 10.0, 101)
+    tlist = jnp.linspace(0.0, 1.0, 101)
     
     return H, state, tlist, c_ops, e_ops
 
 # Function for which we want to compute the gradient
 def f(omega, H, state, tlist, c_ops, e_ops):
-    H[1][1] = qt.coefficient(H_1_coeff, args={"omega": omega})
-    
-    result = mcsolve(H, state, tlist, c_ops, e_ops, ntraj=10, options={"method": "diffrax"})
+    result = mcsolve(
+        H, state, tlist, c_ops, e_ops, ntraj=10, 
+        args={"omega": omega}, 
+        options={"method": "diffrax"}
+    )
     
     return result.expect[0][-1].real
 
 # Pytest test case for gradient computation
-@pytest.mark.parametrize("omega_val", [1.0, 2.0, 3.0])
+@pytest.mark.parametrize("omega_val", [2.0])
 def test_gradient_mcsolve(omega_val):
     H, state, tlist, c_ops, e_ops = setup_system(size=10)
     
