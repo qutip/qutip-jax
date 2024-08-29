@@ -18,7 +18,7 @@ To enable JAX as the backend for QuTiP, you need to set the backend to `jax` usi
     import qutip_jax
 
     # Use JAX as the backend
-    qutip_jax.use_jax_backend()
+    qutip_jax.set_as_default()
 
 Using `jax.jit` with QuTiP
 --------------------------
@@ -35,7 +35,7 @@ Using `jax.jit` with QuTiP
     import qutip_jax
 
     # Use JAX as the backend
-    qutip_jax.use_jax_backend()
+    qutip_jax.set_as_default()
 
     # Define states
     psi = basis(2, 0).to("jax")
@@ -57,7 +57,7 @@ Using `jax.jit` with QuTiP
     import qutip_jax
 
     # Use JAX as the backend
-    qutip_jax.use_jax_backend()
+    qutip_jax.set_as_default()
 
     # Define a density matrix
     rho = ket2dm(psi).to("jax")
@@ -87,7 +87,7 @@ To compute the gradient, you need a function that returns a scalar. Note that `j
     import qutip_jax
 
     # Use JAX as the backend
-    qutip_jax.use_jax_backend()
+    qutip_jax.set_as_default()
 
     # Define bra and ket states
     bra_state = basis(2, 0).dag()
@@ -119,7 +119,7 @@ The `trace_dist` function supports `oper` states for gradient computation.
     import qutip_jax
 
     # Use JAX as the backend
-    qutip_jax.use_jax_backend()
+    qutip_jax.set_as_default()
 
     # Define an operator state
     oper_state = rand_dm(2)
@@ -147,5 +147,5 @@ If you want to switch back to the default backend (NumPy), use the following:
 
 .. code-block:: python
 
-    qutip.settings.core["numpy_backend"] = np
+    qutip_jax.set_as_default(revert = True)
 
