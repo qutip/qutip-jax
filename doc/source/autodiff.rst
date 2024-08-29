@@ -47,24 +47,24 @@ should work:
 Auto differentiation in ``mcsolve``
 ===================================
 
-.. note::
 
-   The automatic differentiation (`jax.grad`) in `mcsolve` does not support parallel map operations. 
-   To ensure accurate gradient computations, please use the default serial execution instead of 
-   parallel mapping within `mcsolve`.
+Here is an example to use jax auto differentiation with `mcsolve`.
+The automatic differentiation (`jax.grad`) in `mcsolve` does not support parallel map operations. 
+To ensure accurate gradient computations, please use the default serial execution instead of 
+parallel mapping within `mcsolve`.
 
 
 .. code-block::
 
-    import qutip_jax as qjax
-    import qutip as qt
+    import qutip_jax
+    import qutip
     import jax
     import jax.numpy as jnp
     from functools import partial
     from qutip import mcsolve
     
     # Use JAX backend for QuTiP
-    qjax.set_as_default()
+    qutip_jax.set_as_default()
 
     # Define time-dependent functions
     @partial(jax.jit, static_argnames=("omega",))
@@ -73,18 +73,18 @@ Auto differentiation in ``mcsolve``
 
     # Define operators and states
     size = 10
-    a = qt.tensor(qt.destroy(size), qt.qeye(2)).to('jaxdia')    # Annihilation operator
-    sm = qt.qeye(size).to('jaxdia') & qt.sigmax().to('jaxdia')  # Example spin operator
+    a = qutip.tensor(qutip.destroy(size), qutip.qeye(2)).to('jaxdia')    # Annihilation operator
+    sm = qutip.qeye(size).to('jaxdia') & qutip.sigmax().to('jaxdia')  # Example spin operator
 
     # Define the Hamiltonian
     H_0 = 2.0 * jnp.pi * a.dag() * a + 2.0 * jnp.pi * sm.dag() * sm
     H_1_op = sm * a.dag() + sm.dag() * a
 
     # Initialize the Hamiltonian with time-dependent coefficients
-    H = [H_0, [H_1_op, qt.coefficient(H_1_coeff, args={"omega": 1.0})]]
+    H = [H_0, [H_1_op, qutip.coefficient(H_1_coeff, args={"omega": 1.0})]]
 
     # Define initial states, mixed states are not supported
-    state = qt.basis(size, size - 1).to('jax') & qt.basis(2, 1).to('jax')
+    state = qutip.basis(size, size - 1).to('jax') & qutip.basis(2, 1).to('jax')
     
     # Define collapse operators and observables
     c_ops = [jnp.sqrt(0.1) * a]
