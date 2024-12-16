@@ -10,7 +10,7 @@ from functools import partial
 qjax.set_as_default()
 
 # Define time-dependent functions
-@partial(jax.jit, static_argnames=("omega",))
+@jax.jit
 def H_1_coeff(t, omega):
     return 2.0 * jnp.pi * 0.25 * jnp.cos(2.0 * omega * t)
 
