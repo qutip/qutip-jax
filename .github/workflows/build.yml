@@ -51,7 +51,10 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      run: |
+          echo "Disabled for testing purpose."
+          ls dist/*
+      # uses: pypa/gh-action-pypi-publish@release/v1
 
   github-release:
     name: >-
@@ -95,7 +98,7 @@ jobs:
     name: Publish qutip-jax to TestPyPI
     needs:
     - build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
 
     environment:
@@ -112,6 +115,9 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution  to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
+      run: |
+          echo "Pushing to testpypi disabled while we work on this workflow"
+          ls dist/*
+      #uses: pypa/gh-action-pypi-publish@release/v1
+      #with:
+      #  repository-url: https://test.pypi.org/legacy/
