@@ -5,11 +5,11 @@ on:
     branches:
       - master
     tags:
-      - 'v*.*.*'
+      - v*
 
 jobs:
   build:
-    name: qutip-jax
+    name: Build qutip-jax
     runs-on: ubuntu-latest
 
     steps:
@@ -50,6 +50,12 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
+
+    - name: Verify this is not a dev version
+      shell: bash
+      run: |
+        if [[  dist/*.whl == *"dev"* ]]; then echo "Should be refused"; fi #then exit 1; fi
+        if [[  "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; fi #then exit 1; fi
     - name: Publish distribution to PyPI
       run: |
           echo "Disabled for testing purpose."
@@ -80,11 +86,6 @@ jobs:
         inputs: >-
           ./dist/*.tar.gz
           ./dist/*.whl
-    - name: Create GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: >-
-        gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --notes ""
     - name: Upload artifact signatures to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -121,4 +122,3 @@ jobs:
       #uses: pypa/gh-action-pypi-publish@release/v1
       #with:
       #  repository-url: https://test.pypi.org/legacy/
-      
