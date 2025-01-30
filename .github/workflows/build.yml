@@ -54,13 +54,11 @@ jobs:
     - name: Verify this is not a dev version
       shell: bash
       run: |
-        if [[  dist/*.whl == *"dev"* ]]; then echo "Should be refused"; fi #then exit 1; fi
-        if [[  "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; fi #then exit 1; fi
+        if [[ dist/*dev*.whl ]]; then exit 1; fi
+        if [[ "$GITHUB_REF" == *"master"* ]]; then exit 1; fi
+
     - name: Publish distribution to PyPI
-      run: |
-          echo "Disabled for testing purpose."
-          ls dist/*
-      # uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@release/v1
 
   github-release:
     name: >-
@@ -116,9 +114,6 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution  to TestPyPI
-      run: |
-          echo "Pushing to testpypi disabled while we work on this workflow"
-          ls dist/*
-      #uses: pypa/gh-action-pypi-publish@release/v1
-      #with:
-      #  repository-url: https://test.pypi.org/legacy/
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
