@@ -6,6 +6,7 @@ on:
       - master
     tags:
       - v*
+  pull_request:  # Temp
 
 jobs:
   build:
@@ -30,6 +31,14 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
+    - name: Verify this is not a dev version (Temp location)
+      shell: bash
+      run: |
+        echo dist/*.whl
+        if [[ dist/*.whl == *"dev"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
+
+        echo $GITHUB_REF
+        if [[ "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
 
   publish-to-pypi:
     name: >-
@@ -54,8 +63,11 @@ jobs:
     - name: Verify this is not a dev version
       shell: bash
       run: |
-        if [[  dist/*.whl == *"dev"* ]]; then echo "Should be refused"; fi #then exit 1; fi
-        if [[  "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; fi #then exit 1; fi
+        echo dist/*.whl
+        if [[ dist/*.whl == *"dev"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
+
+        echo $GITHUB_REF
+        if [[ "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
     - name: Publish distribution to PyPI
       run: |
           echo "Disabled for testing purpose."
