@@ -54,8 +54,8 @@ jobs:
     - name: Verify this is not a dev version
       shell: bash
       run: |
-        if [[ dist/*dev*.whl ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
-        if [[ "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
+        if [[ dist/*dev*.whl ]]; then exit 1; fi
+        if [[ "$GITHUB_REF" == *"master"* ]]; then exit 1; fi
 
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
