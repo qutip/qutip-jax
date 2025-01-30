@@ -6,6 +6,7 @@ on:
       - master
     tags:
       - v*
+  workflow_dispatch:
 
 jobs:
   build:
@@ -54,6 +55,8 @@ jobs:
     - name: Verify this is not a dev version
       shell: bash
       run: |
+        ls dist/*dev*.whl
+        echo $GITHUB_REF
         if [[ dist/*dev*.whl ]]; then exit 1; fi
         if [[ "$GITHUB_REF" == *"master"* ]]; then exit 1; fi
 
