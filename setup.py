@@ -45,7 +45,7 @@ def _determine_version(options):
     options['short_version'] = str(version.public)
     options['release'] = not version.is_devrelease
     diff = subprocess.run(["git", "diff", "master"], capture_output=True)
-    if len(diff.stdout) != 0:
+    if not options['release'] and len(diff.stdout) != 0:
         # Put the version string into canonical form, if it wasn't already.
         version_string = str(version)
         version_string += "+"
