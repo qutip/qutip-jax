@@ -6,7 +6,6 @@ on:
       - master
     tags:
       - v*
-  pull_request:  # Temp
 
 jobs:
   build:
@@ -31,15 +30,6 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-    - name: Verify this is not a dev version (Temp location)
-      shell: bash
-      run: |
-        echo dist/*.whl
-        if [[ dist/*dev*.whl ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
-
-        echo $GITHUB_REF
-        if [[ "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
-        if [[ "$GITHUB_REF" == *"merge"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
 
   publish-to-pypi:
     name: >-
@@ -64,16 +54,11 @@ jobs:
     - name: Verify this is not a dev version
       shell: bash
       run: |
-        echo dist/*.whl
-        if [[ dist/*.whl == *"dev"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
-
-        echo $GITHUB_REF
+        if [[ dist/*dev*.whl ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
         if [[ "$GITHUB_REF" == *"master"* ]]; then echo "Should be refused"; else echo "Should be accepted"; fi #then exit 1; fi
+
     - name: Publish distribution to PyPI
-      run: |
-          echo "Disabled for testing purpose."
-          ls dist/*
-      # uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@release/v1
 
   github-release:
     name: >-
@@ -129,9 +114,6 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution  to TestPyPI
-      run: |
-          echo "Pushing to testpypi disabled while we work on this workflow"
-          ls dist/*
-      #uses: pypa/gh-action-pypi-publish@release/v1
-      #with:
-      #  repository-url: https://test.pypi.org/legacy/
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
