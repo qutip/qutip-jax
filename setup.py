@@ -44,7 +44,8 @@ def _determine_version(options):
     version = packaging.version.parse(version_string)
     options['short_version'] = str(version.public)
     options['release'] = not version.is_devrelease
-    if not options['release']:
+    diff = subprocess.run(["git", "diff", "master"], capture_output=True)
+    if len(diff.stdout) != 0:
         # Put the version string into canonical form, if it wasn't already.
         version_string = str(version)
         version_string += "+"
