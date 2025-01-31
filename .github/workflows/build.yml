@@ -12,15 +12,16 @@ on:
 jobs:
   update_version:
     name: Update dev version
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
       - name: Increment VERSION
+        if: github.ref == 'refs/heads/master'
         run: |
           version="$(cat VERSION)"; python -c "b, n = '$version'.split('v'); print('v'.join([b, str(int(n)+1)]))" > VERSION
       - name: Add commit
+        if: github.ref == 'refs/heads/master'
         run: |
           git config --global user.email "Version_Incrementer@gh_bot"
           git config --global user.name "Version Incrementer"
@@ -32,7 +33,6 @@ jobs:
 
   build:
     name: Build qutip-jax
-    if: ${{ always() }}
     needs: update_version
 
     runs-on: ubuntu-latest
