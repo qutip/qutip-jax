@@ -8,7 +8,7 @@ Qutip-Jax can be installed with pip:
 
 .. code-block:: bash
 
-    pip install qutip>=5.0.0 qutip-jax
+    pip install qutip>=5.1.0 qutip-jax
 
 However qutip-jax is currently being developed and a lot of feature are only available when installed from source:
 
@@ -16,6 +16,10 @@ However qutip-jax is currently being developed and a lot of feature are only ava
 
     pip install git+https://github.com/qutip/qutip.git
     pip install git+https://github.com/qutip/qutip-jax.git
+
+The latest changes are also avaiable as pre release on TestPyPI:
+
+    pip install --pre --index-url https://test.pypi.org/simple/ qutip-jax
 
 .. _prerequisites:
 
