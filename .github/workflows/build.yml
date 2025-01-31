@@ -42,6 +42,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Checkout updated version
+      if: github.ref == 'refs/heads/master'
       run: git pull
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -83,10 +84,11 @@ jobs:
       run: |
         ls dist/*dev*.whl
         echo $GITHUB_REF
-        if [[ dist/*dev*.whl ]]; then echo dist/*dev*.whl; exit 1; fi
+        if [[ $(ls dist/*.whl) == *dev* ]]; then echo dist/*dev*.whl; exit 1; fi
         if [[ "$GITHUB_REF" == *"master"* ]]; then echo $GITHUB_REF; exit 1; fi
 
     - name: Publish distribution to PyPI
+      if: github.repository == 'qutip/qutip-jax'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         verbose: true
@@ -145,6 +147,7 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution  to TestPyPI
+      if: github.repository == 'qutip/qutip-jax'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
