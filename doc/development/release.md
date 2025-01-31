@@ -17,10 +17,7 @@
 ## Make the git release
 
 - Create the tag and fill with the changelog.
-
-## Run the build action.
-
-- Chose between a testpypi, dry run or full release.
+- This will automatically trigger the action to release to pypi and also add the wheels to the GitHub release.
 
 ## Readthedocs
 

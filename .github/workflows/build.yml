@@ -82,9 +82,9 @@ jobs:
     - name: Verify this is not a dev version
       shell: bash
       run: |
-        ls dist/*dev*.whl
+        ls dist/*.whl
         echo $GITHUB_REF
-        if [[ $(ls dist/*.whl) == *dev* ]]; then echo dist/*dev*.whl; exit 1; fi
+        if [[ $(ls dist/*.whl) == *dev* ]]; then echo dist/*.whl; exit 1; fi
         if [[ "$GITHUB_REF" == *"master"* ]]; then echo $GITHUB_REF; exit 1; fi
 
     - name: Publish distribution to PyPI
