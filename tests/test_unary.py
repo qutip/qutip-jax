@@ -60,7 +60,7 @@ def _inv_jax(matrix):
         data.add(
             matrix,
             data.diag(
-                [1.1] * matrix.shape[0], shape=matrix.shape, dtype="JaxArray"
+                [2.0] * matrix.shape[0], shape=matrix.shape, dtype="JaxArray"
             ),
         )
     )
