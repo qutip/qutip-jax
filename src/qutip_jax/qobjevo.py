@@ -14,6 +14,14 @@ from qutip.core.data.matmul import matmul
 from functools import partial
 
 
+try:
+    # Pre jac 0.6.1
+    PjitFunction = jaxlib.xla_extension.PjitFunction
+except AttributeError:
+    # Post jac 0.6.1
+    PjitFunction = jaxlib._jax.PjitFunction
+
+
 __all__ = []
 
 
@@ -146,7 +154,7 @@ class JaxJitCoeff(Coefficient):
         )
 
 
-coefficient_builders[jaxlib.xla_extension.PjitFunction] = JaxJitCoeff
+coefficient_builders[PjitFunction] = JaxJitCoeff
 jax.tree_util.register_pytree_node(
     JaxJitCoeff, JaxJitCoeff.flatten, JaxJitCoeff.unflatten
 )
