@@ -114,7 +114,7 @@ def inv_jaxarray(matrix):
     return JaxArray._fast_constructor(linalg.inv(matrix._jxa), matrix.shape)
 
 
-def sqrtm_jaxarray(matrix):
+def sqrtm_jaxarray(matrix, isherm=None):
     """Matrix square root `sqrt(A)` for a matrix `A`."""
     _check_square_shape(matrix)
     return JaxArray._fast_constructor(linalg.sqrtm(matrix._jxa), matrix.shape)
