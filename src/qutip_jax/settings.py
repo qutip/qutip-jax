@@ -8,7 +8,7 @@ __all__ = ["set_as_default"]
 def set_as_default(*, revert=False):
     if revert:
         settings.core['numpy_backend'] = np
-        settings.core['default_dtype'] = None
+        settings.core['default_dtype'] = "Core"
         SESolver.solver_options['method'] = 'adams'
         MESolver.solver_options['method'] = 'adams'
         MCSolver.solver_options['method'] = 'adams'
