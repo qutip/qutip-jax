@@ -30,6 +30,7 @@ qutip.data.create.add_creators(
 del is_jax_array
 
 from .binops import *
+from .einsum import *
 from .unary import *
 from .permute import *
 from .reshape import *
