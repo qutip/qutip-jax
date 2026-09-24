@@ -18,8 +18,3 @@ jobs:
           echo "Runner OS: $RUNNER_OS"
           echo "Runner architecture: $RUNNER_ARCH"
           echo "Workspace: $GITHUB_WORKSPACE"
-
-      - name: Show Python
-        run: |
-          python --version
-          which python
