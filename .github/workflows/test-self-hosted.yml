@@ -1,0 +1,23 @@
+name: Test self-hosted runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Hello from runner
+        run: echo "Hello from the self-hosted runner!"
+
+      - name: Show environment
+        run: |
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner architecture: $RUNNER_ARCH"
+          echo "Workspace: $GITHUB_WORKSPACE"
+
+      - name: Show Python
+        run: |
+          python --version
+          which python
