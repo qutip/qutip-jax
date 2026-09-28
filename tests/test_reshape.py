@@ -8,7 +8,7 @@ class TestSplitColumns(test_reshape.TestSplitColumns):
         pytest.param(
             qutip_jax.split_columns_jaxarray,
             qutip_jax.JaxArray,
-            list,
+            qutip_jax.JaxArray,
         )
     ]
 
