@@ -44,6 +44,7 @@ class TestExpm(testing.TestExpm):
 
 
 def _invertible_jaxarray(shape):
+    # Add a diagonal so `matrix` is not singular
     matrix = conftest._random_cplx(shape)
     return data.add(
         matrix,
