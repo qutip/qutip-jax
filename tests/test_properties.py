@@ -8,16 +8,6 @@ import qutip.core.data as _data
 from . import conftest
 
 
-testing._ALL_CASES = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
-    qutip_jax.JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
-}
-testing._RANDOM = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
-    qutip_jax.JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
-}
-
-
 @pytest.mark.parametrize("N", (1, 10))
 @pytest.mark.parametrize(
     ["func", "maker"],
