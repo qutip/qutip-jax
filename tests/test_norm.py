@@ -4,17 +4,6 @@ import qutip_jax
 import pytest
 import numbers
 
-from . import conftest
-
-
-testing._ALL_CASES = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
-}
-testing._RANDOM = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
-}
-
-
 class TestOneNorm(testing_norm.TestOneNorm):
     specialisations = [
         pytest.param(

@@ -3,19 +3,6 @@ import qutip_jax
 from qutip_jax import JaxArray, JaxDia
 import pytest
 
-from . import conftest
-
-
-testing._ALL_CASES = {
-    JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
-    JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
-}
-testing._RANDOM = {
-    JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
-    JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
-}
-
-
 class TestAdd(testing.TestAdd):
     specialisations = [
         pytest.param(

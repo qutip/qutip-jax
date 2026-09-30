@@ -1,6 +1,8 @@
 from jax import random
 import qutip_jax
 import numpy as np
+from qutip.tests.core.data.conftest import CORRECT_CASES, WRONG_CASES
+from qutip.tests.conftest import random_generator
 
 key = random.PRNGKey(1234)
 
@@ -18,3 +20,12 @@ def _random_dia(shape):
     data_shape = len(offsets), shape[1]
     data = np.random.rand(*data_shape) + 1j * np.random.rand(*data_shape)
     return qutip_jax.JaxDia((data, offsets), shape=shape)
+
+CORRECT_CASES.update({
+    qutip_jax.JaxArray: lambda shape: [lambda rng: _random_cplx(shape)],
+    qutip_jax.JaxDia: lambda shape: [lambda rng: _random_dia(shape)],
+})
+WRONG_CASES.update({
+    qutip_jax.JaxArray: lambda shape: [lambda rng: _random_cplx(shape)],
+    qutip_jax.JaxDia: lambda shape: [lambda rng: _random_dia(shape)],
+})
