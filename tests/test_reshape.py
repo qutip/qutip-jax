@@ -1,5 +1,5 @@
-import qutip.tests.core.data.test_mathematics as test_mathematics
-import qutip.tests.core.data.test_reshape as test_reshape
+import qutip.testing.mixin as testing
+import qutip.testing.reshape_mixin as test_reshape
 import qutip_jax
 import pytest
 
@@ -43,7 +43,7 @@ class TestReshape(test_reshape.TestReshape):
     ]
 
 
-class TestPtrace(test_mathematics.TestPtrace):
+class TestPtrace(testing.TestPtrace):
     specialisations = [
         pytest.param(
             qutip_jax.ptrace_jaxarray,
