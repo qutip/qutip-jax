@@ -27,8 +27,8 @@ def test_eigen_known_oper():
     ],
 )
 @pytest.mark.parametrize("order", ["low", "high"])
-def test_eigen_rand_oper(rand, isherm, order):
-    mat = rand(10, dtype="jax").data
+def test_eigen_rand_oper(rand, isherm, order, random_generator):
+    mat = rand(10, dtype="jax", seed=random_generator).data
     kw = {"isherm": isherm, "sort": order}
     spvals, spvecs = qutip_jax.eigs_jaxarray(mat, vecs=True, **kw)
     sp_energies = qutip_jax.eigs_jaxarray(mat, vecs=False, **kw)
@@ -49,8 +49,8 @@ def test_eigen_rand_oper(rand, isherm, order):
 )
 @pytest.mark.parametrize("order", ["low", "high"])
 @pytest.mark.parametrize("N", [1, 5, 8, 9])
-def test_eigvals_parameter(rand, isherm, order, N):
-    mat = rand(10, dtype="jax").data
+def test_eigvals_parameter(rand, isherm, order, N, random_generator):
+    mat = rand(10, dtype="jax", seed=random_generator).data
     kw = {"isherm": isherm, "sort": order}
     spvals, spvecs = qutip_jax.eigs_jaxarray(mat, vecs=True, eigvals=N, **kw)
     sp_energies = qutip_jax.eigs_jaxarray(mat, vecs=False, eigvals=N, **kw)
