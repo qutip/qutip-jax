@@ -1,4 +1,4 @@
-import qutip.tests.core.data.test_mathematics as testing
+import qutip.testing.mixin as testing
 import qutip_jax
 from qutip_jax import JaxArray, JaxDia
 import pytest
