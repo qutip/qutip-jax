@@ -14,7 +14,7 @@ def test_Qobj_flatten():
     assert func(qobj) == qobj.dag()
 
 
-def test_QobjEvo_flatten():
+def test_QobjEvo_flatten(random_generator):
     @jax.jit
     def fp(t, w):
         return jax.numpy.exp(1j * t * w)
@@ -29,7 +29,7 @@ def test_QobjEvo_flatten():
         + destroy(3, dtype="jax") * coefficient(fm, args={"w": 3.1415})
     )
 
-    state = rand_ket(3, dtype="jax")
+    state = rand_ket(3, dtype="jax", seed=random_generator)
 
     @jax.jit
     def func(t, H, state):

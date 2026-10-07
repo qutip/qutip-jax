@@ -12,10 +12,11 @@ import qutip
 )
 @pytest.mark.parametrize("shape", [(1, 1), (10, 1), (3, 3), (1, 10)])
 @pytest.mark.parametrize("dtype", [int, float, complex])
-def test_init(backend, shape, dtype):
+def test_init(backend, shape, dtype, random_generator):
     """Tests creation of JaxArrays from NumPy and JAX-Numpy arrays"""
-    array = np.array(np.random.rand(1, shape[1]), dtype=dtype)
-    array = backend.array(array)
+    array = backend.array(
+        random_generator.random((1, shape[1])), dtype=dtype
+    )
     jax_a = JaxDia((array, (0,)), shape=shape)
     assert isinstance(jax_a, JaxDia)
     assert jax_a.data.dtype == jnp.complex128
