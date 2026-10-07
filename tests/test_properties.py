@@ -1,4 +1,4 @@
-import qutip.tests.core.data.test_mathematics as testing
+import qutip.testing.mixin as testing
 import qutip_jax
 import pytest
 import numbers
@@ -16,8 +16,8 @@ from . import conftest
         (qutip_jax.isherm_jaxdia, conftest._random_dia),
     ],
 )
-def test_isherm(func, maker, N):
-    A = maker((N, N))
+def test_isherm(func, maker, N, random_generator):
+    A = maker((N, N), random_generator)
     A = A + A.adjoint()
     assert func(A)
 
@@ -30,19 +30,19 @@ def test_isherm(func, maker, N):
         (qutip_jax.isherm_jaxdia, conftest._random_dia),
     ],
 )
-def test_isherm_non_square(func, maker, shape):
-    A = maker(shape)
+def test_isherm_non_square(func, maker, shape, random_generator):
+    A = maker(shape, random_generator)
     assert not func(A)
 
 
-def test_isherm_nonherm():
-    A = conftest._random_cplx((10, 10))
+def test_isherm_nonherm(random_generator):
+    A = conftest._random_cplx((10, 10), random_generator)
     A = A + qutip_jax.JaxArray(np.diag(np.arange(10) * 1j))
     assert not qutip_jax.isherm_jaxarray(A)
 
 
-def test_isherm_nonherm_dia():
-    A = conftest._random_cplx((10, 10))
+def test_isherm_nonherm_dia(random_generator):
+    A = conftest._random_cplx((10, 10), random_generator)
     A = A + qutip_jax.identity_jaxdia(10) * 1j
     assert not qutip_jax.isherm_jaxarray(A)
 
@@ -54,10 +54,10 @@ def test_isherm_nonherm_dia():
         (qutip_jax.isherm_jaxdia, conftest._random_dia),
     ],
 )
-def test_isherm_tol(func, maker):
-    A = maker((10, 10))
+def test_isherm_tol(func, maker, random_generator):
+    A = maker((10, 10), random_generator)
     A = A + A.adjoint()
-    A = A + maker((10, 10)) * 1e-10
+    A = A + maker((10, 10), random_generator) * 1e-10
     assert func(A, 1e-5)
     assert not func(A, 1e-15)
 
@@ -70,8 +70,8 @@ def test_isherm_tol(func, maker):
         (qutip_jax.iszero_jaxdia, conftest._random_dia),
     ],
 )
-def test_iszero(func, maker, shape):
-    A = maker(shape) * 1e-10
+def test_iszero(func, maker, shape, random_generator):
+    A = maker(shape, random_generator) * 1e-10
     assert func(A, 1e-5)
     assert not func(A, 1e-15)
 

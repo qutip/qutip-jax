@@ -1,10 +1,9 @@
-import qutip.tests.core.data.test_mathematics as testing
-import qutip.tests.core.data.test_expect as testing_expect
+import qutip.testing.mixin as testing
 import qutip_jax
 import pytest
 import numbers
 
-class TestExpect(testing_expect.TestExpect):
+class TestExpect(testing.TestExpect):
     specialisations = [
         pytest.param(
             qutip_jax.expect_jaxdia_jaxarray,
@@ -21,7 +20,7 @@ class TestExpect(testing_expect.TestExpect):
     ]
 
 
-class TestExpectSuper(testing_expect.TestExpectSuper):
+class TestExpectSuper(testing.TestExpectSuper):
     specialisations = [
         pytest.param(
             qutip_jax.expect_super_jaxarray,

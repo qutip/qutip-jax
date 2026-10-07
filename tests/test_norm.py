@@ -1,5 +1,4 @@
-import qutip.tests.core.data.test_mathematics as testing
-import qutip.tests.core.data.test_norm as testing_norm
+import qutip.testing.stat_mixin as testing_norm
 import qutip_jax
 import pytest
 import numbers
