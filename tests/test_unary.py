@@ -1,21 +1,10 @@
-import qutip.tests.core.data.test_mathematics as testing
+import qutip.testing.mixin as testing
 import qutip_jax
 from qutip_jax import JaxArray, JaxDia
 import pytest
 from qutip.core import data
 
 from . import conftest
-
-
-testing._ALL_CASES = {
-    JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
-    JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
-}
-testing._RANDOM = {
-    JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)],
-    JaxDia: lambda shape: [lambda: conftest._random_dia(shape)],
-}
-
 
 class TestNeg(testing.TestNeg):
     specialisations = [
@@ -54,20 +43,23 @@ class TestExpm(testing.TestExpm):
     ]
 
 
-def _inv_jax(matrix):
+def _invertible_jaxarray(shape, rng):
     # Add a diagonal so `matrix` is not singular
-    return qutip_jax.inv_jaxarray(
-        data.add(
-            matrix,
-            data.diag(
-                [2.0] * matrix.shape[0], shape=matrix.shape, dtype="JaxArray"
-            ),
-        )
+    matrix = conftest._random_cplx(shape, rng)
+    return data.add(
+        matrix,
+        data.diag([2.0 * shape[0]] * shape[0], shape=shape, dtype="JaxArray"),
     )
 
 
 class TestInv(testing.TestInv):
-    specialisations = [pytest.param(_inv_jax, JaxArray, JaxArray)]
+    specialisations = [pytest.param(qutip_jax.inv_jaxarray, JaxArray, JaxArray)]
+    correct_cases = {
+        JaxArray: lambda shape: [lambda rng: _invertible_jaxarray(shape, rng)],
+    }
+    wrong_cases = {
+        JaxArray: lambda shape: [lambda rng: conftest._random_cplx(shape, rng)],
+    }
 
 
 class TestSqrtm(testing.TestSqrtm):

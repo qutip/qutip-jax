@@ -1,19 +1,7 @@
-import qutip.tests.core.data.test_mathematics as testing
-import qutip.tests.core.data.test_norm as testing_norm
+import qutip.testing.stat_mixin as testing_norm
 import qutip_jax
 import pytest
 import numbers
-
-from . import conftest
-
-
-testing._ALL_CASES = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
-}
-testing._RANDOM = {
-    qutip_jax.JaxArray: lambda shape: [lambda: conftest._random_cplx(shape)]
-}
-
 
 class TestOneNorm(testing_norm.TestOneNorm):
     specialisations = [

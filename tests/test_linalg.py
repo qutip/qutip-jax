@@ -14,16 +14,16 @@ class TestSolve:
     def op_numpy(self, A, b):
         return np.linalg.solve(A, b)
 
-    def _gen_op(self, N, dtype):
-        return qutip.rand_unitary(N, dtype=dtype).data
+    def _gen_op(self, N, dtype, rng):
+        return qutip.rand_unitary(N, dtype=dtype, seed=rng).data
 
-    def _gen_ket(self, N, dtype):
-        return qutip.rand_ket(N, dtype=dtype).data
+    def _gen_ket(self, N, dtype, rng):
+        return qutip.rand_ket(N, dtype=dtype, seed=rng).data
 
     @pytest.mark.parametrize("method", ["solve", "lstsq"])
-    def test_mathematically_correct_JaxArray(self, method):
-        A = self._gen_op(10, JaxArray)
-        b = self._gen_ket(10, JaxArray)
+    def test_mathematically_correct_JaxArray(self, method, random_generator):
+        A = self._gen_op(10, JaxArray, random_generator)
+        b = self._gen_ket(10, JaxArray, random_generator)
         expected = self.op_numpy(A.to_array(), b.to_array())
         test = solve_jaxarray(A, b, method)
         test1 = _data.solve(A, b, method)
@@ -55,22 +55,24 @@ class TestSVD:
     def op_numpy(self, A):
         return jax.numpy.linalg.svd(A)
 
-    def _gen_dm(self, N, rank, dtype):
-        return qutip.rand_dm(N, rank=rank, dtype=dtype).data
+    def _gen_dm(self, N, rank, dtype, rng):
+        return qutip.rand_dm(N, rank=rank, dtype=dtype, seed=rng).data
 
-    def _gen_non_square(self, N):
-        mat = np.random.randn(N, N // 2)
-        for i in range(N // 2):
-            # Ensure no zeros singular values
-            mat[i, i] += 5
+    def _gen_non_square(self, N, rng):
+        mat = rng.normal(size=(N, N // 2))
+        # Ensure no zeros singular values.
+        indices = np.arange(N // 2)
+        mat[indices, indices] += 5
         return _data.Dense(mat)
 
     @pytest.mark.parametrize("shape", ["square", "non-square"])
-    def test_mathematically_correct_svd_jaxarray(self, shape):
+    def test_mathematically_correct_svd_jaxarray(self, shape, random_generator):
         if shape == "square":
-            matrix = self._gen_dm(10, 6, JaxArray)
+            matrix = self._gen_dm(10, 6, JaxArray, random_generator)
         else:
-            matrix = _data.to(JaxArray, self._gen_non_square(12))
+            matrix = _data.to(
+                JaxArray, self._gen_non_square(12, random_generator)
+            )
         u, s, v = self.op_numpy(matrix.to_array())
         test_U, test_S, test_V = svd_jaxarray(matrix, True)
         only_S = _data.svd(matrix, False)

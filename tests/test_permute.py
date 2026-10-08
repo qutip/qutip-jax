@@ -3,7 +3,7 @@ from qutip_jax import JaxArray
 
 
 class TestPermute:
-    def test_psi(self):
+    def test_psi(self, random_generator):
         A = qutip.basis(3, 0, dtype="jax")
         B = qutip.basis(5, 4, dtype="jax")
         C = qutip.basis(4, 2, dtype="jax")
@@ -18,9 +18,9 @@ class TestPermute:
         assert isinstance(psi2_bra.data, JaxArray)
 
         for _ in range(3):
-            A = qutip.rand_ket(3, dtype="jax")
-            B = qutip.rand_ket(4, dtype="jax")
-            C = qutip.rand_ket(5, dtype="jax")
+            A = qutip.rand_ket(3, dtype="jax", seed=random_generator)
+            B = qutip.rand_ket(4, dtype="jax", seed=random_generator)
+            C = qutip.rand_ket(5, dtype="jax", seed=random_generator)
             psi = qutip.tensor(A, B, C)
             psi2 = psi.permute([1, 0, 2])
             assert psi2 == qutip.tensor(B, A, C)
@@ -31,7 +31,7 @@ class TestPermute:
             assert psi2_bra == qutip.tensor(B, A, C).dag()
             assert isinstance(psi2_bra.data, JaxArray)
 
-    def test_oper(self):
+    def test_oper(self, random_generator):
         A = qutip.fock_dm(3, 0, dtype="jax")
         B = qutip.fock_dm(5, 4, dtype="jax")
         C = qutip.fock_dm(4, 2, dtype="jax")
@@ -41,9 +41,9 @@ class TestPermute:
         assert isinstance(rho2.data, JaxArray)
 
         for _ in range(3):
-            A = qutip.rand_dm(3, dtype="jax")
-            B = qutip.rand_dm(4, dtype="jax")
-            C = qutip.rand_dm(5, dtype="jax")
+            A = qutip.rand_dm(3, dtype="jax", seed=random_generator)
+            B = qutip.rand_dm(4, dtype="jax", seed=random_generator)
+            C = qutip.rand_dm(5, dtype="jax", seed=random_generator)
             rho = qutip.tensor(A, B, C)
             rho2 = rho.permute([1, 0, 2])
             assert rho2 == qutip.tensor(B, A, C)
@@ -62,10 +62,10 @@ class TestPermute:
             )
             assert isinstance(rho2_vec_bra.data, JaxArray)
 
-    def test_super(self):
+    def test_super(self, random_generator):
         for _ in range(3):
             super_dims = [3, 5, 4]
-            U = qutip.rand_unitary(super_dims, dtype="jax")
+            U = qutip.rand_unitary(super_dims, dtype="jax", seed=random_generator)
             Unew = U.permute([2, 1, 0])
             S_tens = qutip.to_super(U)
             S_tens_new = qutip.to_super(Unew)
