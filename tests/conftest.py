@@ -14,9 +14,7 @@ def _random_cplx(shape, rng):
     )
 
 def _random_dia(shape, rng):
-    offsets = np.arange(-shape[0] + 1, shape[1])
-    offsets = tuple(offsets[: min(3, shape[0] + shape[1] - 1)])
-    density = len(offsets) / (shape[0] + shape[1] - 1)
+    density = 0.2
     matrix = random_diag(shape, density=density, gen=rng)
     return qutip_jax.jaxdia_from_dia(matrix)
 
