@@ -1,11 +1,9 @@
 # Release procedure
 
-##### Document in progress!
-
 ## Preparing the code
 
 ###  For major and minor release.
-- Create a new branch qutip-jax-X.Y.0 with the code at the state of the release.
+- Create a new branch `qutip-jax-X.Y.0` with the code at the state of the release.
 - Create a PR to update the version number and changelog.
 
 ###  For micro release.
@@ -18,6 +16,13 @@
 
 - Create the tag and fill with the changelog.
 - This will automatically trigger the action to release to pypi and also add the wheels to the GitHub release.
+
+## Post-release ToDo's
+
+1. In [qutip-tutorials](https://github.com/qutip/qutip-tutorials), upgrade `qutip-jax` dependency for tests with the released `qutip` by updating the value in `jax-install-spec` keyword of the 'v5-release' job.
+The following workflows have to be modified:
+    1. `.github/workflows/notebook_ci.yaml`
+    2. `.github/workflows/nightly_ci.yaml`
 
 ## Readthedocs
 
