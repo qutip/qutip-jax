@@ -1,0 +1,29 @@
+name: Test self-hosted runner
+
+on:
+  push:
+    branches:
+      - test_self_hosted_runner
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: [self-hosted, au_gh200-qutip_jax]
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install JAX with CUDA and qutip-jax tests
+        run: |
+          python -m pip install "jax[cuda12]"
+          python -m pip install -e ".[tests]"
+
+      - name: Check GPU and run smoke tests
+        run: |
+          python -c 'import jax, qutip; print("QuTiP:", qutip.__version__); print("JAX devices:", jax.devices()); assert any(device.platform == "gpu" for device in jax.devices())'
+          python -m pytest -q tests/test_jaxarray.py
