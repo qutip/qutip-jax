@@ -6,24 +6,39 @@ on:
       - test_self_hosted_runner
   workflow_dispatch:
 
+# Only one run at a time on the single GPU runner; newer pushes replace queued ones
+concurrency:
+  group: self-hosted-gpu
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
   test:
-    runs-on: [self-hosted, au_gh200-qutip_jax]
+    if: github.repository == 'qutip/qutip-jax'
+    runs-on: [self-hosted, linux, arm64, gpu]
     timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
 
+      - name: Check GPU driver
+        run: nvidia-smi
+
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
 
-      - name: Install JAX with CUDA and qutip-jax tests
+      - name: Create clean virtualenv and install
         run: |
-          python -m pip install "jax[cuda12]"
-          python -m pip install -e ".[tests]"
+          python -m venv "$RUNNER_TEMP/venv"
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/venv/bin/python" -m pip install "jax[cuda12]"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install -e ".[tests]"
 
       - name: Check GPU and run smoke tests
         run: |
-          python -c 'import jax, qutip; print("QuTiP:", qutip.__version__); print("JAX devices:", jax.devices()); assert any(device.platform == "gpu" for device in jax.devices())'
+          python -c 'import jax, qutip; print("QuTiP:", qutip.__version__); print("JAX devices:", jax.devices()); assert any(d.platform == "gpu" for d in jax.devices())'
           python -m pytest -q tests/test_jaxarray.py
