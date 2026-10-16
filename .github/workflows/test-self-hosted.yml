@@ -36,7 +36,7 @@ jobs:
           echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
           "$RUNNER_TEMP/venv/bin/python" -m pip install "jax[cuda12]"
-          "$RUNNER_TEMP/venv/bin/python" -m pip install -e ".[tests]"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install pytest "qutip>=5.1.0" qutip-jax
 
       - name: Check GPU and run smoke tests
         run: |
