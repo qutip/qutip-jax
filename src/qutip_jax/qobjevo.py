@@ -81,7 +81,7 @@ class JaxJitCoeff(Coefficient):
             )
 
             def f(t, **kwargs):
-                return self._caller(t, **kwargs) * self._caller(t, **kwargs)
+                return self._caller(t, **kwargs) * other._caller(t, **kwargs)
 
             return JaxJitCoeff(
                 jit(f, static_argnames=merge_static),
