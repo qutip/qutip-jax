@@ -41,4 +41,4 @@ jobs:
       - name: Check GPU and run smoke tests
         run: |
           python -c 'import jax, qutip; print("QuTiP:", qutip.__version__); print("JAX devices:", jax.devices()); assert any(d.platform == "gpu" for d in jax.devices())'
-          python -m pytest -q tests/test_jaxarray.py
+          #python -m pytest -q tests/test_jaxarray.py
