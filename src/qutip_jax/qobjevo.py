@@ -24,7 +24,7 @@ except AttributeError:
 
 __all__ = []
 
-
+ 
 class JaxJitCoeff(Coefficient):
     func: callable
     static_argnames: tuple
@@ -224,7 +224,7 @@ class JaxQobjEvo:
         return jnp.array(list_coeffs, dtype=np.complex128)
 
     def __call__(self, t, _args=None, **kwargs):
-        if args is not None:
+        if _args is not None:
             kwargs.update(_args)
         if kwargs:
             caller = self.arguments(kwargs)
