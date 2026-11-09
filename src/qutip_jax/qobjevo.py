@@ -24,7 +24,6 @@ except AttributeError:
 
 __all__ = []
 
- 
 class JaxJitCoeff(Coefficient):
     func: callable
     static_argnames: tuple
