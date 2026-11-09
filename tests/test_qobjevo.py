@@ -2,7 +2,7 @@ import jax
 import pytest
 import jax.numpy as jnp
 import numpy as np
-from qutip_jax.qobjevo import JaxJitCoeff,JaxQobjEvo
+from qutip_jax.qobjevo import JaxJitCoeff, JaxQobjEvo
 from qutip import QobjEvo, coefficient, create, num
 
 def _coeff(value):
