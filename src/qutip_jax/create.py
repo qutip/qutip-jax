@@ -228,7 +228,7 @@ def diag_jaxdia(diagonals, offsets=None, shape=None):
             )
         else:
             n_rows, n_cols = shape
-        return zeros(n_rows, n_cols)
+        return zeros_jaxdia(n_rows, n_cols)
 
     if shape:
         n_rows, n_cols = shape

@@ -103,6 +103,13 @@ def test_diags(func, dtype, diagonals, offsets, shape):
     np.testing.assert_allclose(base.to_array(), test, rtol=1e-10)
 
 
+@pytest.mark.parametrize("func", [diag_jaxarray, diag_jaxdia])
+def test_diags_empty_with_shape(func):
+    """Tests diags with no diagonals but a given shape gives zeros."""
+    base = func([], shape=(3, 4))
+    assert base.shape == (3, 4)
+    assert np.count_nonzero(base.to_array()) == 0
+
 @pytest.mark.parametrize(
     ["shape", "position", "value"],
     [
