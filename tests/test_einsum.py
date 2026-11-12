@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 import qutip as qt
-from qutip.core.dimensions import einsum
+from qutip import einsum
 from qutip_jax import JaxArray, einsum_jax
 from qutip.tests.core.data.test_einsum import TestEinsum as _TestEinsum
 
@@ -176,6 +176,3 @@ def test_qobj_einsum_jit_scalar():
 
     val = calc(z.data)
     np.testing.assert_allclose(val, 2.0, atol=1e-12)
-
-
-
