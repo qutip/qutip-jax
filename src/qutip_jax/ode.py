@@ -117,7 +117,7 @@ class DiffraxIntegrator(Integrator):
         if out._is_set:
             out.t = children[3]
             out.state = children[4]
-        out.ODEsystem = diffrax.ODETerm(out.dstate)
+        out.ODEsystem = diffrax.ODETerm(dstate)
         return out
 
     @property
