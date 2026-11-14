@@ -1,4 +1,5 @@
 from qutip import (
+    SESolver,
     coefficient,
     num,
     destroy,
@@ -108,3 +109,22 @@ def test_ode_grad(dtype):
     assert val == pytest.approx(9 * np.exp(-0.2 * 0.5**2))
     assert dt == pytest.approx(9 * np.exp(-0.2 * 0.5**2) * -0.5**2)
     assert dA == pytest.approx(9 * np.exp(-0.2 * 0.5**2) * -0.2)
+
+
+@pytest.mark.filterwarnings("ignore:Passing arguments 'a'")
+def test_ode_integrator_flatten():
+    solver = SESolver(num(3), options={"method": "diffrax"})
+    integrator = solver._integrator
+    integrator.set_state(0., basis(3, 2, dtype="jax").data)
+
+    leaves, treedef = jax.tree_util.tree_flatten(integrator)
+    rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
+
+    # The rebuilt integrator must still be able to integrate.
+    t, state = integrator.integrate(0.5)
+    t_rebuilt, state_rebuilt = rebuilt.integrate(0.5)
+
+    assert t_rebuilt == t
+    np.testing.assert_allclose(
+        state_rebuilt.to_array(), state.to_array(), atol=1e-6
+    )
