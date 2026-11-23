@@ -8,6 +8,7 @@ import jax
 
 from qutip.core import data as _data
 from qutip.core.data import Data, Dense, CSR
+from . import conftest
 
 
 class TestSolve:
@@ -59,11 +60,11 @@ class TestSVD:
         return qutip.rand_dm(N, rank=rank, dtype=dtype, seed=rng).data
 
     def _gen_non_square(self, N, rng):
-        mat = rng.normal(size=(N, N // 2))
+        mat = jax.random.normal(conftest._jax_key(rng), (N, N // 2))
         # Ensure no zeros singular values.
-        indices = np.arange(N // 2)
-        mat[indices, indices] += 5
-        return _data.Dense(mat)
+        indices = jax.numpy.arange(N // 2)
+        mat = mat.at[indices, indices].add(5)
+        return JaxArray(mat)
 
     @pytest.mark.parametrize("shape", ["square", "non-square"])
     def test_mathematically_correct_svd_jaxarray(self, shape, random_generator):
