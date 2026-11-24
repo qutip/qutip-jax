@@ -12,34 +12,6 @@ class TestEinsum(einsum_mixin.TestEinsum):
         pytest.param(einsum_jax, JaxArray, JaxArray, id="JaxArray"),
     ]
 
-    @pytest.mark.parametrize("einsum_func, data_type, out_type", specialisations)
-    @pytest.mark.parametrize(*_cases_mark.args)
-    def test_einsum(
-        self,
-        einsum_func,
-        data_type,
-        out_type,
-        subscripts,
-        shapes,
-        perms,
-        out_perm,
-        out_shape,
-        operands_data,
-        expected_data,
-    ):
-        _TestEinsum().test_einsum(
-            einsum_func,
-            data_type,
-            out_type,
-            subscripts,
-            shapes,
-            perms,
-            out_perm,
-            out_shape,
-            operands_data,
-            expected_data,
-        )
-
 
 _cx = qt.Qobj(
     [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]],
