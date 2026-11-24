@@ -3,15 +3,11 @@ import pytest
 import qutip as qt
 from qutip import einsum
 from qutip_jax import JaxArray, einsum_jax
-from qutip.tests.core.data.test_einsum import TestEinsum as _TestEinsum
-
-_cases_mark = [
-    m for m in _TestEinsum.test_einsum.pytestmark
-    if m.name == 'parametrize' and 'subscripts' in m.args[0]
-][0]
+from qutip.testing import einsum_mixin
 
 
-class TestEinsum:
+class TestEinsum(einsum_mixin.TestEinsum):
+
     specialisations = [
         pytest.param(einsum_jax, JaxArray, JaxArray, id="JaxArray"),
     ]
