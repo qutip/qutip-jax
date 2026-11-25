@@ -19,12 +19,20 @@ jobs:
     if: github.repository == 'qutip/qutip-jax'
     runs-on: [self-hosted, linux, arm64, gpu]
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      LOG_DIR: ${{ runner.temp }}/self-hosted-logs-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
+      - name: Prepare log directory
+        run: mkdir -p "$LOG_DIR"
+
       - uses: actions/checkout@v7
 
       - name: Check GPU driver
-        run: nvidia-smi
+        run: nvidia-smi 2>&1 | tee "$LOG_DIR/gpu-driver.log"
 
       - uses: actions/setup-python@v7
         with:
@@ -32,13 +40,25 @@ jobs:
 
       - name: Create clean virtualenv and install
         run: |
-          python -m venv "$RUNNER_TEMP/venv"
-          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
-          "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
-          "$RUNNER_TEMP/venv/bin/python" -m pip install "jax[cuda12]"
-          "$RUNNER_TEMP/venv/bin/python" -m pip install pytest "qutip>=5.1.0" qutip-jax
+          (
+            python -m venv "$RUNNER_TEMP/venv"
+            echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+            "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
+            "$RUNNER_TEMP/venv/bin/python" -m pip install "jax[cuda12]"
+            "$RUNNER_TEMP/venv/bin/python" -m pip install pytest "qutip>=5.1.0" qutip-jax
+          ) 2>&1 | tee "$LOG_DIR/install.log"
 
       - name: Check GPU and run smoke tests
         run: |
-          python -c 'import jax, qutip; print("QuTiP:", qutip.__version__); print("JAX devices:", jax.devices()); assert any(d.platform == "gpu" for d in jax.devices())'
-          #python -m pytest -q tests/test_jaxarray.py
+          (
+            python -c 'import jax, qutip; print("QuTiP:", qutip.__version__); print("JAX devices:", jax.devices()); assert any(d.platform == "gpu" for d in jax.devices())'
+            #python -m pytest -q tests/test_jaxarray.py
+          ) 2>&1 | tee "$LOG_DIR/smoke-tests.log"
+
+      - name: Upload command logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: self-hosted-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.LOG_DIR }}/*.log
+          if-no-files-found: warn
