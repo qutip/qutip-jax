@@ -22,12 +22,13 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      LOG_DIR: ${{ runner.temp }}/self-hosted-logs-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Prepare log directory
-        run: mkdir -p "$LOG_DIR"
+        run: |
+          LOG_DIR="$RUNNER_TEMP/self-hosted-logs-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$LOG_DIR"
+          echo "LOG_DIR=$LOG_DIR" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v7
 
