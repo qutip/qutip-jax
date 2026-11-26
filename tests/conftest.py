@@ -1,4 +1,5 @@
 import qutip_jax
+import jax
 import numpy as np
 import pytest
 import qutip.testing.mixin as testing
@@ -8,9 +9,16 @@ from qutip.testing.random_data import random_diag
 def random_generator():
     return np.random.default_rng(1234)
 
+def _jax_key(rng):
+    # Derive a JAX PRNG key from the seeded numpy generator, so the tests
+    # stay reproducible while the data is drawn from jax.random.
+    return jax.random.key(int(rng.integers(2**31)))
+
 def _random_cplx(shape, rng):
+    key_real, key_imag = jax.random.split(_jax_key(rng))
     return qutip_jax.JaxArray(
-        rng.normal(size=shape) + 1j * rng.normal(size=shape)
+        jax.random.normal(key_real, shape)
+        + 1j * jax.random.normal(key_imag, shape)
     )
 
 def _random_dia(shape, rng):
